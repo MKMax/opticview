@@ -1,0 +1,5 @@
+# Gradle related ignores
+.gradle
+build
+
+# Other ignores:
