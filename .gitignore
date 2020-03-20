@@ -2,4 +2,7 @@
 .gradle
 build
 
-# Other ignores:
+# Other/IDE ignores:
+.idea
+out
+*.iml

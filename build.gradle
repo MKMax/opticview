@@ -4,7 +4,8 @@ plugins {
     id "org.openjfx.javafxplugin" version "0.0.8"
 }
 
-group               = "me.maximkasyanenko"
+group               = "io.github.mkmax"
+mainClassName       = "io.github.mkmax.opticview/io.github.mkmax.opticview.OpticView"
 targetCompatibility = "13"
 sourceCompatibility = "13"
 
@@ -17,13 +18,16 @@ test {
 }
 
 dependencies {
+    implementation     "org.joml:joml:1.9.22"
+    implementation     "org.controlsfx:controlsfx:11.0.1"
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.4.2"
     testImplementation "org.junit.jupiter:junit-jupiter-engine:5.4.2"
 }
 
 javafx {
-    version "13.0.2"
+    version "14"
     modules = [
+        "javafx.base",
         "javafx.controls",
         "javafx.graphics"
     ]
