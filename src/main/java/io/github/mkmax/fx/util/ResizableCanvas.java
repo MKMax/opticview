@@ -1,7 +1,9 @@
-package io.github.mkmax.fxutil;
+package io.github.mkmax.fx.util;
 
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Dimension2D;
 import javafx.scene.canvas.Canvas;
 
@@ -16,11 +18,11 @@ public class ResizableCanvas extends Canvas {
     private static final double DEF_MAX_WIDTH  = Double.MAX_VALUE;
     private static final double DEF_MAX_HEIGHT = Double.MAX_VALUE;
 
-    private DoubleProperty minWidth  = new SimpleDoubleProperty ();
-    private DoubleProperty minHeight = new SimpleDoubleProperty ();
+    private final DoubleProperty minWidth  = new SimpleDoubleProperty ();
+    private final DoubleProperty minHeight = new SimpleDoubleProperty ();
 
-    private DoubleProperty maxWidth  = new SimpleDoubleProperty ();
-    private DoubleProperty maxHeight = new SimpleDoubleProperty ();
+    private final DoubleProperty maxWidth  = new SimpleDoubleProperty ();
+    private final DoubleProperty maxHeight = new SimpleDoubleProperty ();
 
     public ResizableCanvas (
         double minWidth,
