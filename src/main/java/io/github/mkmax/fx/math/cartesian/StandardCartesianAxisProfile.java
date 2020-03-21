@@ -3,27 +3,20 @@ package io.github.mkmax.fx.math.cartesian;
 import io.github.mkmax.util.data.ArrayIterable;
 import io.github.mkmax.util.math.DoubleRange.Lerp;
 import io.github.mkmax.util.math.DoubleRange;
+import io.github.mkmax.util.math.FloatingPoint;
 
 public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
 
     private static final Iterable<CartesianAxisPoint> EMPTY = ArrayIterable.empty ();
 
-    private static final double MIN_FPU = 1d;
-    private static final int    MIN_CACHE_SIZE = 8;
+    private CartesianAxisPoint[] cachedAxisPointArray;
 
-    private ArrayIterable<CartesianAxisPoint> cachedAxisPointArray;
-    private double mfpu;
-
-    public StandardCartesianAxisProfile (double mfpu) {
-        setMinimumFragmentsPerUnit (mfpu);
+    public StandardCartesianAxisProfile (double pMfpu) {
+        super (pMfpu)
     }
 
-    public void setMinimumFragmentsPerUnit (double nMfpu) {
-        mfpu = Math.max (MIN_FPU, nMfpu);
-    }
-
-    public double getMinimumFragmentsPerUnit () {
-        return mfpu;
+    public StandardCartesianAxisProfile () {
+        /* initial state already achieved. */
     }
 
     @Override
@@ -31,6 +24,7 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
         DoubleRange realAxisRange,
         DoubleRange mappedAxisRange)
     {
+        final double mfpu                   = getMinimumFragmentsPerUnit ();
         final double realAxisNumericRange   = realAxisRange.range ();
         final double mappedAxisNumericRange = mappedAxisRange.range ();
 
@@ -126,10 +120,23 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
          * i.e. < 0, the remainder produced by the modulus operation actually ends
          * up being negative as well (which is technically valid, but does not truly follow
          * the definition we see in number theory).
+         *
+         * Additional note: because the axes should only be in the range
+         * (realAxisRange.min, realAxisRange.max) exclusively, we need to ensure
+         * that 'start' != 'realAxisRange.min' which may happen if 'realAxisRange.min'
+         * is perfectly divisible by 'step'.
          */
-        if (realAxisRange.min < 0)
+        if (realAxisRange.min < 0) {
             start = realAxisRange.min - (realAxisRange.min % step);
+
+            /* ensure the criteria mentioned above by simply adding 'step' if needed */
+            if (FloatingPoint.equal (realAxisRange.min, start))
+                start += step;
+        }
         else
+            /* This computation here actually already ensures
+             * that 'start' != 'realAxisRange.min'
+             */
             start = realAxisRange.min + (step - realAxisRange.min % step);
 
         /* Trivially, if 'start' is actually ahead (or equal to) the end of
@@ -149,11 +156,16 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
          * performance as this function is expected to be called in rather rapid
          * succession (for example, when rendering a graph multiple times per second).
          */
-        if (cachedAxisPointArray == null)
-            cachedAxisPointArray = new ArrayList<> (axisCount);
-
-        if (cachedAxisPointArray.size () < axisCount)
-            cachedAxisPointArray.ensureCapacity (axisCount);
+        if (cachedAxisPointArray == null || cachedAxisPointArray.length < axisCount) {
+            /* Admittedly this can be improved a lot more, but we need to write
+             * a special array buffer type that would provide direct access to any
+             * index in some "resizable" array which java's ArrayList does not
+             * allow us to do. This is especially inefficient considering that we
+             * may still be re-allocating the array constantly if axisCount continues
+             * to increment on each call.
+             */
+            cachedAxisPointArray = new CartesianAxisPoint[axisCount];
+        }
 
         /* We will need this to compute the viewport value of the axis point */
         final Lerp winToVp = new Lerp (realAxisRange, mappedAxisRange);
@@ -165,7 +177,9 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
             cachedAxisPointArray[i] = new CartesianAxisPoint (pWindowSpace, pViewportSpace);
         }
 
-        /* Yes, we have finally completed this monumental task */
+        /* Again, this area may also be improved as we're unnecessarily creating
+         * a new instance of ArrayIterable each time this function is called.
+         */
         return new ArrayIterable<> (cachedAxisPointArray, axisCount);
     }
 

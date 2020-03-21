@@ -6,6 +6,10 @@ import java.util.Iterator;
 
 public interface CartesianAxisProfile {
 
+    void setMinimumFragmentsPerUnit (double nMfpu);
+
+    double getMinimumFragmentsPerUnit ();
+
     void setComputeMajorAxisPoints (boolean enable);
 
     boolean wouldComputeMajorAxisPoints ();
