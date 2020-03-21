@@ -56,6 +56,7 @@ public class DoubleRange {
     }
 
     public double range () {
+        /* guaranteed to be positive from checks performed in constructor. */
         return max - min;
     }
 
