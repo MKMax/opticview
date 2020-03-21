@@ -45,10 +45,14 @@ public class DoubleRange {
     public final double max;
 
     public DoubleRange (double pMin, double pMax) {
-        if (pMin > pMax)
-            throw new IllegalArgumentException ();
-        min = pMin;
-        max = pMax;
+        if (pMin > pMax) {
+            min = pMax;
+            max = pMin;
+        }
+        else {
+            min = pMin;
+            max = pMax;
+        }
     }
 
     public double range () {

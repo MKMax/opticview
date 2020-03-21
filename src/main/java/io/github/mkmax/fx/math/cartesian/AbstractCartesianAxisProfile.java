@@ -1,5 +1,6 @@
 package io.github.mkmax.fx.math.cartesian;
 
+import io.github.mkmax.util.data.ArrayIterable;
 import io.github.mkmax.util.math.FloatingPoint;
 
 import java.util.ArrayList;
@@ -18,6 +19,8 @@ public abstract class AbstractCartesianAxisProfile implements CartesianAxisProfi
     public interface MFPUChangeListener {
         void onMFPUChanged ();
     }
+
+    protected static final Iterable<CartesianAxisPoint> EMPTY = ArrayIterable.empty ();
 
     private static final double MIN_MFPU = 1d;
 

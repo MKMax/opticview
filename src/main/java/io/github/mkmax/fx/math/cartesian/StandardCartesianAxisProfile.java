@@ -7,8 +7,6 @@ import io.github.mkmax.util.math.FloatingPoint;
 
 public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
 
-    private static final Iterable<CartesianAxisPoint> EMPTY = ArrayIterable.empty ();
-
     private CartesianAxisPoint[] cachedAxisPointArray;
 
     public StandardCartesianAxisProfile (double pMfpu) {
@@ -24,6 +22,10 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
         DoubleRange realAxisRange,
         DoubleRange mappedAxisRange)
     {
+        /* very import check to run! */
+        if (!wouldComputeMajorAxisPoints ())
+            return EMPTY;
+
         final double mfpu                   = getMinimumFragmentsPerUnit ();
         final double realAxisNumericRange   = realAxisRange.range ();
         final double mappedAxisNumericRange = mappedAxisRange.range ();
@@ -188,6 +190,10 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
         DoubleRange realAxisRange,
         DoubleRange mappedAxisRange)
     {
+        /* very important check to run! */
+        if (!wouldComputeMinorAxisPoints ())
+            return EMPTY;
+
         return null;
     }
 
