@@ -1,6 +1,6 @@
 package io.github.mkmax.fx.math.cartesian;
 
-import io.github.mkmax.math.DoubleRange;
+import io.github.mkmax.util.math.DoubleRange;
 
 import java.util.Iterator;
 
@@ -14,11 +14,11 @@ public interface CartesianAxisProfile {
 
     boolean wouldComputeMinorAxisPoints ();
 
-    Iterator<CartesianAxisPoint> computeMajorPoints (
+    Iterable<CartesianAxisPoint> computeMajorPoints (
         DoubleRange realAxisRange,
         DoubleRange mappedAxisRange);
 
-    Iterator<CartesianAxisPoint> computeMinorPoints (
+    Iterable<CartesianAxisPoint> computeMinorPoints (
         DoubleRange realAxisRange,
         DoubleRange mappedAxisRange);
 

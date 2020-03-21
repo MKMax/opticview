@@ -1,4 +1,4 @@
-package io.github.mkmax.math;
+package io.github.mkmax.util.math;
 
 import java.util.Objects;
 
