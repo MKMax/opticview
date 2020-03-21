@@ -5,9 +5,20 @@ import io.github.mkmax.util.math.DoubleRange.Lerp;
 import io.github.mkmax.util.math.DoubleRange;
 import io.github.mkmax.util.math.FloatingPoint;
 
+/* non-javadoc
+ *
+ * An emulation of an axis profile that is similar to the one
+ * seen in the, surprisingly good, free online Desmos graphing
+ * calculator (https://www.desmos.com/calculator).
+ *
+ * I'm sure most other calculators use this but I'm most familiar
+ * with desmos and that is what I used to derive the computations
+ * for the major & minor axis points for this profile.
+ */
 public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
 
-    private CartesianAxisPoint[] cachedAxisPointArray;
+    private CartesianAxisPoint[] cachedMajorPointArray;
+    private CartesianAxisPoint[] cachedMinorPointArray;
 
     public StandardCartesianAxisProfile (double pMfpu) {
         super (pMfpu);
@@ -160,7 +171,7 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
          * performance as this function is expected to be called in rather rapid
          * succession (for example, when rendering a graph multiple times per second).
          */
-        if (cachedAxisPointArray == null || cachedAxisPointArray.length < axisCount) {
+        if (cachedMajorPointArray == null || cachedMajorPointArray.length < axisCount) {
             /* Admittedly this can be improved a lot more, but we need to write
              * a special array buffer type that would provide direct access to any
              * index in some "resizable" array which java's ArrayList does not
@@ -168,7 +179,7 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
              * may still be re-allocating the array constantly if axisCount continues
              * to increment on each call.
              */
-            cachedAxisPointArray = new CartesianAxisPoint[axisCount];
+            cachedMajorPointArray = new CartesianAxisPoint[axisCount];
         }
 
         /* We will need this to compute the viewport value of the axis point */
@@ -178,13 +189,13 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
             double pWindowSpace   = start + (step * i);
             double pViewportSpace = winToVp.project (pWindowSpace);
 
-            cachedAxisPointArray[i] = new CartesianAxisPoint (pWindowSpace, pViewportSpace);
+            cachedMajorPointArray[i] = new CartesianAxisPoint (pWindowSpace, pViewportSpace);
         }
 
         /* Again, this area may also be improved as we're unnecessarily creating
          * a new instance of ArrayIterable each time this function is called.
          */
-        return new ArrayIterable<> (cachedAxisPointArray, axisCount);
+        return new ArrayIterable<> (cachedMajorPointArray, axisCount);
     }
 
     @Override
@@ -196,7 +207,88 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
         if (!wouldComputeMinorAxisPoints ())
             return EMPTY;
 
-        return null;
+        /* This function's procedure is mostly a copy-paste of computeMajorPoints
+         * since the minor axes are closely related to the major axes. However, we
+         * cannot entirely generalize the computeMajorPoints function as there are
+         * some critical differences with minor points that cannot really be
+         * generalized. If it can, it would take more investment time than desired
+         * to achieve the same goal.
+         */
+
+        final double mfpu                   = getMinimumFragmentsPerUnit ();
+        final double realAxisNumericRange   = realAxisRange.range ();
+        final double mappedAxisNumericRange = mappedAxisRange.range ();
+
+        /* See identical comments in computeMajorPoints(...) */
+        final double fpu             = mappedAxisNumericRange / realAxisNumericRange;
+        final double unitsInMin      = mfpu / fpu;
+        final double log10           = Math.ceil (Math.log10 (unitsInMin));
+        final double pow10           = Math.pow (10, log10);
+        final double normalizedUnits = unitsInMin / pow10;
+
+        /* Here's where the crucial difference is. Again, I did not invest much
+         * time into figuring out how to optimize computing minor points on
+         * their own just yet (will possibly come back to it later).
+         *
+         * TODO: perhaps optimize computeMinorPoints(...)
+         *
+         * Either way, in computeMajorPoints, we only cared about the "macro" axis
+         * which has one defined pattern that it follows. Minor axes depend on the
+         * computation result from the major axes to ensure that there is no overlapping
+         * axis points emitted and to make sure that the 'minorStep' is adjusted
+         * accordingly to fit into the 'majorStep'.
+         *
+         * Because 'majorStep' can either be a factor of 0.2 (fifths), 0.5 (halves), or
+         * 1.0 (wholes), our corresponding 'minorStep' must either be 0.25 (quarters),
+         * or 0.2 (fifths) and 0.2 (fifths) respectively.
+         *
+         * majorStep | minorStep
+         * ---------------------
+         * 0.2         0.25
+         * 0.5         0.2
+         * 1.0         0.2
+         *
+         *
+         */
+        double majorStep;
+        double minorStep;
+
+        if (normalizedUnits <= 0.2d)      /* normalizedUnits <= (1d / 5d) */
+            step = 0.2d * pow10;
+        else if (normalizedUnits <= 0.5d) /* normalizedUnits <= (1d / 2d) */
+            step = 0.5d * pow10;
+        else                              /* normalizedUnits <= 1d        */
+            step = pow10;
+
+        double start;
+
+        if (realAxisRange.min < 0) {
+            start = realAxisRange.min - (realAxisRange.min % step);
+
+            if (FloatingPoint.strictEq (realAxisRange.min, start))
+                start += step;
+        }
+        else
+            start = realAxisRange.min + (step - realAxisRange.min % step);
+
+        if (start >= realAxisRange.max)
+            return EMPTY;
+
+        final int axisCount = (int) Math.ceil ((realAxisRange.max - start) / step);
+
+        if (cachedMinorPointArray == null || cachedMinorPointArray.length < axisCount)
+            cachedMinorPointArray = new CartesianAxisPoint[axisCount];
+
+        final Lerp winToVp = new Lerp (realAxisRange, mappedAxisRange);
+
+        for (int i = 0; i < axisCount; ++i) {
+            double pWindowSpace   = start + (step * i);
+            double pViewportSpace = winToVp.project (pWindowSpace);
+
+            cachedMinorPointArray[i] = new CartesianAxisPoint (pWindowSpace, pViewportSpace);
+        }
+
+        return new ArrayIterable<> (cachedMinorPointArray, axisCount);
     }
 
 }
