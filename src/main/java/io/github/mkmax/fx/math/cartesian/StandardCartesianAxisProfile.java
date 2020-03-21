@@ -12,7 +12,7 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
     private CartesianAxisPoint[] cachedAxisPointArray;
 
     public StandardCartesianAxisProfile (double pMfpu) {
-        super (pMfpu)
+        super (pMfpu);
     }
 
     public StandardCartesianAxisProfile () {
