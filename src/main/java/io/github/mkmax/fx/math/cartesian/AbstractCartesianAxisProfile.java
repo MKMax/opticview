@@ -16,6 +16,7 @@ public abstract class AbstractCartesianAxisProfile implements CartesianAxisProfi
         void onMinorAxisToggled ();
     }
 
+    /* MFPU = Minimum Fragments (or pixels) Per Unit */
     public interface MFPUChangeListener {
         void onMFPUChanged ();
     }
@@ -82,7 +83,7 @@ public abstract class AbstractCartesianAxisProfile implements CartesianAxisProfi
     @Override
     public void setMinimumFragmentsPerUnit (double nMfpu) {
         nMfpu = Math.max (MIN_MFPU, nMfpu);
-        if (FloatingPoint.equal (mfpu, nMfpu))
+        if (FloatingPoint.strictEq (mfpu, nMfpu))
             return;
         mfpu = nMfpu;
         mfpuChangeListeners.forEach (MFPUChangeListener::onMFPUChanged);

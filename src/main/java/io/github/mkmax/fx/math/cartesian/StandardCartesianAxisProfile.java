@@ -132,7 +132,7 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
             start = realAxisRange.min - (realAxisRange.min % step);
 
             /* ensure the criteria mentioned above by simply adding 'step' if needed */
-            if (FloatingPoint.equal (realAxisRange.min, start))
+            if (FloatingPoint.strictEq (realAxisRange.min, start))
                 start += step;
         }
         else
@@ -150,9 +150,11 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
 
         /* Straight forward intrinsic computation of the total number of axes we
          * will iterate over so that we may pre-allocate all of the necessary
-         * memory.
+         * memory. The only slightly obscure thing here is that we use ceil(), but
+         * this is simply to ensure that we keep realAxisRange.max from being an
+         * axis point since it is out of our range of desired points.
          */
-        final int axisCount = (int) Math.floor ((realAxisRange.max - start) / step + 1);
+        final int axisCount = (int) Math.ceil ((realAxisRange.max - start) / step);
 
         /* Caching already allocated axis point array in the hopes of saving some
          * performance as this function is expected to be called in rather rapid
