@@ -38,15 +38,15 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
             return EMPTY;
 
         final double mfpu                   = getMinimumFragmentsPerUnit ();
-        final double realAxisNumericRange   = realAxisRange.range ();
-        final double mappedAxisNumericRange = mappedAxisRange.range ();
+        final double realAxisNumericRange   = realAxisRange.absRange ();
+        final double mappedAxisNumericRange = mappedAxisRange.absRange ();
 
         /* Obtain the current fragments per
          * unit (FPU) defined by the window
          * (realAxisRange) & viewport (mappedAxisRange).
          *
-         * NOTE: 'fpu' is guaranteed to be positive because both of the
-         * ranges are guaranteed to be positive by DoubleRange.
+         * NOTE: 'fpu' is guaranteed to be positive because we use
+         * the absRange() function of the DoubleRange class.
          */
         final double fpu = mappedAxisNumericRange / realAxisNumericRange;
 
@@ -147,18 +147,23 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
          * that 'start' != 'realAxisRange.min' which may happen if 'realAxisRange.min'
          * is perfectly divisible by 'step'.
          */
-        if (realAxisRange.min < 0) {
+        if (realAxisRange.min < 0)
             start = realAxisRange.min - (realAxisRange.min % step);
-
-            /* ensure the criteria mentioned above by simply adding 'step' if needed */
-            if (FloatingPoint.strictEq (realAxisRange.min, start))
-                start += step;
-        }
         else
-            /* This computation here actually already ensures
-             * that 'start' != 'realAxisRange.min'
+            /* Although this computation here should already ensure
+             * that 'start' != 'realAxisRange.min', the way floating
+             * point numbers work, the expression 'realAxisRange.min % step'
+             * could produce a result that is too similar to 'realAxisRange.min'
+             * in such a way that when computing the 'axisCount' further
+             * on, we end up actually including 'realAxisRange.min'.
              */
             start = realAxisRange.min + (step - realAxisRange.min % step);
+
+        /* ensure the criteria mentioned above is met
+         * by simply adding 'step' if needed.
+         */
+        if (FloatingPoint.strictEq (realAxisRange.min, start))
+            start += step;
 
         /* Trivially, if 'start' is actually ahead (or equal to) the end of
          * our window/function space, there will be no major axis points
@@ -203,7 +208,10 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
             double pWindowSpace   = start + (step * i);
             double pViewportSpace = winToVp.project (pWindowSpace);
 
-            cachedMajorPointArray[i] = new CartesianAxisPoint (pWindowSpace, pViewportSpace);
+            cachedMajorPointArray[i] = new CartesianAxisPoint (
+                pWindowSpace,
+                pViewportSpace
+            );
         }
 
         /* Again, this area may also be improved as we're unnecessarily creating
@@ -234,8 +242,8 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
          */
 
         final double mfpu                   = getMinimumFragmentsPerUnit ();
-        final double realAxisNumericRange   = realAxisRange.range ();
-        final double mappedAxisNumericRange = mappedAxisRange.range ();
+        final double realAxisNumericRange   = realAxisRange.absRange ();
+        final double mappedAxisNumericRange = mappedAxisRange.absRange ();
 
         /* See identical comments in computeMajorPoints(...) */
         final double fpu             = mappedAxisNumericRange / realAxisNumericRange;
@@ -366,7 +374,7 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
         }
 
         /* See the comment about this in computeMajorPoints(...) regarding problems. */
-        return new ArrayIterable<> (cachedMinorPointArray, majorAxisCount);
+        return new ArrayIterable<> (cachedMinorPointArray, minorAxisCount);
     }
 
 }

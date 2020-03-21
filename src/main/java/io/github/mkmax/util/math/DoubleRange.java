@@ -20,7 +20,7 @@ public class DoubleRange {
 
             /* don't worry about divide by zero, floating points will handle it */
             m = to.range () / from.range ();
-            b = to.min - m * from.min;
+            b = to.a - m * from.a;
         }
 
         public DoubleRange getFrom () {
@@ -41,23 +41,33 @@ public class DoubleRange {
         }
     }
 
+    public final double a;
+    public final double b;
+
     public final double min;
     public final double max;
 
-    public DoubleRange (double pMin, double pMax) {
-        if (pMin > pMax) {
-            min = pMax;
-            max = pMin;
-        }
-        else {
-            min = pMin;
-            max = pMax;
-        }
+    public DoubleRange (double pA, double pB) {
+        a = pA;
+        b = pB;
+
+        min = Math.min (a, b);
+        max = Math.max (a, b);
     }
 
-    public double range () {
-        /* guaranteed to be positive from checks performed in constructor. */
+    /* computes the absolute value of the range (distance between a & b) */
+    public double absRange () {
         return max - min;
+    }
+
+    /* computes the inverse of the range (a - b), i.e., (start - end) */
+    public double invRange () {
+        return a - b;
+    }
+
+    /* computes the intuitive range (b - a), i.e., (end - start)*/
+    public double range () {
+        return b - a;
     }
 
 }
