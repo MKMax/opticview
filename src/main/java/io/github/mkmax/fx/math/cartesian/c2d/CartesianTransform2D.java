@@ -49,12 +49,6 @@ public class CartesianTransform2D {
             recomputedListeners.remove (rl);
     }
 
-    /* +----------------------------------------------+ */
-    /* | Grid computation (used mainly for rendering) | */
-    /* +----------------------------------------------+ */
-
-
-
     /* +--------------------------------+ */
     /* | Application of transformations | */
     /* +--------------------------------+ */
