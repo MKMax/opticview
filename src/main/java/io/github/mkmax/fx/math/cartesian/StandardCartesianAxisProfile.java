@@ -15,17 +15,21 @@ import io.github.mkmax.util.math.FloatingPoint;
  * with desmos and that is what I used to derive the computations
  * for the major & minor axis points for this profile.
  */
-public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
+public class StandardCartesianAxisProfile extends CommonCartesianAxisProfile {
+
+    private static final double LOWEST_MFPU  = 1d;
+    private static final double HIGHEST_MFPU = Double.POSITIVE_INFINITY;
+    private static final double INIT_MFPU    = 128d;
 
     private CartesianAxisPoint[] cachedMajorPointArray;
     private CartesianAxisPoint[] cachedMinorPointArray;
 
     public StandardCartesianAxisProfile (double pMfpu) {
-        super (pMfpu);
+        super (LOWEST_MFPU, HIGHEST_MFPU, pMfpu);
     }
 
     public StandardCartesianAxisProfile () {
-        /* initial state already achieved. */
+        this (INIT_MFPU);
     }
 
     @Override
@@ -35,7 +39,7 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
     {
         /* very import check to run! */
         if (!wouldComputeMajorAxisPoints ())
-            return EMPTY;
+            return EMPTY_CAP_ITERABLE;
 
         final double mfpu                   = getMinimumFragmentsPerUnit ();
         final double realAxisNumericRange   = realAxisRange.absRange ();
@@ -170,7 +174,7 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
          * emitted so we may safely return an empty iterator.
          */
         if (start >= realAxisRange.max)
-            return EMPTY;
+            return EMPTY_CAP_ITERABLE;
 
         /* Straight forward intrinsic computation of the total number of axes we
          * will iterate over so that we may pre-allocate all of the necessary
@@ -227,7 +231,7 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
     {
         /* very important check to run! */
         if (!wouldComputeMinorAxisPoints ())
-            return EMPTY;
+            return EMPTY_CAP_ITERABLE;
 
         /* This function's procedure is mostly a copy-paste of computeMajorPoints
          * since the minor axes are closely related to the major axes. However, we
@@ -317,7 +321,7 @@ public class StandardCartesianAxisProfile extends AbstractCartesianAxisProfile {
          * For additional comments, see the comments in computeMajorPoints(...)
          */
         if (minorStart >= realAxisRange.max)
-            return EMPTY;
+            return EMPTY_CAP_ITERABLE;
 
         /* Similar situation as described by the identical comments in the
          * computeMajorPoints(...) at this point in the function. However,

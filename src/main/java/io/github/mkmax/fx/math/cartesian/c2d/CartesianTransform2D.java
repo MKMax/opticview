@@ -153,6 +153,10 @@ public class CartesianTransform2D {
         );
     }
 
+    public void setViewport (double width, double height) {
+        setViewport (0, width, height, 0);
+    }
+
     private void recompute () {
         map (window, viewport, projection);
         map (viewport, window, inverse);
