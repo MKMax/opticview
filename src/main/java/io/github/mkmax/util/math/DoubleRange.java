@@ -55,6 +55,10 @@ public class DoubleRange {
         max = Math.max (a, b);
     }
 
+    public boolean in (double val) {
+        return min <= val && val <= max;
+    }
+
     /* computes the absolute value of the range (distance between a & b) */
     public double absRange () {
         return max - min;
