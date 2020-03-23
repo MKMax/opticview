@@ -3,136 +3,162 @@ package io.github.mkmax.fx.math.cartesian;
 import io.github.mkmax.util.data.ArrayIterable;
 import io.github.mkmax.util.math.FloatingPoint;
 
-import java.util.ArrayList;
-import java.util.List;
+import javafx.beans.property.*;
 
 public abstract class CommonCartesianAxisProfile implements CartesianAxisProfile {
 
     protected static final Iterable<CartesianAxisPoint> EMPTY_CAP_ITERABLE = ArrayIterable.empty ();
 
-    /* Major Axis Profile (MAAP) Toggle Listener */
-    public interface MAAPToggleListener {
-        void onMAAPToggled (boolean newState);
-    }
+    protected static final int DECIMAL_PRECISION_MIN = 0;
+    protected static final int DECIMAL_PRECISION_MAX = 16;
 
-    /* Minor Axis Profile (MIAP) Toggle Listener */
-    public interface MIAPToggleListener {
-        void onMIAPToggled (boolean newState);
-    }
-
-    /* Minimum Fragments Per Unit (MFPU) Change Listener */
-    public interface MFPUChangeListener {
-        void onMFPUChanged (double oldMfpu, double newMfpu);
-    }
-
-    private final List<MAAPToggleListener> maapToggleListeners = new ArrayList<> ();
-    private final List<MIAPToggleListener> miapToggleListeners = new ArrayList<> ();
-    private final List<MFPUChangeListener> mfpuChangeListeners = new ArrayList<> ();
-
-    private boolean computeMaaps = true;
-    private boolean computeMiaps = true;
+    private final BooleanProperty computeMaaps     = new SimpleBooleanProperty (true);
+    private final BooleanProperty computeMiaps     = new SimpleBooleanProperty (true);
+    private final BooleanProperty labelsEnabled    = new SimpleBooleanProperty (false);
+    private final IntegerProperty decimalPrecision = new SimpleIntegerProperty (3);
+    private final IntegerProperty sciNotLowerBound = new SimpleIntegerProperty (-3);
+    private final IntegerProperty sciNotUpperBound = new SimpleIntegerProperty (3);
 
     /* NOTE: perhaps later these limitations will be lifted on extending
      * classes to enable them to create their own more specific restrictions.
      */
-    private double lowestMfpu;
-    private double highestMfpu;
-    private double mfpu;
+    private final DoubleProperty lowestMfpu  = new SimpleDoubleProperty ();
+    private final DoubleProperty highestMfpu = new SimpleDoubleProperty ();
+    private final DoubleProperty mfpu        = new SimpleDoubleProperty ();
 
     public CommonCartesianAxisProfile (
         double pLowestMfpu,
         double pHighestMfpu,
         double pMfpu)
     {
-        lowestMfpu  = pLowestMfpu;
-        highestMfpu = pHighestMfpu;
-        /* The function call will ensure 'mfpu' is within bounds */
-        setMinimumFragmentsPerUnit (pMfpu);
-    }
-
-    /* +-----------------------------------------------+ */
-    /* | Registration/Unregistering of event listeners | */
-    /* +-----------------------------------------------+ */
-
-    public void register (MAAPToggleListener maaptl) {
-        if (maaptl != null)
-            maapToggleListeners.add (maaptl);
-    }
-
-    public void unregister (MAAPToggleListener maaptl) {
-        if (maaptl != null)
-            maapToggleListeners.remove (maaptl);
-    }
-
-    public void register (MIAPToggleListener miaptl) {
-        if (miaptl != null)
-            miapToggleListeners.add (miaptl);
-    }
-
-    public void unregister (MIAPToggleListener miaptl) {
-        if (miaptl != null)
-            miapToggleListeners.remove (miaptl);
-    }
-
-    public void register (MFPUChangeListener mfpucl) {
-        if (mfpucl != null)
-            mfpuChangeListeners.add (mfpucl);
-    }
-
-    public void unregister (MFPUChangeListener mfpucl) {
-        if (mfpucl != null)
-            mfpuChangeListeners.remove (mfpucl);
+        lowestMfpu.set (pLowestMfpu);
+        highestMfpu.set (pHighestMfpu);
+        /* Use setter to ensure it will be within bounds */
+        setMfpu (pMfpu);
     }
 
     /* +-----------------------------------------------------------------+ */
     /* | Enable/Disable implementation enabling event driven programming | */
     /* +-----------------------------------------------------------------+ */
 
-    public double getLowestMinimumFragmentsPerUnit () {
+    public double getLowestMfpu () {
+        return lowestMfpu.get ();
+    }
+
+    public ReadOnlyDoubleProperty lowestMfpuProperty () {
         return lowestMfpu;
     }
 
-    public double getHighestMinimumFragmentsPerUnit () {
+    public double getHighestMfpu () {
+        return highestMfpu.get ();
+    }
+
+    public ReadOnlyDoubleProperty highestMfpuProperty () {
         return highestMfpu;
     }
 
-    public double getMinimumFragmentsPerUnit () {
-        return mfpu;
+    public double getMfpu () {
+        return mfpu.get ();
     }
 
-    public void setMinimumFragmentsPerUnit (double nMfpu) {
-        nMfpu = Math.max (lowestMfpu, Math.min (highestMfpu, nMfpu));
-        if (FloatingPoint.strictEq (mfpu, nMfpu))
-            return;
-        double old = mfpu;
-        mfpu = nMfpu;
-        mfpuChangeListeners.forEach (l -> l.onMFPUChanged (old, mfpu));
+    public void setMfpu (double nMfpu) {
+        nMfpu = Math.max (lowestMfpu.get (), Math.min (highestMfpu.get (), nMfpu));
+        if (!FloatingPoint.strictEq (mfpu.get (), nMfpu))
+            mfpu.set (nMfpu);
+    }
+
+    public ReadOnlyDoubleProperty mfpuProperty () {
+        return mfpu;
     }
 
     @Override
     public void setComputeMajorAxisPoints (boolean enable) {
-        if (computeMaaps == enable)
-            return;
-        computeMaaps = enable;
-        maapToggleListeners.forEach (l -> l.onMAAPToggled (computeMaaps));
+        if (computeMaaps.get () != enable)
+            computeMaaps.setValue (enable);
     }
 
     @Override
-    public boolean wouldComputeMajorAxisPoints () {
+    public boolean shouldComputeMajorAxisPoints () {
+        return computeMaaps.get ();
+    }
+
+    public ReadOnlyBooleanProperty computeMaapsProperty () {
         return computeMaaps;
     }
 
     @Override
     public void setComputeMinorAxisPoints (boolean enable) {
-        if (computeMiaps == enable)
-            return;
-        computeMiaps = enable;
-        miapToggleListeners.forEach (l -> l.onMIAPToggled (computeMiaps));
+        if (computeMiaps.get () != enable)
+            computeMiaps.setValue (enable);
     }
 
     @Override
-    public boolean wouldComputeMinorAxisPoints () {
+    public boolean shouldComputeMinorAxisPoints () {
+        return computeMiaps.get ();
+    }
+
+    public ReadOnlyBooleanProperty computeMiapsProperty () {
         return computeMiaps;
     }
 
+    @Override
+    public void setLabelsEnabled (boolean enabled) {
+        if (labelsEnabled.get () != enabled)
+            labelsEnabled.set (enabled);
+    }
+
+    @Override
+    public boolean areLabelsEnabled () {
+        return labelsEnabled.get ();
+    }
+
+    public ReadOnlyBooleanProperty labelsEnabledProperty () {
+        return labelsEnabled;
+    }
+
+    @Override
+    public void setLabelDecimalPrecision (int dp) {
+        dp = Math.max (DECIMAL_PRECISION_MIN, Math.min (DECIMAL_PRECISION_MAX, dp));
+        if (decimalPrecision.get () != dp)
+            decimalPrecision.setValue (dp);
+    }
+
+    @Override
+    public int getLabelDecimalPrecision () {
+        return decimalPrecision.get ();
+    }
+
+    public ReadOnlyIntegerProperty labelDecimalPrecisionProperty () {
+        return decimalPrecision;
+    }
+
+    @Override
+    public void setScientificNotationLowerBound (int snlb) {
+        if (sciNotLowerBound.get () != snlb)
+            sciNotLowerBound.set (snlb);
+    }
+
+    @Override
+    public int getScientificNotationLowerBound () {
+        return sciNotLowerBound.get ();
+    }
+
+    public ReadOnlyIntegerProperty sciNotLowerBoundProperty () {
+        return sciNotLowerBound;
+    }
+
+    @Override
+    public void setScientificNotationUpperBound (int snhb) {
+        if (sciNotUpperBound.get () != snhb)
+            sciNotUpperBound.setValue (snhb);
+    }
+
+    @Override
+    public int getScientificNotationUpperBound () {
+        return sciNotUpperBound.get ();
+    }
+
+    public ReadOnlyIntegerProperty sciNotUpperBoundProperty () {
+        return sciNotUpperBound;
+    }
 }

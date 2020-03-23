@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import io.github.mkmax.fx.math.cartesian.c2d.CartesianGraphView2D ?>
+<?import javafx.scene.layout.StackPane?>
+
+<?import java.net.URL?>
+<StackPane>
+    <CartesianGraphView2D>
+
+    </CartesianGraphView2D>
+
+    <stylesheets>
+        <URL value="@style.css"/>
+    </stylesheets>
+</StackPane>
+

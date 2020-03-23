@@ -2,24 +2,28 @@ package io.github.mkmax.fx.math.cartesian.c2d;
 
 import io.github.mkmax.fx.math.cartesian.CartesianAxisProfile;
 import io.github.mkmax.fx.math.cartesian.CommonCartesianAxisProfile;
-import io.github.mkmax.fx.math.cartesian.CommonCartesianAxisProfile.*;
 import io.github.mkmax.fx.math.cartesian.StandardCartesianAxisProfile;
 import io.github.mkmax.fx.math.cartesian.c2d.CartesianTransform2D.*;
-import io.github.mkmax.fx.math.cartesian.c2d.CartesianAxes2D.*;
 import io.github.mkmax.fx.util.ResizableCanvas;
 
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.css.CssMetaData;
 import javafx.scene.canvas.GraphicsContext;
 
 public class CartesianGraphView2D extends ResizableCanvas {
 
     /* Predefined event handlers */
-    private final XAxisChangeListener XACL     = this::onXYAxisChanged;
-    private final YAxisChangeListener YACL     = this::onXYAxisChanged;
-    private final MAAPToggleListener  XYMAAPTL = this::onXYAxisMAAPToggled;
-    private final MIAPToggleListener  XYMIAPTL = this::onXYAxisMIAPToggled;
-    private final MFPUChangeListener  XYMFPUCL = this::onXYAxisMFPUChanged;
-    private final RecomputedListener  TRCL     = this::onTransformRecomputed;
+    private final RecomputedListener                   TRCL     = this::onTransformRecomputed;
+    private final ChangeListener<CartesianAxisProfile> XACL     = this::onXYAxisChanged;
+    private final ChangeListener<CartesianAxisProfile> YACL     = this::onXYAxisChanged;
+    private final ChangeListener<Boolean>              MAAPSTL  = this::onXYAxisMAAPToggled;
+    private final ChangeListener<Boolean>              MIAPSTL  = this::onXYAxisMIAPToggled;
+    private final ChangeListener<Number>               MFPUCL   = this::onXYAxisMFPUChanged;
+
+    private final ChangeListener<Number>               WIDTHCL  = this::onWidthChanged;
+    private final ChangeListener<Number>               HEIGHTCL = this::onHeightChanged;
 
     /* Actual member data */
     private final GraphicsContext graphics = getGraphicsContext2D ();
@@ -29,7 +33,26 @@ public class CartesianGraphView2D extends ResizableCanvas {
     private final CartesianAxes2D axes;
 
     public CartesianGraphView2D () {
+        /* Initialize members */
+        transform = new CartesianTransform2D ();
+        registry  = new CartesianRegistry2D ();
+        axes      = new CartesianAxes2D (
+            new StandardCartesianAxisProfile (),
+            new StandardCartesianAxisProfile ()
+        );
 
+        /* Register event handlers */
+        transform.addListener (TRCL);
+        addAxisListeners (axes.getXAxis ());
+        addAxisListeners (axes.getYAxis ());
+        axes.xAxisProperty ().addListener (XACL);
+        axes.yAxisProperty ().addListener (YACL);
+
+        widthProperty ().addListener (WIDTHCL);
+        heightProperty ().addListener (HEIGHTCL);
+
+        /* Run initial render */
+        render ();
     }
 
     /* +---------------------------+ */
@@ -52,34 +75,57 @@ public class CartesianGraphView2D extends ResizableCanvas {
     /* | Event handlers | */
     /* +----------------+ */
 
+    /* internal */
+
+    private void removeAxisListeners (CartesianAxisProfile cap) {
+        if (!(cap instanceof CommonCartesianAxisProfile))
+            return;
+        CommonCartesianAxisProfile ccap = (CommonCartesianAxisProfile) cap;
+        ccap.mfpuProperty ().removeListener (MFPUCL);
+        ccap.computeMaapsProperty ().removeListener (MAAPSTL);
+        ccap.computeMiapsProperty ().removeListener (MIAPSTL);
+    }
+
+    private void addAxisListeners (CartesianAxisProfile cap) {
+        if (!(cap instanceof CommonCartesianAxisProfile))
+            return;
+        CommonCartesianAxisProfile ccap = (CommonCartesianAxisProfile) cap;
+        ccap.mfpuProperty ().addListener (MFPUCL);
+        ccap.computeMaapsProperty ().addListener (MAAPSTL);
+        ccap.computeMiapsProperty ().addListener (MIAPSTL);
+    }
+
     private void onXYAxisChanged (
-        CartesianAxisProfile old,
-        CartesianAxisProfile now)
+        ObservableValue<? extends CartesianAxisProfile> obs,
+        CartesianAxisProfile                            old,
+        CartesianAxisProfile                            now)
     {
-        if (old instanceof CommonCartesianAxisProfile) {
-            CommonCartesianAxisProfile ccap = (CommonCartesianAxisProfile) old;
-            ccap.unregister (XYMAAPTL);
-            ccap.unregister (XYMIAPTL);
-            ccap.unregister (XYMFPUCL);
-        }
-        if (now instanceof CommonCartesianAxisProfile) {
-            CommonCartesianAxisProfile ccap = (CommonCartesianAxisProfile) now;
-            ccap.register (XYMAAPTL);
-            ccap.register (XYMIAPTL);
-            ccap.register (XYMFPUCL);
-        }
+        removeAxisListeners (old);
+        addAxisListeners (now);
         render ();
     }
 
-    private void onXYAxisMAAPToggled (boolean stateNow) {
+    private void onXYAxisMAAPToggled (
+        ObservableValue<? extends Boolean> obs,
+        Boolean                            old,
+        Boolean                            now)
+    {
         render ();
     }
 
-    private void onXYAxisMIAPToggled (boolean stateNow) {
+    private void onXYAxisMIAPToggled (
+        ObservableValue<? extends Boolean> obs,
+        Boolean                            old,
+        Boolean                            now)
+    {
         render ();
     }
 
-    private void onXYAxisMFPUChanged (double oldMfpu, double nowMfpu) {
+    private void onXYAxisMFPUChanged (
+        ObservableValue<? extends Number> obs,
+        Number                            old,
+        Number                            now)
+    {
         render ();
     }
 
@@ -87,13 +133,14 @@ public class CartesianGraphView2D extends ResizableCanvas {
         render ();
     }
 
+    /* javafx/ui */
+
     private void onWidthChanged (
         ObservableValue<? extends Number> obs,
         Number                            old,
         Number                            now)
     {
         transform.setViewport (getWidth (), getHeight ());
-        render ();
     }
 
     private void onHeightChanged (
@@ -102,7 +149,6 @@ public class CartesianGraphView2D extends ResizableCanvas {
         Number                            now)
     {
         transform.setViewport (getWidth (), getHeight ());
-        render ();
     }
 
     /* +--------------------+ */
@@ -110,6 +156,6 @@ public class CartesianGraphView2D extends ResizableCanvas {
     /* +--------------------+ */
 
     private void render () {
-
+        System.out.println ("Rendering");
     }
 }

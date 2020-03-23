@@ -38,10 +38,10 @@ public class StandardCartesianAxisProfile extends CommonCartesianAxisProfile {
         DoubleRange mappedAxisRange)
     {
         /* very import check to run! */
-        if (!wouldComputeMajorAxisPoints ())
+        if (!shouldComputeMajorAxisPoints ())
             return EMPTY_CAP_ITERABLE;
 
-        final double mfpu                   = getMinimumFragmentsPerUnit ();
+        final double mfpu                   = getMfpu ();
         final double realAxisNumericRange   = realAxisRange.absRange ();
         final double mappedAxisNumericRange = mappedAxisRange.absRange ();
 
@@ -230,7 +230,7 @@ public class StandardCartesianAxisProfile extends CommonCartesianAxisProfile {
         DoubleRange mappedAxisRange)
     {
         /* very important check to run! */
-        if (!wouldComputeMinorAxisPoints ())
+        if (!shouldComputeMinorAxisPoints ())
             return EMPTY_CAP_ITERABLE;
 
         /* This function's procedure is mostly a copy-paste of computeMajorPoints
@@ -245,7 +245,7 @@ public class StandardCartesianAxisProfile extends CommonCartesianAxisProfile {
          *       you find the fragments per major axis point.
          */
 
-        final double mfpu                   = getMinimumFragmentsPerUnit ();
+        final double mfpu                   = getMfpu ();
         final double realAxisNumericRange   = realAxisRange.absRange ();
         final double mappedAxisNumericRange = mappedAxisRange.absRange ();
 
@@ -333,7 +333,7 @@ public class StandardCartesianAxisProfile extends CommonCartesianAxisProfile {
               int minorAxisCount = (int) Math.ceil ((realAxisRange.max - minorStart) / minorStep);
 
         /* We do not want to overlap with the major axes. */
-        if (wouldComputeMajorAxisPoints ())
+        if (shouldComputeMajorAxisPoints ())
             minorAxisCount -= Math.max (0, majorAxisCount);
 
         /* See equivalent comment in computeMajorAxis(...) describing the problems

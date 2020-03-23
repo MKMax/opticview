@@ -31,6 +31,7 @@ javafx {
     modules = [
         "javafx.base",
         "javafx.controls",
-        "javafx.graphics"
+        "javafx.graphics",
+        "javafx.fxml"
     ]
 }

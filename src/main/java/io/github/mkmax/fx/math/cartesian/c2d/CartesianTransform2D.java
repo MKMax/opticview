@@ -2,8 +2,8 @@ package io.github.mkmax.fx.math.cartesian.c2d;
 
 import org.joml.*;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public class CartesianTransform2D {
 
@@ -23,6 +23,20 @@ public class CartesianTransform2D {
         /* initial state has already been reached */
     }
 
+    /* +----------------------------------------+ */
+    /* | Event registration + handling (if any) | */
+    /* +----------------------------------------+ */
+
+    public void addListener (RecomputedListener rl) {
+        if (rl != null)
+            recomputedListeners.add (rl);
+    }
+
+    public void removeListener (RecomputedListener rl) {
+        if (rl != null)
+            recomputedListeners.remove (rl);
+    }
+
     /* +---------------------------+ */
     /* | General getters & setters | */
     /* +---------------------------+ */
@@ -33,20 +47,6 @@ public class CartesianTransform2D {
 
     public Matrix3x2dc getInverse () {
         return inverse;
-    }
-
-    /* +----------------------------------------+ */
-    /* | Event registration + handling (if any) | */
-    /* +----------------------------------------+ */
-
-    public void register (RecomputedListener rl) {
-        if (rl != null)
-            recomputedListeners.add (rl);
-    }
-
-    public void unregister (RecomputedListener rl) {
-        if (rl != null)
-            recomputedListeners.remove (rl);
     }
 
     /* +--------------------------------+ */
@@ -160,7 +160,6 @@ public class CartesianTransform2D {
     private void recompute () {
         map (window, viewport, projection);
         map (viewport, window, inverse);
-
         recomputedListeners.forEach (RecomputedListener::onRecomputed);
     }
 }
