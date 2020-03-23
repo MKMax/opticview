@@ -2,8 +2,6 @@ package io.github.mkmax.fx.math.cartesian;
 
 import io.github.mkmax.util.math.DoubleRange;
 
-import java.util.Iterator;
-
 public interface CartesianAxisProfile {
 
     void setComputeMajorAxisPoints (boolean enable);
@@ -14,9 +12,13 @@ public interface CartesianAxisProfile {
 
     boolean shouldComputeMinorAxisPoints ();
 
-    void setLabelsEnabled (boolean enable);
+    void setMajorLabelsEnabled (boolean enable);
 
-    boolean areLabelsEnabled ();
+    boolean areMajorLabelsEnabled ();
+
+    void setMinorLabelsEnabled (boolean enable);
+
+    boolean areMinorLabelsEnabled ();
 
     void setLabelDecimalPrecision (int dp);
 

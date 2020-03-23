@@ -6,10 +6,8 @@ import io.github.mkmax.fx.math.cartesian.StandardCartesianAxisProfile;
 import io.github.mkmax.fx.math.cartesian.c2d.CartesianTransform2D.*;
 import io.github.mkmax.fx.util.ResizableCanvas;
 
-import javafx.beans.property.DoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.css.CssMetaData;
 import javafx.scene.canvas.GraphicsContext;
 
 public class CartesianGraphView2D extends ResizableCanvas {
@@ -20,6 +18,10 @@ public class CartesianGraphView2D extends ResizableCanvas {
     private final ChangeListener<CartesianAxisProfile> YACL     = this::onXYAxisChanged;
     private final ChangeListener<Boolean>              MAAPSTL  = this::onXYAxisMAAPToggled;
     private final ChangeListener<Boolean>              MIAPSTL  = this::onXYAxisMIAPToggled;
+    private final ChangeListener<Boolean>              MALTL    = this::onXYAxisMajorLabelsToggled;
+    private final ChangeListener<Boolean>              MILTL    = this::onXYAxisMinorLabelsToggled;
+    private final ChangeListener<Number>               ASNLBCL  = this::onXYAxisSciNotLowerBoundChanged;
+    private final ChangeListener<Number>               ASNHBCL  = this::onXYAxisSciNotUpperBoundChanged;
     private final ChangeListener<Number>               MFPUCL   = this::onXYAxisMFPUChanged;
 
     private final ChangeListener<Number>               WIDTHCL  = this::onWidthChanged;
@@ -43,10 +45,10 @@ public class CartesianGraphView2D extends ResizableCanvas {
 
         /* Register event handlers */
         transform.addListener (TRCL);
-        addAxisListeners (axes.getXAxis ());
-        addAxisListeners (axes.getYAxis ());
         axes.xAxisProperty ().addListener (XACL);
         axes.yAxisProperty ().addListener (YACL);
+        addAxisListeners (axes.getXAxis ());
+        addAxisListeners (axes.getYAxis ());
 
         widthProperty ().addListener (WIDTHCL);
         heightProperty ().addListener (HEIGHTCL);
@@ -84,6 +86,10 @@ public class CartesianGraphView2D extends ResizableCanvas {
         ccap.mfpuProperty ().removeListener (MFPUCL);
         ccap.computeMaapsProperty ().removeListener (MAAPSTL);
         ccap.computeMiapsProperty ().removeListener (MIAPSTL);
+        ccap.majorLabelsEnabledProperty ().removeListener (MALTL);
+        ccap.minorLabelsEnabledProperty ().removeListener (MILTL);
+        ccap.sciNotLowerBoundProperty ().removeListener (ASNLBCL);
+        ccap.sciNotUpperBoundProperty ().removeListener (ASNHBCL);
     }
 
     private void addAxisListeners (CartesianAxisProfile cap) {
@@ -93,6 +99,10 @@ public class CartesianGraphView2D extends ResizableCanvas {
         ccap.mfpuProperty ().addListener (MFPUCL);
         ccap.computeMaapsProperty ().addListener (MAAPSTL);
         ccap.computeMiapsProperty ().addListener (MIAPSTL);
+        ccap.majorLabelsEnabledProperty ().addListener (MALTL);
+        ccap.minorLabelsEnabledProperty ().addListener (MILTL);
+        ccap.sciNotLowerBoundProperty ().addListener (ASNLBCL);
+        ccap.sciNotUpperBoundProperty ().addListener (ASNHBCL);
     }
 
     private void onXYAxisChanged (
@@ -122,6 +132,38 @@ public class CartesianGraphView2D extends ResizableCanvas {
     }
 
     private void onXYAxisMFPUChanged (
+        ObservableValue<? extends Number> obs,
+        Number                            old,
+        Number                            now)
+    {
+        render ();
+    }
+
+    private void onXYAxisMajorLabelsToggled (
+        ObservableValue<? extends Boolean> obs,
+        Boolean                            old,
+        Boolean                            now)
+    {
+        render ();
+    }
+
+    private void onXYAxisMinorLabelsToggled (
+        ObservableValue<? extends Boolean> obs,
+        Boolean                            old,
+        Boolean                            now)
+    {
+        render ();
+    }
+
+    private void onXYAxisSciNotUpperBoundChanged (
+        ObservableValue<? extends Number> obs,
+        Number                            old,
+        Number                            now)
+    {
+        render ();
+    }
+
+    private void onXYAxisSciNotLowerBoundChanged (
         ObservableValue<? extends Number> obs,
         Number                            old,
         Number                            now)

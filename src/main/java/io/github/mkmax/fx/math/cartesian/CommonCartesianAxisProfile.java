@@ -12,12 +12,13 @@ public abstract class CommonCartesianAxisProfile implements CartesianAxisProfile
     protected static final int DECIMAL_PRECISION_MIN = 0;
     protected static final int DECIMAL_PRECISION_MAX = 16;
 
-    private final BooleanProperty computeMaaps     = new SimpleBooleanProperty (true);
-    private final BooleanProperty computeMiaps     = new SimpleBooleanProperty (true);
-    private final BooleanProperty labelsEnabled    = new SimpleBooleanProperty (false);
-    private final IntegerProperty decimalPrecision = new SimpleIntegerProperty (3);
-    private final IntegerProperty sciNotLowerBound = new SimpleIntegerProperty (-3);
-    private final IntegerProperty sciNotUpperBound = new SimpleIntegerProperty (3);
+    private final BooleanProperty computeMaaps       = new SimpleBooleanProperty (true);
+    private final BooleanProperty computeMiaps       = new SimpleBooleanProperty (true);
+    private final BooleanProperty majorLabelsEnabled = new SimpleBooleanProperty (true);
+    private final BooleanProperty minorLabelsEnabled = new SimpleBooleanProperty (false);
+    private final IntegerProperty decimalPrecision   = new SimpleIntegerProperty (3);
+    private final IntegerProperty sciNotLowerBound   = new SimpleIntegerProperty (-3);
+    private final IntegerProperty sciNotUpperBound   = new SimpleIntegerProperty (3);
 
     /* NOTE: perhaps later these limitations will be lifted on extending
      * classes to enable them to create their own more specific restrictions.
@@ -102,18 +103,33 @@ public abstract class CommonCartesianAxisProfile implements CartesianAxisProfile
     }
 
     @Override
-    public void setLabelsEnabled (boolean enabled) {
-        if (labelsEnabled.get () != enabled)
-            labelsEnabled.set (enabled);
+    public void setMajorLabelsEnabled (boolean enabled) {
+        if (majorLabelsEnabled.get () != enabled)
+            majorLabelsEnabled.set (enabled);
     }
 
     @Override
-    public boolean areLabelsEnabled () {
-        return labelsEnabled.get ();
+    public boolean areMajorLabelsEnabled () {
+        return majorLabelsEnabled.get ();
     }
 
-    public ReadOnlyBooleanProperty labelsEnabledProperty () {
-        return labelsEnabled;
+    public ReadOnlyBooleanProperty majorLabelsEnabledProperty () {
+        return majorLabelsEnabled;
+    }
+
+    @Override
+    public void setMinorLabelsEnabled (boolean enable) {
+        if (minorLabelsEnabled.get () != enable)
+            minorLabelsEnabled.set (enable);
+    }
+
+    @Override
+    public boolean areMinorLabelsEnabled () {
+        return minorLabelsEnabled.get ();
+    }
+
+    public ReadOnlyBooleanProperty minorLabelsEnabledProperty () {
+        return minorLabelsEnabled;
     }
 
     @Override
