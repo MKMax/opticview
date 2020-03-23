@@ -78,8 +78,8 @@ public class StandardCartesianAxisProfileTest {
         final double MIN_MFPU = 128;
 
         CartesianAxisProfile profile = new StandardCartesianAxisProfile (MIN_MFPU);
-        profile.setComputeMaaps (false);
-        profile.setComputeMiaps (false);
+        profile.setComputeMajorAxisPoints (false);
+        profile.setComputeMinorAxisPoints (false);
 
         final DoubleRange window = new DoubleRange (-1, +1);
         final DoubleRange viewport = new DoubleRange (0, 1280);
