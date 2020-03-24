@@ -9,15 +9,18 @@ public class AxisMark {
         MAJOR
     }
 
-    public final Type   type;
-    public final double unitSpaceLocation;
+    public final Type    type;
+    public final double  location;
+    public final boolean overlapPossible;
 
     public AxisMark (
-        Type   pType,
-        double pUnitSpaceLocation)
+        Type    pType,
+        double  pLocation,
+        boolean pOverlapPossible)
     {
-        type              = Objects.requireNonNull (pType);
-        unitSpaceLocation = pUnitSpaceLocation;
+        type            = Objects.requireNonNull (pType);
+        location        = pLocation;
+        overlapPossible = pOverlapPossible;
     }
 
 }

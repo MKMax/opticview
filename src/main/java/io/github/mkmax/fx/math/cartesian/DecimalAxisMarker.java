@@ -1,7 +1,8 @@
 package io.github.mkmax.fx.math.cartesian;
 
+import io.github.mkmax.fx.math.cartesian.AxisMark.Type;
+
 import io.github.mkmax.util.data.ArrayIterable;
-import io.github.mkmax.util.math.DoubleRange.Lerp;
 import io.github.mkmax.util.math.DoubleRange;
 import io.github.mkmax.util.math.FloatingPoint;
 
@@ -187,19 +188,19 @@ public class DecimalAxisMarker implements AxisMarker {
          * this is simply to ensure that we keep realAxisRange.max from being an
          * axis point since it is out of our range of desired points.
          *
-         * NOTE: We don't have to check to ensure that 'axisCount' is negative since
+         * NOTE: We don't have to check to ensure that 'markCount' is negative since
          * the difference 'unitRange.max - start' is guaranteed to be positive
          * by the check above and 'step' is always positive as it is composed of
          * a positive constant multiplied by variable whose function is positive
          * on all real numbers.
          */
-        final int axisCount = (int) Math.ceil ((unitRange.max - start) / step);
+        final int markCount = (int) Math.ceil ((unitRange.max - start) / step);
 
         /* Caching already allocated axis point array in the hopes of saving some
          * performance as this function is expected to be called in rather rapid
          * succession (for example, when rendering a graph multiple times per second).
          */
-        if (cachedMajorMarks == null || cachedMajorMarks.length < axisCount) {
+        if (cachedMajorMarks == null || cachedMajorMarks.length < markCount) {
             /* Admittedly this can be improved a lot more, but we need to write
              * a special array buffer type that would provide direct access to any
              * index in some "resizable" array which java's ArrayList does not
@@ -207,16 +208,29 @@ public class DecimalAxisMarker implements AxisMarker {
              * may still be re-allocating the array constantly if axisCount continues
              * to increment on each call.
              */
-            cachedMajorMarks = new AxisMark[axisCount];
+            cachedMajorMarks = new AxisMark[markCount];
         }
 
-        for (int i = 0; i < axisCount; ++i)
-            cachedMajorMarks[i] = new AxisMark (start + (step * i));
+        for (int i = 0; i < markCount; ++i) {
+            final Type    type            = Type.MAJOR;
+            final double  location        = start + (step * i);
+            final boolean overlapPossible = false; /* overlapping only applies to minor axes */
+
+            /* TODO: Possible optimization where AxisMark's class definition removes
+             *       the final qualifier to enable reuse of already existing AxisMark
+             *       instances.
+             */
+            cachedMajorMarks[i] = new AxisMark (
+                type,
+                location,
+                overlapPossible
+            );
+        }
 
         /* Again, this area may also be improved as we're unnecessarily creating
          * a new instance of ArrayIterable each time this function is called.
          */
-        return new ArrayIterable<> (cachedMajorMarks, axisCount);
+        return new ArrayIterable<> (cachedMajorMarks, markCount);
     }
 
     @Override
@@ -231,7 +245,7 @@ public class DecimalAxisMarker implements AxisMarker {
          * closely coupled with the graph view. This is no longer the case and
          * the axis markers are no longer supposed to be responsible for overlapping.
          * This is left up to the graph renderer to sort out. Because of this,
-         * the declaration of the AxisMark class has been extended to hint at
+         * the definition of the AxisMark class has been extended to hint at
          * the possibility of an overlap so that the graph renderer can display
          * the grid properly.
          */
@@ -325,21 +339,15 @@ public class DecimalAxisMarker implements AxisMarker {
             return ArrayIterable.empty ();
 
         /* Similar situation as described by the identical comments in the
-         * computeMajorPoints(...) at this point in the function. However,
-         * now we do not have a guarantee that 'majorAxisCount' is always
-         * positive or zero. We ultimately compute the true number of minor
-         * axes we must yield right after.
+         * computeMajorPoints(...) at this point in the function.
          */
-        final int majorAxisCount = (int) Math.ceil ((unitRange.max - majorStart) / majorStep);
-              int minorAxisCount = (int) Math.ceil ((unitRange.max - minorStart) / minorStep);
+        final int markCount = (int) Math.ceil ((unitRange.max - minorStart) / minorStep);
 
         /* See equivalent comment in computeMajorAxis(...) describing the problems
          * with this approach of caching.
          */
-        if (cachedMinorMarks == null || cachedMinorMarks.length < minorAxisCount)
-            cachedMinorMarks = new AxisMark[minorAxisCount];
-
-        final Lerp winToVp = new Lerp (unitRange, fragmentRange);
+        if (cachedMinorMarks == null || cachedMinorMarks.length < markCount)
+            cachedMinorMarks = new AxisMark[markCount];
 
         /* We create two counters to ensure that we can easily compute both
          * the position of the minor axis point but also the next major
@@ -351,31 +359,32 @@ public class DecimalAxisMarker implements AxisMarker {
          * TODO: improve how overlap detection occurs and pre-compute
          *       indices to skip.
          */
-        int maj = 0, min = 0, i = 0;
-        while (i < minorAxisCount) {
-            final double pWindowSpaceMaj = majorStart + (majorStep * maj);
-            final double pWindowSpaceMin = minorStart + (minorStep * min);
-            ++min;
+        int maj = 0, i = 0;
+        while (i < markCount) {
+            final double majLocation = majorStart + (majorStep * maj);
 
-            /* We can use leanEq() here because the margin between the
-             * minor and major axis points might be relatively large and
-             * strictEq() would be too harsh and actually force overlapping
+            final Type    type             = Type.MINOR;
+            final double  minLocation      = minorStart + (minorStep * i);
+                  boolean overlapPossible  = false;
+
+            /* If there is a possibility of overlapping, we must flag it
+             * so that the graph renderer can take appropriate action when
+             * rendering the grid.
              */
-            if (FloatingPoint.leanEq (pWindowSpaceMaj, pWindowSpaceMin)) {
+            if (FloatingPoint.leanEq (majLocation, minLocation)) {
+                overlapPossible = true;
                 ++maj;
-                continue;
             }
 
-            final double pViewportSpace = winToVp.project (pWindowSpaceMin);
-
             cachedMinorMarks[i++] = new AxisMark (
-                pWindowSpaceMin,
-                pViewportSpace
+                type,
+                minLocation,
+                overlapPossible
             );
         }
 
         /* See the comment about this in computeMajorPoints(...) regarding problems. */
-        return new ArrayIterable<> (cachedMinorMarks, minorAxisCount);
+        return new ArrayIterable<> (cachedMinorMarks, markCount);
     }
 
 }
