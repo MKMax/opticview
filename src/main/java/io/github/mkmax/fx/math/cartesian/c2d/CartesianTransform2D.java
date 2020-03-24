@@ -1,5 +1,7 @@
 package io.github.mkmax.fx.math.cartesian.c2d;
 
+import io.github.mkmax.util.math.DoubleRange;
+
 import org.joml.*;
 
 import java.util.ArrayList;
@@ -109,6 +111,14 @@ public class CartesianTransform2D {
         );
     }
 
+    public DoubleRange getWindowRangeX () {
+        return new DoubleRange (window.minX, window.maxX);
+    }
+
+    public DoubleRange getWindowRangeY () {
+        return new DoubleRange (window.minY, window.maxY);
+    }
+
     public void setWindow (
         double left,
         double right,
@@ -129,6 +139,14 @@ public class CartesianTransform2D {
             nWindow.minY,
             nWindow.maxY
         );
+    }
+
+    public DoubleRange getViewportRangeX () {
+        return new DoubleRange (viewport.minX, viewport.maxX);
+    }
+
+    public DoubleRange getViewportRangeY () {
+        return new DoubleRange (viewport.minY, viewport.maxY);
     }
 
     public void setViewport (
