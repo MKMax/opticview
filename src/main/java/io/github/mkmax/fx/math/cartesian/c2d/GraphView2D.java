@@ -1,10 +1,9 @@
 package io.github.mkmax.fx.math.cartesian.c2d;
 
-import io.github.mkmax.fx.math.cartesian.CartesianAxisPoint;
-import io.github.mkmax.fx.math.cartesian.CartesianAxisProfile;
-import io.github.mkmax.fx.math.cartesian.CommonCartesianAxisProfile;
-import io.github.mkmax.fx.math.cartesian.StandardCartesianAxisProfile;
-import io.github.mkmax.fx.math.cartesian.c2d.CartesianTransform2D.*;
+import io.github.mkmax.fx.math.cartesian.AxisMark;
+import io.github.mkmax.fx.math.cartesian.AxisMarker;
+import io.github.mkmax.fx.math.cartesian.DecimalAxisMarker;
+import io.github.mkmax.fx.math.cartesian.c2d.Transform2D.*;
 import io.github.mkmax.fx.util.ResizableCanvas;
 
 import javafx.beans.value.ChangeListener;
@@ -12,12 +11,12 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
-public class CartesianGraphView2D extends ResizableCanvas {
+public class GraphView2D extends ResizableCanvas {
 
     /* Predefined event handlers */
         /* grid */
-    private final ChangeListener<CartesianAxisProfile> XACL     = this::onXYAxisChanged;
-    private final ChangeListener<CartesianAxisProfile> YACL     = this::onXYAxisChanged;
+    private final ChangeListener<AxisMarker> XACL     = this::onXYAxisChanged;
+    private final ChangeListener<AxisMarker> YACL     = this::onXYAxisChanged;
     private final ChangeListener<Boolean>              MAAPSTL  = this::onXYAxisMAAPToggled;
     private final ChangeListener<Boolean>              MIAPSTL  = this::onXYAxisMIAPToggled;
     private final ChangeListener<Boolean>              MALTL    = this::onXYAxisMajorLabelsToggled;
@@ -37,19 +36,19 @@ public class CartesianGraphView2D extends ResizableCanvas {
     /* Actual member data */
     private final GraphicsContext graphics = getGraphicsContext2D ();
 
-    private final CartesianTransform2D transform;
-    private final CartesianRegistry2D  registry;
-    private final CartesianStyle2D     style;
-    private final CartesianAxes2D      axes;
+    private final Transform2D transform;
+    private final Registry2D registry;
+    private final Style2D style;
+    private final Axes2D axes;
 
-    public CartesianGraphView2D () {
+    public GraphView2D () {
         /* Initialize members */
-        transform = new CartesianTransform2D ();
-        registry  = new CartesianRegistry2D ();
-        style     = new CartesianStyle2D ();
-        axes      = new CartesianAxes2D (
-            new StandardCartesianAxisProfile (),
-            new StandardCartesianAxisProfile ()
+        transform = new Transform2D ();
+        registry  = new Registry2D ();
+        style     = new Style2D ();
+        axes      = new Axes2D (
+            new DecimalAxisMarker (),
+            new DecimalAxisMarker ()
         );
 
         /* Register event handlers */
@@ -70,15 +69,15 @@ public class CartesianGraphView2D extends ResizableCanvas {
     /* | General getters & setters | */
     /* +---------------------------+ */
 
-    public CartesianTransform2D getTransform () {
+    public Transform2D getTransform () {
         return transform;
     }
 
-    public CartesianRegistry2D getRegistry () {
+    public Registry2D getRegistry () {
         return registry;
     }
 
-    public CartesianAxes2D getAxes () {
+    public Axes2D getAxes () {
         return axes;
     }
 
@@ -88,7 +87,7 @@ public class CartesianGraphView2D extends ResizableCanvas {
 
     /* internal */
 
-    private void removeAxisListeners (CartesianAxisProfile cap) {
+    private void removeAxisListeners (AxisMarker cap) {
         if (!(cap instanceof CommonCartesianAxisProfile))
             return;
         CommonCartesianAxisProfile ccap = (CommonCartesianAxisProfile) cap;
@@ -101,7 +100,7 @@ public class CartesianGraphView2D extends ResizableCanvas {
         ccap.sciNotUpperBoundProperty ().removeListener (ASNHBCL);
     }
 
-    private void addAxisListeners (CartesianAxisProfile cap) {
+    private void addAxisListeners (AxisMarker cap) {
         if (!(cap instanceof CommonCartesianAxisProfile))
             return;
         CommonCartesianAxisProfile ccap = (CommonCartesianAxisProfile) cap;
@@ -115,9 +114,9 @@ public class CartesianGraphView2D extends ResizableCanvas {
     }
 
     private void onXYAxisChanged (
-        ObservableValue<? extends CartesianAxisProfile> obs,
-        CartesianAxisProfile                            old,
-        CartesianAxisProfile                            now)
+        ObservableValue<? extends AxisMarker> obs,
+        AxisMarker old,
+        AxisMarker now)
     {
         removeAxisListeners (old);
         addAxisListeners (now);
@@ -241,7 +240,7 @@ public class CartesianGraphView2D extends ResizableCanvas {
         graphics.strokeLine (abx, aby, aex, aey);
     }
 
-    private void drawAxisX (CartesianAxisPoint point, Color color) {
+    private void drawAxisX (AxisMark point, Color color) {
         drawAxis
     }
 
@@ -249,14 +248,14 @@ public class CartesianGraphView2D extends ResizableCanvas {
         /* vertical/x-axis */
         axes
             .getXAxis ()
-            .computeMajorPoints (
+            .getMajorMarks (
                 transform.getWindowRangeX (),
                 transform.getViewportRangeX ())
             .forEach (pt -> drawAxisX (pt, style.getMajorAxisColor ()));
 
         axes
             .getXAxis ()
-            .computeMinorPoints (
+            .getMinorMarks (
                 transform.getWindowRangeX (),
                 transform.getViewportRangeX ())
             .forEach (this::drawMinorAxisX);

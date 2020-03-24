@@ -5,14 +5,14 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
-public class CartesianStyle2D {
+public class Style2D {
 
     private final ObjectProperty<Font>  primaryFont    = new SimpleObjectProperty<> ();
     private final ObjectProperty<Color> background     = new SimpleObjectProperty<> ();
     private final ObjectProperty<Color> majorAxisColor = new SimpleObjectProperty<> ();
     private final ObjectProperty<Color> minorAxisColor = new SimpleObjectProperty<> ();
 
-    public CartesianStyle2D () {
+    public Style2D () {
         primaryFont.set    (Font.loadFont ("jar://font/opensans-regular.ttf", 0d));
         background.set     (Color.rgb (255, 255, 255));
         majorAxisColor.set (Color.rgb (225, 225, 225));

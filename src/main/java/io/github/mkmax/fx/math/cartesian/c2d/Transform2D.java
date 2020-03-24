@@ -7,7 +7,7 @@ import org.joml.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CartesianTransform2D {
+public class Transform2D {
 
     public interface RecomputedListener {
         void onRecomputed ();
@@ -21,7 +21,7 @@ public class CartesianTransform2D {
     private final Matrix3x2d projection = new Matrix3x2d ();
     private final Matrix3x2d inverse    = new Matrix3x2d ();
 
-    public CartesianTransform2D () {
+    public Transform2D () {
         /* initial state has already been reached */
     }
 

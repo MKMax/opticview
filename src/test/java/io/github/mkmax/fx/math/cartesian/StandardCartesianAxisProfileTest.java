@@ -13,20 +13,20 @@ import java.util.List;
 
 public class StandardCartesianAxisProfileTest {
 
-    static final Comparator<CartesianAxisPoint> WINDOW_SPACE_ASCENDING =
+    static final Comparator<AxisMark> WINDOW_SPACE_ASCENDING =
         (a, b) -> (int) Math.floor (a.windowSpace - b.windowSpace);
 
     @Test
     void testMajorAxisGenerationExpectedCase_0 () {
         final double MIN_MFPU = 128;
 
-        CartesianAxisProfile profile = new StandardCartesianAxisProfile (MIN_MFPU);
+        AxisMarker profile = new DecimalAxisMarker (MIN_MFPU);
 
         final DoubleRange window = new DoubleRange (-1, +1);
         final DoubleRange viewport = new DoubleRange (0, 1280);
 
-        final List<CartesianAxisPoint> points =
-            IteratorUtils.newArrayList (profile.computeMajorPoints (window, viewport));
+        final List<AxisMark> points =
+            IteratorUtils.newArrayList (profile.getMajorMarks (window, viewport));
 
         /* the order of the points is not specified; for the sake of the test, they
          * must be ordered in window space ascending order.
@@ -61,13 +61,13 @@ public class StandardCartesianAxisProfileTest {
     void testMajorAxisGenerationExpectedCase_1 () {
         final double MIN_MFPU = 512d;
 
-        CartesianAxisProfile profile = new StandardCartesianAxisProfile (MIN_MFPU);
+        AxisMarker profile = new DecimalAxisMarker (MIN_MFPU);
 
         final DoubleRange window = new DoubleRange (0.25d, 0.75d);
         final DoubleRange viewport = new DoubleRange (0, 128d);
 
-        final List<CartesianAxisPoint> points =
-            IteratorUtils.newArrayList (profile.computeMajorPoints (window, viewport));
+        final List<AxisMark> points =
+            IteratorUtils.newArrayList (profile.getMajorMarks (window, viewport));
 
         /* We have chosen a MIN_MFPU purposely so that no axis points could be constructed. */
         assertEquals (0, points.size ());
@@ -77,15 +77,15 @@ public class StandardCartesianAxisProfileTest {
     void testMajorAxisGenerationExpectedCase_2 () {
         final double MIN_MFPU = 128;
 
-        CartesianAxisProfile profile = new StandardCartesianAxisProfile (MIN_MFPU);
+        AxisMarker profile = new DecimalAxisMarker (MIN_MFPU);
         profile.setComputeMajorAxisPoints (false);
         profile.setComputeMinorAxisPoints (false);
 
         final DoubleRange window = new DoubleRange (-1, +1);
         final DoubleRange viewport = new DoubleRange (0, 1280);
 
-        final List<CartesianAxisPoint> points =
-            IteratorUtils.newArrayList (profile.computeMajorPoints (window, viewport));
+        final List<AxisMark> points =
+            IteratorUtils.newArrayList (profile.getMajorMarks (window, viewport));
 
         /* Because we disabled major axis computation, we*/
         assertEquals (0, points.size ());
@@ -95,13 +95,13 @@ public class StandardCartesianAxisProfileTest {
     void testMajorAxisGenerationExpectedCase_3 () {
         final double MIN_MFPU = 128;
 
-        CartesianAxisProfile profile = new StandardCartesianAxisProfile (MIN_MFPU);
+        AxisMarker profile = new DecimalAxisMarker (MIN_MFPU);
 
         final DoubleRange window = new DoubleRange (+1, +3);
         final DoubleRange viewport = new DoubleRange (0, 1280);
 
-        final List<CartesianAxisPoint> points =
-            IteratorUtils.newArrayList (profile.computeMajorPoints (window, viewport));
+        final List<AxisMark> points =
+            IteratorUtils.newArrayList (profile.getMajorMarks (window, viewport));
 
         /* the order of the points is not specified; for the sake of the test, they
          * must be ordered in window space ascending order.
@@ -136,13 +136,13 @@ public class StandardCartesianAxisProfileTest {
     void testMajorAxisGenerationExpectedCase_4 () {
         final double MIN_MFPU = 128;
 
-        CartesianAxisProfile profile = new StandardCartesianAxisProfile (MIN_MFPU);
+        AxisMarker profile = new DecimalAxisMarker (MIN_MFPU);
 
         final DoubleRange window = new DoubleRange (+3, +1);
         final DoubleRange viewport = new DoubleRange (0, 1280);
 
-        final List<CartesianAxisPoint> points =
-            IteratorUtils.newArrayList (profile.computeMajorPoints (window, viewport));
+        final List<AxisMark> points =
+            IteratorUtils.newArrayList (profile.getMajorMarks (window, viewport));
 
         /* the order of the points is not specified; for the sake of the test, they
          * must be ordered in window space ascending order.
@@ -177,13 +177,13 @@ public class StandardCartesianAxisProfileTest {
     void testMajorAxisGenerationExpectedCase_5 () {
         final double MIN_MFPU = 200; /* expecting halves now, not fifths */
 
-        CartesianAxisProfile profile = new StandardCartesianAxisProfile (MIN_MFPU);
+        AxisMarker profile = new DecimalAxisMarker (MIN_MFPU);
 
         final DoubleRange window = new DoubleRange (-1, +1);
         final DoubleRange viewport = new DoubleRange (0, 1280);
 
-        final List<CartesianAxisPoint> points =
-            IteratorUtils.newArrayList (profile.computeMajorPoints (window, viewport));
+        final List<AxisMark> points =
+            IteratorUtils.newArrayList (profile.getMajorMarks (window, viewport));
 
         /* the order of the points is not specified; for the sake of the test, they
          * must be ordered in window space ascending order.
@@ -206,13 +206,13 @@ public class StandardCartesianAxisProfileTest {
     void testMajorAxisGenerationExpectedCase_6 () {
         final double MIN_MFPU = 1000; /* expecting wholes, not halves or fifths */
 
-        CartesianAxisProfile profile = new StandardCartesianAxisProfile (MIN_MFPU);
+        AxisMarker profile = new DecimalAxisMarker (MIN_MFPU);
 
         final DoubleRange window = new DoubleRange (-1, +1);
         final DoubleRange viewport = new DoubleRange (0, 1280);
 
-        final List<CartesianAxisPoint> points =
-            IteratorUtils.newArrayList (profile.computeMajorPoints (window, viewport));
+        final List<AxisMark> points =
+            IteratorUtils.newArrayList (profile.getMajorMarks (window, viewport));
 
         /* the order of the points is not specified; for the sake of the test, they
          * must be ordered in window space ascending order.
@@ -229,13 +229,13 @@ public class StandardCartesianAxisProfileTest {
     void testMinorAxisGenerationExpectedCase_0 () {
         final double MIN_MFPU = 128;
 
-        CartesianAxisProfile profile = new StandardCartesianAxisProfile (MIN_MFPU);
+        AxisMarker profile = new DecimalAxisMarker (MIN_MFPU);
 
         final DoubleRange window = new DoubleRange (-1, +1);
         final DoubleRange viewport = new DoubleRange (0, 1280);
 
-        final List<CartesianAxisPoint> points =
-            IteratorUtils.newArrayList (profile.computeMinorPoints (window, viewport));
+        final List<AxisMark> points =
+            IteratorUtils.newArrayList (profile.getMinorMarks (window, viewport));
 
         /* the order of the points is not specified; for the sake of the test, they
          * must be ordered in window space ascending order.
@@ -266,13 +266,13 @@ public class StandardCartesianAxisProfileTest {
     void testMinorAxisGenerationExpectedCase_1 () {
         final double MIN_MFPU = 200; /* expecting fifths of halves now */
 
-        CartesianAxisProfile profile = new StandardCartesianAxisProfile (MIN_MFPU);
+        AxisMarker profile = new DecimalAxisMarker (MIN_MFPU);
 
         final DoubleRange window = new DoubleRange (-1, +1);
         final DoubleRange viewport = new DoubleRange (0, 1280);
 
-        final List<CartesianAxisPoint> points =
-            IteratorUtils.newArrayList (profile.computeMinorPoints (window, viewport));
+        final List<AxisMark> points =
+            IteratorUtils.newArrayList (profile.getMinorMarks (window, viewport));
 
         /* the order of the points is not specified; for the sake of the test, they
          * must be ordered in window space ascending order.
