@@ -16,9 +16,6 @@ public class OpticView extends Application {
     @Override
     public void start (Stage stage) throws Exception {
         GraphView2D gv = new GraphView2D ();
-        gv.getAxes ().getXAxis ().setComputeMajorAxisPoints (false);
-        gv.getAxes ().getYAxis ().setComputeMajorAxisPoints (false);
-        gv.getTransform ().setWindow (-3, -3, +3, +3);
 
         BorderPane pane = new BorderPane ();
         pane.setCenter (gv);
