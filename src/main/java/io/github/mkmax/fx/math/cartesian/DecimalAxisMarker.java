@@ -24,8 +24,8 @@ public class DecimalAxisMarker implements AxisMarker {
     private AxisMark[] cachedMajorMarks;
     private AxisMark[] cachedMinorMarks;
 
-    /* 256 for no particular reason, just seems like a nice number */
-    private double fpu = 256d;
+    /* 128 for no particular reason, just seems like a nice number */
+    private double fpu = 128d;
 
     public DecimalAxisMarker (double fpu) {
         setFragmentsPerUnit (fpu);
