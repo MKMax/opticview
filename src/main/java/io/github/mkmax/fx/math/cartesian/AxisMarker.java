@@ -1,15 +1,15 @@
 package io.github.mkmax.fx.math.cartesian;
 
-import io.github.mkmax.util.math.Range2d;
+import io.github.mkmax.util.math.Segment1dv;
 
 public interface AxisMarker {
 
     Iterable<AxisMark> getMajorMarks (
-        Range2d unitRange,
-        Range2d fragmentRange);
+        Segment1dv unitRange,
+        Segment1dv fragmentRange);
 
     Iterable<AxisMark> getMinorMarks (
-        Range2d unitRange,
-        Range2d fragmentRange);
+        Segment1dv unitRange,
+        Segment1dv fragmentRange);
 
 }

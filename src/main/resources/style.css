@@ -1,3 +1,9 @@
-* {
-    -fx-background: black;
+GraphView2a {
+    -fx-background-color: black;
+    -fx-opacity: 0.75;
+}
+
+Button {
+    -fx-background-color: orange;
+    -fx-opacity: 0.5;
 }

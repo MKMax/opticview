@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import io.github.mkmax.fx.math.cartesian.c2d.GraphView2D ?>
+<?import io.github.mkmax.fx.math.cartesian.GraphView2a ?>
 <?import javafx.scene.layout.StackPane?>
 
 <?import java.net.URL?>
+<?import javafx.scene.control.Button?>
 <StackPane>
-    <GraphView2D>
+    <GraphView2a>
 
-    </GraphView2D>
+    </GraphView2a>
+
+    <Button text="Hello"/>
 
     <stylesheets>
         <URL value="@style.css"/>

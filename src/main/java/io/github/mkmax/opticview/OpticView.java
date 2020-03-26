@@ -1,10 +1,11 @@
 package io.github.mkmax.opticview;
 
-import io.github.mkmax.fx.math.cartesian.c2d.GraphView2D;
-
+import io.github.mkmax.fx.math.cartesian.GraphView2a;
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Button;
+import javafx.scene.layout.Pane;
 import javafx.scene.Scene;
-import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 public class OpticView extends Application {
@@ -15,10 +16,14 @@ public class OpticView extends Application {
 
     @Override
     public void start (Stage stage) throws Exception {
-        GraphView2D gv = new GraphView2D ();
+        Pane pane = FXMLLoader.load (getClass ().getClassLoader ().getResource ("test.fxml"));
 
-        BorderPane pane = new BorderPane ();
-        pane.setCenter (gv);
+        GraphView2a gv = (GraphView2a) pane.getChildren ().get (0);
+        Button btn = (Button) pane.getChildren ().get (1);
+
+        gv.setOnMouseClicked (e -> {
+            System.out.println (gv.getOpacity ());
+        });
 
         Scene scene = new Scene (pane);
 

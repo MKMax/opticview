@@ -3,7 +3,7 @@ package io.github.mkmax.fx.math.cartesian;
 import io.github.mkmax.fx.math.cartesian.AxisMark.Type;
 
 import io.github.mkmax.util.data.ArrayIterable;
-import io.github.mkmax.util.math.Range2d;
+import io.github.mkmax.util.math.Segment1dv;
 import io.github.mkmax.util.math.FloatingPoint;
 
 /* non-javadoc
@@ -45,8 +45,8 @@ public class DecimalAxisMarker implements AxisMarker {
 
     @Override
     public Iterable<AxisMark> getMajorMarks (
-        Range2d unitRange,
-        Range2d fragmentRange)
+        Segment1dv unitRange,
+        Segment1dv fragmentRange)
     {
         final double unitNumericRange     = unitRange.absRange ();
         final double fragmentNumericRange = fragmentRange.absRange ();
@@ -235,8 +235,8 @@ public class DecimalAxisMarker implements AxisMarker {
 
     @Override
     public Iterable<AxisMark> getMinorMarks (
-        Range2d unitRange,
-        Range2d fragmentRange)
+        Segment1dv unitRange,
+        Segment1dv fragmentRange)
     {
         /* WARNING: The following comments may be slightly outdated as I have
          * refactored the majority of how the system actually works. The part
