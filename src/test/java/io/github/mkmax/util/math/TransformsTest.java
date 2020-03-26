@@ -16,7 +16,7 @@ public class TransformsTest {
 
     @Test
     void testOffsetRotation2d_0 () {
-        Matrix3d rotation = JomlExtension.rotate2d (Math.PI / 2, 0d, 0d);
+        Matrix3d rotation = Matrix3ext.rotate2d (Math.PI / 2, 0d, 0d);
         Vector3d subject  = new Vector3d (1d, 1d, 1d);
 
         rotation.transform (subject);
@@ -26,7 +26,7 @@ public class TransformsTest {
 
     @Test
     void testOffsetRotation2d_1 () {
-        Matrix3d rotation   = JomlExtension.rotate2d (Math.PI / 2, 1d, 1d);
+        Matrix3d rotation   = Matrix3ext.rotate2d (Math.PI / 2, 1d, 1d);
         Vector3d stationary = new Vector3d (1d, 1d, 1d);
         Vector3d dynamic    = new Vector3d (2d, 2d, 1d);
 

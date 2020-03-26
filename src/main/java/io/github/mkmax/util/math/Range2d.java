@@ -2,19 +2,19 @@ package io.github.mkmax.util.math;
 
 import java.util.Objects;
 
-public class DoubleRange {
+public class Range2d {
 
-    public static final class Lerp {
+    public static final class Project {
 
         /* just save the ranges in case */
-        private final DoubleRange from;
-        private final DoubleRange to;
+        private final Range2d from;
+        private final Range2d to;
 
         /* compute the linear interpolation function (literally y = mx + b) */
         private final double m; // slope or gradient
         private final double b; // y-intercept
 
-        public Lerp (DoubleRange from, DoubleRange to) {
+        public Project (Range2d from, Range2d to) {
             this.from = Objects.requireNonNull (from);
             this.to   = Objects.requireNonNull (to);
 
@@ -23,11 +23,11 @@ public class DoubleRange {
             b = to.a - m * from.a;
         }
 
-        public DoubleRange getFrom () {
+        public Range2d getFrom () {
             return from;
         }
 
-        public DoubleRange getTo () {
+        public Range2d getTo () {
             return to;
         }
 
@@ -47,7 +47,7 @@ public class DoubleRange {
     public final double min;
     public final double max;
 
-    public DoubleRange (double pA, double pB) {
+    public Range2d (double pA, double pB) {
         a = pA;
         b = pB;
 
@@ -73,5 +73,4 @@ public class DoubleRange {
     public double range () {
         return b - a;
     }
-
 }

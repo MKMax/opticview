@@ -16,6 +16,7 @@ public class GraphView2D extends ResizableCanvas {
 
     private final Deque<Matrix3d> committed = new ArrayDeque<> ();
     private final Deque<Matrix3d> staged    = new ArrayDeque<> ();
+    private final Matrix3d        composed  = new Matrix3d ();
 
     public GraphView2D () {
 
