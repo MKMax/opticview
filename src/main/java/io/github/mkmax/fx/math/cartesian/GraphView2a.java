@@ -1,12 +1,9 @@
 package io.github.mkmax.fx.math.cartesian;
 
 import io.github.mkmax.fx.util.ResizableCanvas;
-import io.github.mkmax.util.math.Quad2dv;
+import io.github.mkmax.util.math.Quad3x2d;
 
 import org.joml.Matrix3x2d;
-
-import java.util.ArrayDeque;
-import java.util.Deque;
 
 public class GraphView2a extends ResizableCanvas {
 
@@ -16,9 +13,9 @@ public class GraphView2a extends ResizableCanvas {
     /*
      *
      */
-    private final Quad2dv    commit    = new Quad2dv ();
-    private final Quad2dv    provision = new Quad2dv ();
-    private final Quad2dv    viewport  = new Quad2dv ();
+    private final Quad3x2d commit    = new Quad3x2d ();
+    private final Quad3x2d provision = new Quad3x2d ();
+    private final Quad3x2d viewport  = new Quad3x2d ();
     private final Matrix3x2d quadmap   = new Matrix3x2d ();
 
     public GraphView2a () {

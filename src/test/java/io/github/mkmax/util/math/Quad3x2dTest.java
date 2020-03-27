@@ -9,12 +9,12 @@ import org.junit.jupiter.api.Test;
 import org.joml.Matrix3x2d;
 import org.joml.Vector2d;
 
-public class Quad2dvTest {
+public class Quad3x2dTest {
 
     @Test
     void testMap_0 () {
-        Quad2dv qA = new Quad2dv (-1d,  1d, -1d,  1d);
-        Quad2dv qB = new Quad2dv ( 0d,  2d,  0d,  2d);
+        Quad3x2d qA = new Quad3x2d (-1d,  1d, -1d,  1d);
+        Quad3x2d qB = new Quad3x2d ( 0d,  2d,  0d,  2d);
 
         Matrix3x2d map  = qA.map (qB);
         Vector2d pointA = new Vector2d (-1d, -1d);
@@ -38,12 +38,12 @@ public class Quad2dvTest {
 
     @Test
     void testMap_1 () {
-        Quad2dv qA = new Quad2dv (
+        Quad3x2d qA = new Quad3x2d (
             0d, -1d,
             1d,  0d,
             0d,  1d
         );
-        Quad2dv qB = new Quad2dv (0d, 1d, 0d, 1d);
+        Quad3x2d qB = new Quad3x2d (0d, 1d, 0d, 1d);
 
         Matrix3x2d map  = qA.map (qB);
         Vector2d pointA = new Vector2d ( 0d, -1d);

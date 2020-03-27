@@ -5,22 +5,23 @@ import org.joml.Matrix3x2dc;
 import org.joml.Vector2dc;
 import org.joml.Vector2d;
 
-public class Quad2dv {
+/* A quad using 3 vectors of 2 components each (3x2) */
+public class Quad3x2d {
 
-    public static Quad2dv newOrtho (
+    public static Quad3x2d newOrtho (
         double left,
         double right,
         double bottom,
         double top)
     {
-        return new Quad2dv ().ortho (left, right, bottom, top);
+        return new Quad3x2d ().ortho (left, right, bottom, top);
     }
 
     private final Vector2d qa = new Vector2d (); // lower-left
     private final Vector2d qb = new Vector2d (); // lower-right
     private final Vector2d qc = new Vector2d (); // upper-right
 
-    public Quad2dv (
+    public Quad3x2d (
         Vector2dc pQa,
         Vector2dc pQb,
         Vector2dc pQc)
@@ -28,7 +29,7 @@ public class Quad2dv {
         parallelogram (pQa, pQb, pQc);
     }
 
-    public Quad2dv (
+    public Quad3x2d (
         double ax, double ay,
         double bx, double by,
         double cx, double cy)
@@ -36,32 +37,32 @@ public class Quad2dv {
         parallelogram (ax, ay, bx, by, cx, cy);
     }
 
-    public Quad2dv (
+    public Quad3x2d (
         double px, double py,
         double qx, double qy)
     {
         rectangle (px, py, qx, qy);
     }
 
-    public Quad2dv (
+    public Quad3x2d (
         Vector2dc p,
         Vector2dc q)
     {
         rectangle (p, q);
     }
 
-    public Quad2dv () {
+    public Quad3x2d () {
         normal ();
     }
 
-    public Quad2dv normal () {
+    public Quad3x2d normal () {
         qa.set (-1d, -1d);
         qb.set ( 1d, -1d);
         qc.set ( 1d,  1d);
         return this;
     }
 
-    public Quad2dv rectangle (
+    public Quad3x2d rectangle (
         double px, double py,
         double qx, double qy)
     {
@@ -71,14 +72,14 @@ public class Quad2dv {
         return this;
     }
 
-    public Quad2dv rectangle (
+    public Quad3x2d rectangle (
         Vector2dc p,
         Vector2dc q)
     {
         return rectangle (p.x (), p.y (), q.x (), q.y ());
     }
 
-    public Quad2dv ortho (
+    public Quad3x2d ortho (
         double left,
         double right,
         double bottom,
@@ -90,7 +91,7 @@ public class Quad2dv {
         return this;
     }
 
-    public Quad2dv parallelogram (
+    public Quad3x2d parallelogram (
         double ax, double ay,
         double bx, double by,
         double cx, double cy)
@@ -101,7 +102,7 @@ public class Quad2dv {
         return this;
     }
 
-    public Quad2dv parallelogram (
+    public Quad3x2d parallelogram (
         Vector2dc pQa,
         Vector2dc pQb,
         Vector2dc pQc)
@@ -128,30 +129,30 @@ public class Quad2dv {
         return Math.max (Math.max (qa.y, qb.y), qc.y);
     }
 
-    public Quad2dv transform (Matrix3x2dc mat) {
+    public Quad3x2d transform (Matrix3x2dc mat) {
         return transform (mat, this);
     }
 
-    public Quad2dv transform (Matrix3x2dc mat, Quad2dv dest) {
+    public Quad3x2d transform (Matrix3x2dc mat, Quad3x2d dest) {
         mat.transformPosition (qa, dest.qa);
         mat.transformPosition (qb, dest.qb);
         mat.transformPosition (qc, dest.qc);
         return dest;
     }
 
-    public Matrix3x2d unmap (Quad2dv from) {
+    public Matrix3x2d unmap (Quad3x2d from) {
         return from.map (this);
     }
 
-    public Matrix3x2d unmap (Quad2dv from, Matrix3x2d dest) {
+    public Matrix3x2d unmap (Quad3x2d from, Matrix3x2d dest) {
         return from.map (this, dest);
     }
 
-    public Matrix3x2d map (Quad2dv to) {
+    public Matrix3x2d map (Quad3x2d to) {
         return map (to, new Matrix3x2d ());
     }
 
-    public Matrix3x2d map (Quad2dv to, Matrix3x2d dest) {
+    public Matrix3x2d map (Quad3x2d to, Matrix3x2d dest) {
         final Vector2d A = qa;
         final Vector2d B = qb;
         final Vector2d C = qc;
