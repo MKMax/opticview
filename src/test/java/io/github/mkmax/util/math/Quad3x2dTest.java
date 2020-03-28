@@ -1,7 +1,6 @@
 package io.github.mkmax.util.math;
 
 import static io.github.mkmax.util.math.FloatingPoint.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -43,7 +42,7 @@ public class Quad3x2dTest {
             1d,  0d,
             0d,  1d
         );
-        Quad3x2d qB = new Quad3x2d (0d, 1d, 0d, 1d);
+        Quad3x2d qB = new Quad3x2d (0d, 0d, 1d, 1d);
 
         Matrix3x2d map  = qA.map (qB);
         Vector2d pointA = new Vector2d ( 0d, -1d);

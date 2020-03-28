@@ -1,25 +1,13 @@
 package io.github.mkmax.util.math;
 
+import static io.github.mkmax.util.math.JomlExtension.*;
+
 import org.joml.Vector2d;
 import org.joml.Vector2dc;
 
 import java.util.Objects;
 
 public class Quad4x2d {
-
-    private static double det (
-        double ax, double ay,
-        double bx, double by)
-    {
-        return ax * by - bx * ay;
-    }
-
-    private static double det (
-        Vector2dc a,
-        Vector2dc b)
-    {
-        return a.x () * b.y () - b.x () * a.y ();
-    }
 
     public static final class Interpolator {
 
@@ -67,23 +55,21 @@ public class Quad4x2d {
 
             final double Qn = -Mb + Math.sqrt (Mb * Mb - 4 * Ma * Mc);
 
-            double P = (2 * Ma * (R.x - A.x) + (C.x - A.x) * Qn) / (2 * Ma * (B.x - A.x) + L.x * Qn);
-            double Q = Qn / (2 * Ma);
+            double P;
+            double Q;
 
             if (FloatingPoint.strictEq (Ma, 0d)) {
+                P = (Mb * (R.x - A.x) + Mc * (C.x - A.x)) / (-Mc * L.x + Mb * (B.x - A.x));
                 Q = -Mc / Mb;
-                P = (R.x - Q * (C.x - A.x) - A.x) / (Q * (A.x + D.x - B.x - C.x) + B.x - A.x);
+                // P = (R.x - Q * (C.x - A.x) - A.x) / (Q * (A.x + D.x - B.x - C.x) + B.x - A.x);
+            }
+            else {
+                P = (2 * Ma * (R.x - A.x) + (C.x - A.x) * Qn) / (2 * Ma * (B.x - A.x) + L.x * Qn);
+                Q = Qn / (2 * Ma);
             }
 
             Vector2d F = xy.eval (P);
             Vector2d G = zw.eval (P);
-
-            System.out.println ("Ma: " + Ma);
-            System.out.println ("Mb: " + Mb);
-            System.out.println ("Mc: " + Mc);
-            System.out.println ("P: " + P);
-            System.out.println ("Q: " + Q);
-            System.out.println ();
 
             return dest.set (new Bezier2x2d (F, G).eval (Q));
         }
