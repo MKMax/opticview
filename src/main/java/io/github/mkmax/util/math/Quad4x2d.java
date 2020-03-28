@@ -7,30 +7,82 @@ import org.joml.Vector2dc;
 
 import java.util.Objects;
 
+/**
+ * The most flexible of all <code>Quad</code> figures by enabling
+ * full control of all four vertices of the quad by sacrificing
+ * some performance when performing interpolation.
+ *
+ * @author Maxim Kasyanenko
+ */
 public class Quad4x2d {
 
+    /**
+     * Provides a state-based mechanism or interpolating between different
+     * <code>Quad4x2</code> figures.
+     * <p>
+     * State is required to minimize heap allocation of vectors and additional
+     * <code>Bezier2x2</code> figures.
+     *
+     * @author Maxim Kasyanenko
+     */
     public static final class Interpolator {
 
-        private final Quad4x2d from;
-        private final Quad4x2d to;
+        /**
+         * Represents the "source" quad, i.e., the quad
+         * whose points are mapped onto <code>to</code>.
+         */
+        private Quad4x2d from;
 
-        /* 'from' beziers */
-        private final Bezier2x2d ab;
-        private final Bezier2x2d cd;
+        /**
+         * Represents the "destination" quad, i.e., the quad
+         * onto which input vertices will be mapped onto.
+         */
+        private Quad4x2d to;
 
-        /* 'to' beziers */
-        private final Bezier2x2d xy;
-        private final Bezier2x2d zw;
+        /** For some "source" quad DCAB, this represents the segment AB. */
+        private final Bezier2x2d AB = new Bezier2x2d ();
 
-        private Interpolator (Quad4x2d from, Quad4x2d to) {
-            this.from = Objects.requireNonNull (from);
-            this.to   = Objects.requireNonNull (to);
+        /** For some "source" quad DCAB, this represents the segment CD. */
+        private final Bezier2x2d CD = new Bezier2x2d ();
 
-            ab = new Bezier2x2d (from.a, from.b);
-            cd = new Bezier2x2d (from.c, from.d);
+        /* For some "destination" quad VUST, this represents the segment ST. */
+        private final Bezier2x2d ST = new Bezier2x2d ();
 
-            xy = new Bezier2x2d (to.a, to.b);
-            zw = new Bezier2x2d (to.c, to.d);
+        /* For some "destination" quad VUST, this represents the segment UV. */
+        private final Bezier2x2d UV = new Bezier2x2d ();
+
+        /* Vectors used in computations, pre-allocated for performance */
+
+        private Interpolator (Quad4x2d pFrom, Quad4x2d pTo) {
+            from = Objects.requireNonNull (pFrom);
+            to   = Objects.requireNonNull (pTo);
+            update ();
+
+            AB = new Bezier2x2d (pFrom.a, pFrom.b);
+            CD = new Bezier2x2d (pFrom.c, pFrom.d);
+
+            ST = new Bezier2x2d (pTo.a, pTo.b);
+            UV = new Bezier2x2d (pTo.c, pTo.d);
+        }
+
+        public Quad4x2d getFrom () {
+            return from;
+        }
+
+        public void setFrom (Quad4x2d nFrom) {
+            from = Objects.requireNonNull (nFrom);
+        }
+
+        public Quad4x2d getTo () {
+            return to;
+        }
+
+        public void setTo (Quad4x2d nTo) {
+            to = Objects.requireNonNull (nTo);
+        }
+
+        public void update () {
+            AB.
         }
 
         public Vector2d transform (Vector2d src) {
@@ -68,8 +120,8 @@ public class Quad4x2d {
                 Q = Qn / (2 * Ma);
             }
 
-            Vector2d F = xy.eval (P);
-            Vector2d G = zw.eval (P);
+            Vector2d F = ST.eval (P);
+            Vector2d G = UV.eval (P);
 
             return dest.set (new Bezier2x2d (F, G).eval (Q));
         }
