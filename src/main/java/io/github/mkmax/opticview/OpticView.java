@@ -1,6 +1,6 @@
 package io.github.mkmax.opticview;
 
-import io.github.mkmax.fx.math.cartesian.GraphView2a;
+import io.github.mkmax.fxe.math.graph.cartesian.GraphView2a;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;

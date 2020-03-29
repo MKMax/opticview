@@ -2,7 +2,7 @@ package io.github.mkmax.util.math;
 
 import org.joml.Vector2dc;
 
-public class JomlExtension {
+public class LinearAlgebraStatics {
 
     /* +--------------+ */
     /* | Determinants | */
@@ -12,14 +12,14 @@ public class JomlExtension {
         double ax, double ay,
         double bx, double by)
     {
-        return ax * by - bx * ay;
+        return Math.fma (ax, by, -bx * ay);
     }
 
     public static double det (
         Vector2dc a,
         Vector2dc b)
     {
-        return a.x () * b.y () - b.x () * a.y ();
+        return Math.fma (a.x (), a.y (), - b.x () * a.y ());
     }
 
 }

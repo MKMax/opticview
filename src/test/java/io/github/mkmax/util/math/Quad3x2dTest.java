@@ -3,6 +3,7 @@ package io.github.mkmax.util.math;
 import static io.github.mkmax.util.math.FloatingPoint.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.github.mkmax.util.math.geo.Quad3x2d;
 import org.junit.jupiter.api.Test;
 
 import org.joml.Matrix3x2d;

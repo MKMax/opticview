@@ -1,4 +1,4 @@
-package io.github.mkmax.util.math;
+package io.github.mkmax.util.math.geo;
 
 public class Segment1dv {
 

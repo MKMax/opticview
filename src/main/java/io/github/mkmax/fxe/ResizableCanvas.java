@@ -1,4 +1,4 @@
-package io.github.mkmax.fx.util;
+package io.github.mkmax.fxe;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;

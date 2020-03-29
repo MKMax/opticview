@@ -1,4 +1,4 @@
-package io.github.mkmax.util.math;
+package io.github.mkmax.util.math.geo;
 
 import org.joml.Vector2d;
 import org.joml.Vector2dc;
@@ -9,6 +9,25 @@ import org.joml.Vector2dc;
  * https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Linear_B%C3%A9zier_curves
  */
 public class Bezier2x2d {
+
+    public static Vector2d quickEval (
+        Vector2d start,
+        Vector2d end,
+        double   p)
+    {
+        return quickEval (start, end, p, new Vector2d ());
+    }
+
+    public static Vector2d quickEval (
+        Vector2d start,
+        Vector2d end,
+        double   p,
+        Vector2d dest)
+    {
+        dest.x = Math.fma (end.x - start.x, p, start.x);
+        dest.y = Math.fma (end.y - start.y, p, start.y);
+        return dest;
+    }
 
     private final Vector2d start = new Vector2d ();
     private final Vector2d end   = new Vector2d ();
@@ -90,16 +109,32 @@ public class Bezier2x2d {
         end.set (pB);
     }
 
+    public void set (
+        double ax, double ay,
+        double bx, double by)
+    {
+        start.set (ax, ay);
+        end.set (bx, by);
+    }
+
+    public void set (
+        Vector2dc pA,
+        Vector2dc pB)
+    {
+        start.set (pA);
+        end.set (pB);
+    }
+
     /* +------------+ */
     /* | Evaluators | */
     /* +------------+ */
 
     public double evalX (double p) {
-        return (end.x - start.x) * p + start.x;
+        return Math.fma (end.x - start.x, p, start.x);
     }
 
     public double evalY (double p) {
-        return (end.y - start.y) * p + start.y;
+        return Math.fma (end.y - start.y, p, start.y);
     }
 
     public Vector2d eval (double p) {

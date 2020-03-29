@@ -1,7 +1,7 @@
-package io.github.mkmax.fx.math.cartesian;
+package io.github.mkmax.fxe.math.graph.cartesian;
 
-import io.github.mkmax.fx.util.ResizableCanvas;
-import io.github.mkmax.util.math.Quad3x2d;
+import io.github.mkmax.fxe.ResizableCanvas;
+import io.github.mkmax.util.math.geo.Quad3x2d;
 
 import org.joml.Matrix3x2d;
 

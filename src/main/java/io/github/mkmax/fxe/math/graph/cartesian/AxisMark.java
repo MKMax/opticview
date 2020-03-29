@@ -1,4 +1,4 @@
-package io.github.mkmax.fx.math.cartesian;
+package io.github.mkmax.fxe.math.graph.cartesian;
 
 import java.util.Objects;
 

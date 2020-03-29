@@ -1,6 +1,6 @@
-package io.github.mkmax.fx.math.cartesian;
+package io.github.mkmax.fxe.math.graph.cartesian;
 
-import io.github.mkmax.util.math.Segment1dv;
+import io.github.mkmax.util.math.geo.Segment1dv;
 
 public interface AxisMarker {
 

@@ -1,9 +1,9 @@
-package io.github.mkmax.fx.math.cartesian;
+package io.github.mkmax.fxe.math.graph.cartesian;
 
-import io.github.mkmax.fx.math.cartesian.AxisMark.Type;
+import io.github.mkmax.fxe.math.graph.cartesian.AxisMark.Type;
 
 import io.github.mkmax.util.data.ArrayIterable;
-import io.github.mkmax.util.math.Segment1dv;
+import io.github.mkmax.util.math.geo.Segment1dv;
 import io.github.mkmax.util.math.FloatingPoint;
 
 /* non-javadoc

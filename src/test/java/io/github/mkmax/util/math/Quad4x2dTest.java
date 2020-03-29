@@ -3,6 +3,7 @@ package io.github.mkmax.util.math;
 import static io.github.mkmax.util.math.FloatingPoint.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.github.mkmax.util.math.geo.Quad4x2d;
 import org.junit.jupiter.api.Test;
 
 import org.joml.Vector2d;
@@ -80,5 +81,4 @@ public class Quad4x2dTest {
         assertTrue (pointD.equals (new Vector2d (1d, 1d),     F64_EPSILON_STRICT));
         assertTrue (pointE.equals (new Vector2d (0.5d, 0.5d), F64_EPSILON_STRICT));
     }
-
 }

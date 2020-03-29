@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import io.github.mkmax.fx.math.cartesian.GraphView2a ?>
+<?import io.github.mkmax.fxe.math.graph.cartesian.GraphView2a ?>
 <?import javafx.scene.layout.StackPane?>
 
 <?import java.net.URL?>
