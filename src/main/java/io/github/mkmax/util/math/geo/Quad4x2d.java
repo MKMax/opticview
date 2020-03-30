@@ -1,12 +1,11 @@
 package io.github.mkmax.util.math.geo;
 
-import io.github.mkmax.util.math.FloatingPoint;
-import io.github.mkmax.util.math.LinearAlgebraStatics;
+import static io.github.mkmax.util.math.LinearAlgebraStatics.*;
 
+import io.github.mkmax.util.math.FloatingPoint;
 import org.joml.Matrix3x2dc;
 import org.joml.Vector2dc;
 import org.joml.Vector2d;
-
 import java.util.Objects;
 
 /**
@@ -17,6 +16,45 @@ import java.util.Objects;
  * @author Maxim Kasyanenko
  */
 public class Quad4x2d implements Quad2d {
+
+    public static final Quad4x2d NORMAL = new Quad4x2d (
+        -1d, -1d,
+         1d, -1d,
+        -1d,  1d,
+         1d,  1d)
+    {
+        @Override
+        public void setTopLeftX (double nx)
+        { /* do not allow modification but do not throw exception. */ }
+
+        @Override
+        public void setTopLeftY (double ny)
+        { /* do not allow modification but do not throw exception. */ }
+
+        @Override
+        public void setTopRightX (double nx)
+        { /* do not allow modification but do not throw exception. */ }
+
+        @Override
+        public void setTopRightY (double ny)
+        { /* do not allow modification but do not throw exception. */ }
+
+        @Override
+        public void setBottomLeftX (double nx)
+        { /* do not allow modification but do not throw exception. */ }
+
+        @Override
+        public void setBottomLeftY (double ny)
+        { /* do not allow modification but do not throw exception. */ }
+
+        @Override
+        public void setBottomRightX (double nx)
+        { /* do not allow modification but do not throw exception. */ }
+
+        @Override
+        public void setBottomRightY (double ny)
+        { /* do not allow modification but do not throw exception. */ }
+    };
 
     /* +---------------+ */
     /* | INTERPOLATORS | */
@@ -78,11 +116,11 @@ public class Quad4x2d implements Quad2d {
             Lx = Ax + Dx - Bx - Cx;
             Ly = Ay + Dy - By - Cy;
 
-            detLC = LinearAlgebraStatics.det (Lx, Ly, Cx, Cy);
-            detBC = LinearAlgebraStatics.det (Bx, By, Cx, Cy);
-            detCA = LinearAlgebraStatics.det (Cx, Cy, Ax, Ay);
-            detAB = LinearAlgebraStatics.det (Ax, Ay, Bx, By);
-            detAL = LinearAlgebraStatics.det (Ax, Ay, Lx, Ly);
+            detLC = det (Lx, Ly, Cx, Cy);
+            detBC = det (Bx, By, Cx, Cy);
+            detCA = det (Cx, Cy, Ax, Ay);
+            detAB = det (Ax, Ay, Bx, By);
+            detAL = det (Ax, Ay, Lx, Ly);
 
             Ma  = detAL + detLC;
             Ma2 = 2 * Ma;
@@ -100,9 +138,9 @@ public class Quad4x2d implements Quad2d {
             final double Ry = src.y;
 
             /* These determinants must be recomputed each time as they depend on R */
-            final double detRL = LinearAlgebraStatics.det (Rx, Ry, Lx, Ly);
-            final double detAR = LinearAlgebraStatics.det (Ax, Ay, Rx, Ry);
-            final double detRB = LinearAlgebraStatics.det (Rx, Ry, Bx, By);
+            final double detRL = det (Rx, Ry, Lx, Ly);
+            final double detAR = det (Ax, Ay, Rx, Ry);
+            final double detRB = det (Rx, Ry, Bx, By);
 
             /* Remaining coefficients of the quadratic equation to solve for Q. */
             final double Mb = detRL - detAL + detAB + detBC + detCA;

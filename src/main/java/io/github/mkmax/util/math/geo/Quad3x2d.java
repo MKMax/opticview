@@ -1,15 +1,53 @@
 package io.github.mkmax.util.math.geo;
 
-import io.github.mkmax.util.math.LinearAlgebraStatics;
+import static io.github.mkmax.util.math.LinearAlgebraStatics.*;
+
 import org.joml.Matrix3x2dc;
 import org.joml.Vector2dc;
 import org.joml.Matrix3x2d;
 import org.joml.Vector2d;
-
 import java.util.Objects;
 
 /* A quad using 3 vectors of 2 components each (3x2) */
 public class Quad3x2d implements Quad2d {
+
+    public static final Quad3x2d NORMAL = new Quad3x2d (
+        -1d, -1d,
+         1d, -1d,
+         1d,  1d)
+    {
+        @Override
+        public void setTopLeftX (double nx)
+        { /* do not allow modification but do not throw exception. */ }
+
+        @Override
+        public void setTopLeftY (double ny)
+        { /* do not allow modification but do not throw exception. */ }
+
+        @Override
+        public void setTopRightX (double nx)
+        { /* do not allow modification but do not throw exception. */ }
+
+        @Override
+        public void setTopRightY (double ny)
+        { /* do not allow modification but do not throw exception. */ }
+
+        @Override
+        public void setBottomLeftX (double nx)
+        { /* do not allow modification but do not throw exception. */ }
+
+        @Override
+        public void setBottomLeftY (double ny)
+        { /* do not allow modification but do not throw exception. */ }
+
+        @Override
+        public void setBottomRightX (double nx)
+        { /* do not allow modification but do not throw exception. */ }
+
+        @Override
+        public void setBottomRightY (double ny)
+        { /* do not allow modification but do not throw exception. */ }
+    };
 
     /* +--------------+ */
     /* | INTERPOLATOR | */
@@ -36,9 +74,9 @@ public class Quad3x2d implements Quad2d {
             final double Fx = to.c.x;
             final double Fy = to.c.y;
 
-            final double detBA = LinearAlgebraStatics.det (Bx, By, Ax, Ay);
-            final double detCB = LinearAlgebraStatics.det (Cx, Cy, Bx, By);
-            final double detAC = LinearAlgebraStatics.det (Ax, Ay, Cx, Cy);
+            final double detBA = det (Bx, By, Ax, Ay);
+            final double detCB = det (Cx, Cy, Bx, By);
+            final double detAC = det (Ax, Ay, Cx, Cy);
 
             final double iQ = 1d / (detBA + detCB + detAC);
 

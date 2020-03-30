@@ -1,10 +1,10 @@
 package io.github.mkmax.util.math.geo;
 
-import org.joml.Vector2dc;
-import org.joml.Vector2d;
-
 import static io.github.mkmax.util.math.ComputationStatics.max;
 import static io.github.mkmax.util.math.ComputationStatics.min;
+
+import org.joml.Vector2dc;
+import org.joml.Vector2d;
 
 public interface Quad2d {
 
