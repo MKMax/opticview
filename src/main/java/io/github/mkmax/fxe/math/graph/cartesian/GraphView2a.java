@@ -24,8 +24,6 @@ public class GraphView2a extends ResizableCanvas {
 
     public void render () {
         /* do any preparations here before rendering such as adjusting viewport */
-        viewport.ortho (0d, getWidth (), getHeight (), 0d);
-
         /**/
     }
 }

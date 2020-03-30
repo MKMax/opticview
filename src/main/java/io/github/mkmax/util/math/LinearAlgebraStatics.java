@@ -19,7 +19,7 @@ public class LinearAlgebraStatics {
         Vector2dc a,
         Vector2dc b)
     {
-        return Math.fma (a.x (), a.y (), - b.x () * a.y ());
+        return Math.fma (a.x (), b.y (), - b.x () * a.y ());
     }
 
 }

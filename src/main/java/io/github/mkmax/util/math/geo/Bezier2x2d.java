@@ -32,6 +32,11 @@ public class Bezier2x2d {
     private final Vector2d start = new Vector2d ();
     private final Vector2d end   = new Vector2d ();
 
+    public Bezier2x2d (Bezier2x2d copy) {
+        start.set (copy.start);
+        end.set (copy.end);
+    }
+
     public Bezier2x2d (
         double ax, double ay,
         double bx, double by)
@@ -89,6 +94,12 @@ public class Bezier2x2d {
         return dest.set (end);
     }
 
+    public Bezier2x2d get (Bezier2x2d dest) {
+        dest.start.set (start);
+        dest.end.set (end);
+        return dest;
+    }
+
     /* +---------+ */
     /* | Setters | */
     /* +---------+ */
@@ -123,6 +134,11 @@ public class Bezier2x2d {
     {
         start.set (pA);
         end.set (pB);
+    }
+
+    public void set (Bezier2x2d extern) {
+        start.set (extern.start);
+        end.set (extern.end);
     }
 
     /* +------------+ */

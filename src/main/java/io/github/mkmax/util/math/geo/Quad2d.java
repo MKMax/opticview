@@ -1,34 +1,12 @@
 package io.github.mkmax.util.math.geo;
 
-import org.joml.Matrix3x2dc;
 import org.joml.Vector2dc;
 import org.joml.Vector2d;
 
+import static io.github.mkmax.util.math.ComputationStatics.max;
+import static io.github.mkmax.util.math.ComputationStatics.min;
+
 public interface Quad2d {
-
-    interface Interpolator2d {
-
-        <T extends Quad2d> T getSource ();
-
-        <T extends Quad2d> T getDestination ();
-
-        Vector2d interpolate (Vector2d src);
-
-        Vector2d interpolate (Vector2d src, Vector2d dest);
-
-    }
-
-    /* +---------+ */
-    /* | GENERAL | */
-    /* +---------+ */
-
-    void set (Quad2d q);
-
-    /* Returns the number of vertices used to represent the
-     * quad implementation. Any value that is not 2, 3, or 4
-     * is deemed undefined.
-     */
-    int getOrder ();
 
     /* +-----------------+ */
     /* | TOP LEFT VERTEX | */
@@ -114,21 +92,40 @@ public interface Quad2d {
     /* | LIGHT COMPUTATIONS | */
     /* +--------------------+ */
 
-    double getLeft ();
+    default double getLeft () {
+        return min (
+            getTopLeftX (),
+            getTopRightX (),
+            getBottomLeftX (),
+            getBottomRightX ()
+        );
+    }
 
-    double getRight ();
+    default double getRight () {
+        return max (
+            getTopLeftX (),
+            getTopRightX (),
+            getBottomLeftX (),
+            getBottomRightX ()
+        );
+    }
 
-    double getBottom ();
+    default double getBottom () {
+        return min (
+            getTopLeftY (),
+            getTopRightY (),
+            getBottomLeftY (),
+            getBottomRightY ()
+        );
+    }
 
-    double getTop ();
+    default double getTop () {
+        return max (
+            getTopLeftY (),
+            getTopRightY (),
+            getBottomLeftY (),
+            getBottomRightY ()
+        );
+    }
 
-    /* +---------------------------------+ */
-    /* | TRANFORMATION AND INTERPOLATION | */
-    /* +---------------------------------+ */
-
-    <T extends Quad2d> T transform (Matrix3x2dc mat);
-
-    <T extends Quad2d> T transform (Matrix3x2dc mat, Quad2d dest);
-
-    <T extends Interpolator2d> T interpolate (Quad2d to);
 }

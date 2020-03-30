@@ -1,10 +1,13 @@
 package io.github.mkmax.util.math.geo;
 
+import static io.github.mkmax.util.math.ComputationStatics.max;
+import static io.github.mkmax.util.math.ComputationStatics.min;
 import static io.github.mkmax.util.math.LinearAlgebraStatics.*;
-
 import io.github.mkmax.util.math.FloatingPoint;
-import org.joml.Vector2d;
+
+import org.joml.Matrix3x2dc;
 import org.joml.Vector2dc;
+import org.joml.Vector2d;
 
 import java.util.Objects;
 
@@ -15,119 +18,95 @@ import java.util.Objects;
  *
  * @author Maxim Kasyanenko
  */
-public class Quad4x2d {
+public class Quad4x2d implements Quad2d {
 
-    /**
-     * Provides a state-based mechanism or interpolating between different
-     * <code>Quad4x2</code> figures.
-     * <p>
-     * State is required to minimize heap allocation of vectors and additional
-     * <code>Bezier2x2</code> curves.
-     *
-     * @author Maxim Kasyanenko
-     */
-    public static final class Interpolator {
+    /* +---------------+ */
+    /* | INTERPOLATORS | */
+    /* +---------------public + */
 
-        /**
-         * Represents the "source" quad, i.e., the quad
-         * whose points are mapped onto <code>to</code>.
-         */
+    private static final class BezierInterpolator {
+
         private Quad4x2d from;
-
-        /**
-         * Represents the "destination" quad, i.e., the quad
-         * onto which input vertices will be mapped onto.
-         */
         private Quad4x2d to;
 
-        /* For some "destination" quad STVU, this represents the segment ST. */
-        private final Bezier2x2d ST = new Bezier2x2d ();
+        private double
+            Ax, Ay,
+            Bx, By,
+            Cx, Cy,
+            Dx, Dy,
+            Lx, Ly;
 
-        /* For some "destination" quad STVU, this represents the segment UV. */
+        private double
+            detLC,
+            detBC,
+            detCA,
+            detAB,
+            detAL;
+
+        private double
+            Ma,
+            Ma2;
+
+        private final Bezier2x2d ST = new Bezier2x2d ();
         private final Bezier2x2d UV = new Bezier2x2d ();
 
-        /**
-         * A pre-allocated vector that will store the "source" vector being
-         * transformed.
-         */
-        private final Vector2d R = new Vector2d ();
-
-        /**
-         * A pre-allocated vector used in the computation of the
-         * transformation.
-         */
-        private final Vector2d L = new Vector2d ();
-
-        /**
-         * A pre-allocated vector used in the final stages of
-         * computation of the transformation.
-         */
         private final Vector2d F = new Vector2d ();
-
-        /**
-         * A pre-allocated vector used in the final stages of
-         * computation of the transformation.
-         */
         private final Vector2d G = new Vector2d ();
 
-        private Interpolator (Quad4x2d pFrom, Quad4x2d pTo) {
+        private BezierInterpolator (Quad4x2d pFrom, Quad4x2d pTo) {
             from = Objects.requireNonNull (pFrom);
             to   = Objects.requireNonNull (pTo);
+            update ();
         }
 
         public Quad4x2d getFrom () {
             return from;
         }
 
-        public void setFrom (Quad4x2d nFrom) {
-            from = Objects.requireNonNull (nFrom);
-        }
-
         public Quad4x2d getTo () {
             return to;
         }
 
-        public void setTo (Quad4x2d nTo) {
-            to = Objects.requireNonNull (nTo);
-        }
+        public void update () {
+            Ax = from.a.x;
+            Ay = from.a.y;
+            Bx = from.b.x;
+            By = from.b.y;
+            Cx = from.c.x;
+            Cy = from.c.y;
+            Dx = from.d.x;
+            Dy = from.d.y;
 
-        public Vector2d transform (Vector2d src) {
-            return transform (src, src);
-        }
+            Lx = Ax + Dx - Bx - Cx;
+            Ly = Ay + Dy - By - Cy;
 
-        public Vector2d transform (Vector2d src, Vector2d dest) {
-            final double Ax = from.a.x;
-            final double Ay = from.a.y;
-            final double Bx = from.b.x;
-            final double By = from.b.y;
-            final double Cx = from.c.x;
-            final double Cy = from.c.y;
-            final double Dx = from.d.x;
-            final double Dy = from.d.y;
+            detLC = det (Lx, Ly, Cx, Cy);
+            detBC = det (Bx, By, Cx, Cy);
+            detCA = det (Cx, Cy, Ax, Ay);
+            detAB = det (Ax, Ay, Bx, By);
+            detAL = det (Ax, Ay, Lx, Ly);
+
+            Ma  = detAL + detLC;
+            Ma2 = 2 * Ma;
 
             ST.set (to.a, to.b);
             UV.set (to.c, to.d);
+        }
 
+        public Vector2d map (Vector2d src) {
+            return map (src, src);
+        }
+
+        public Vector2d map (Vector2d src, Vector2d dest) {
             final double Rx = src.x;
             final double Ry = src.y;
 
-            final double Lx = Ax + Dx - Bx - Cx;
-            final double Ly = Ay + Dy - By - Cy;
-
-            /* Following determinants used only once. */
-            final double detLC = det (Lx, Ly, Cx, Cy);
+            /* These determinants must be recomputed each time as they depend on R */
             final double detRL = det (Rx, Ry, Lx, Ly);
-            final double detBC = det (Bx, By, Cx, Cy);
-            final double detCA = det (Cx, Cy, Ax, Ay);
             final double detAR = det (Ax, Ay, Rx, Ry);
             final double detRB = det (Rx, Ry, Bx, By);
 
-            /* Following determinants used multiple times. */
-            final double detAB = det (Ax, Ay, Bx, By);
-            final double detAL = det (Ax, Ay, Lx, Ly);
-
-            /* Coefficients of the quadratic equation to solve for Q. */
-            final double Ma = detAL + detLC;
+            /* Remaining coefficients of the quadratic equation to solve for Q. */
             final double Mb = detRL - detAL + detAB + detBC + detCA;
             final double Mc = detAR + detRB - detAB;
 
@@ -135,6 +114,9 @@ public class Quad4x2d {
 
             /* If our equation for Q becomes linear, we can avoid trying to compute
              * the quadratic formula. We now solve a trivial linear equation.
+             *
+             * TODO: Perhaps revise this if statement as we compute 'Ma' once per
+             *       update() and not per function call.
              */
             if (FloatingPoint.strictEq (Ma, 0d)) {
                 /* When Mb is zero, but Mc is non-zero, then we have no
@@ -163,7 +145,6 @@ public class Quad4x2d {
              * attempt to keep Q within [0, 1].
              */
             else {
-                final double Ma2 = 2 * Ma;
                 final double Qd  = Math.sqrt (Mb * Mb - 4 * Ma * Mc);
 
                 /* We check to see if Mb < -0.5d (or -Mb > 0.5d) to decide
@@ -183,21 +164,95 @@ public class Quad4x2d {
         }
     }
 
+    /**
+     * Provides a state-based mechanism or interpolating between different
+     * <code>Quad4x2</code> figures.
+     * <p>
+     * State is required to minimize heap allocation of vectors and additional
+     * <code>Bezier2x2</code> curves.
+     *
+     * @author Maxim Kasyanenko
+     */
+    public static final class Interpolator {
+
+        /**
+         * Represents the "source" quad, i.e., the quad
+         * whose points are mapped onto <code>to</code>.
+         */
+        private final Quad4x2d from;
+
+        /**
+         * Represents the "destination" quad, i.e., the quad
+         * onto which input vertices will be mapped onto.
+         */
+        private final Quad4x2d to;
+
+        private final BezierInterpolator projection;
+
+        private final BezierInterpolator inverse;
+
+        private Interpolator (
+            Quad4x2d pFrom,
+            Quad4x2d pTo)
+        {
+            from = Objects.requireNonNull (pFrom);
+            to   = Objects.requireNonNull (pTo);
+
+            projection = new BezierInterpolator (from, to);
+            inverse    = new BezierInterpolator (to, from);
+        }
+
+        public Quad4x2d getFrom () {
+            return from;
+        }
+
+        public Quad4x2d getTo () {
+            return to;
+        }
+
+        public void update () {
+            projection.update ();
+            inverse.update ();
+        }
+
+        public Vector2d unmap (Vector2d dest) {
+            return inverse.map (dest);
+        }
+
+        public Vector2d unmap (Vector2d dest, Vector2d src) {
+            return inverse.map (dest, src);
+        }
+
+        public Vector2d map (Vector2d src) {
+            return projection.map (src);
+        }
+
+        public Vector2d map (Vector2d src, Vector2d dest) {
+            return projection.map (src, dest);
+        }
+    }
+
+    /* +--------------------+ */
+    /* | CONSTRUCTOR + DATA | */
+    /* +--------------------+ */
+
     private final Vector2d a = new Vector2d ();
     private final Vector2d b = new Vector2d ();
     private final Vector2d c = new Vector2d ();
     private final Vector2d d = new Vector2d ();
 
-    public Quad4x2d (
-        double ax, double ay,
-        double bx, double by,
-        double cx, double cy,
-        double dx, double dy)
-    {
-        a.set (ax, ay);
-        b.set (bx, by);
-        c.set (cx, cy);
-        d.set (dx, dy);
+    public Quad4x2d () {
+        a.set (-1d, -1d);
+        b.set ( 1d, -1d);
+        c.set ( 1d,  1d);
+        d.set (-1d,  1d);
+    }
+
+    public Quad4x2d (Quad2d src) {
+        src.getBottomLeft (a);
+        src.getBottomRight (b);
+        src.setTopLeft (c);
+        src.setTopRight (d);
     }
 
     public Quad4x2d (
@@ -212,11 +267,216 @@ public class Quad4x2d {
         d.set (pD);
     }
 
-    public Quad4x2d () {
-        a.set (-1d, -1d);
-        b.set ( 1d, -1d);
-        c.set ( 1d,  1d);
-        d.set (-1d,  1d);
+    public Quad4x2d (
+        double ax, double ay,
+        double bx, double by,
+        double cx, double cy,
+        double dx, double dy)
+    {
+        a.set (ax, ay);
+        b.set (bx, by);
+        c.set (cx, cy);
+        d.set (dx, dy);
+    }
+
+    /* +-----------------+ */
+    /* | TOP LEFT VERTEX | */
+    /* +-----------------+ */
+
+    @Override
+    public double getTopLeftX () {
+        return c.x;
+    }
+
+    @Override
+    public double getTopLeftY () {
+        return c.y;
+    }
+
+    @Override
+    public Vector2d getTopLeft () {
+        return getTopLeft (new Vector2d ());
+    }
+
+    @Override
+    public Vector2d getTopLeft (Vector2d dest) {
+        return dest.set (getTopLeftX (), getTopLeftY ());
+    }
+
+    @Override
+    public void setTopLeftX (double nx) {
+        c.x = nx;
+    }
+
+    @Override
+    public void setTopLeftY (double ny) {
+        c.y = ny;
+    }
+
+    @Override
+    public void setTopLeft (double nx, double ny) {
+        setTopLeftX (nx);
+        setTopLeftY (ny);
+    }
+
+    @Override
+    public void setTopLeft (Vector2dc nPos) {
+        setTopLeft (nPos.x (), nPos.y ());
+    }
+
+    /* +------------------+ */
+    /* | TOP RIGHT VERTEX | */
+    /* +------------------+ */
+
+    @Override
+    public double getTopRightX () {
+        return d.x;
+    }
+
+    @Override
+    public double getTopRightY () {
+        return d.y;
+    }
+
+    @Override
+    public Vector2d getTopRight () {
+        return getTopRight (new Vector2d ());
+    }
+
+    @Override
+    public Vector2d getTopRight (Vector2d dest) {
+        return dest.set (getTopRightX (), getTopRightY ());
+    }
+
+    @Override
+    public void setTopRightX (double nx) {
+        d.x = nx;
+    }
+
+    @Override
+    public void setTopRightY (double ny) {
+        d.y = ny;
+    }
+
+    @Override
+    public void setTopRight (double nx, double ny) {
+        setTopRightX (nx);
+        setTopRightY (ny);
+    }
+
+    @Override
+    public void setTopRight (Vector2dc nPos) {
+        setTopRight (nPos.x (), nPos.y ());
+    }
+
+    /* +--------------------+ */
+    /* | BOTTOM LEFT VERTEX | */
+    /* +--------------------+ */
+
+    @Override
+    public double getBottomLeftX () {
+        return a.x;
+    }
+
+    @Override
+    public double getBottomLeftY () {
+        return a.y;
+    }
+
+    @Override
+    public Vector2d getBottomLeft () {
+        return getBottomLeft (new Vector2d ());
+    }
+
+    @Override
+    public Vector2d getBottomLeft (Vector2d dest) {
+        return dest.set (getBottomLeftX (), getBottomLeftY ());
+    }
+
+    @Override
+    public void setBottomLeftX (double nx) {
+        a.x = nx;
+    }
+
+    @Override
+    public void setBottomLeftY (double ny) {
+        a.y = ny;
+    }
+
+    @Override
+    public void setBottomLeft (double nx, double ny) {
+        setBottomLeftX (nx);
+        setBottomLeftY (ny);
+    }
+
+    @Override
+    public void setBottomLeft (Vector2dc nPos) {
+        setBottomLeft (nPos.x (), nPos.y ());
+    }
+
+    /* +---------------------+ */
+    /* | BOTTOM RIGHT VERTEX | */
+    /* +---------------------+ */
+
+    @Override
+    public double getBottomRightX () {
+        return b.x;
+    }
+
+    @Override
+    public double getBottomRightY () {
+        return b.y;
+    }
+
+    @Override
+    public Vector2d getBottomRight () {
+        return getBottomRight (new Vector2d ());
+    }
+
+    @Override
+    public Vector2d getBottomRight (Vector2d dest) {
+        return dest.set (getBottomRightX (), getBottomRightY ());
+    }
+
+    @Override
+    public void setBottomRightX (double nx) {
+        b.x = nx;
+    }
+
+    @Override
+    public void setBottomRightY (double ny) {
+        b.y = ny;
+    }
+
+    @Override
+    public void setBottomRight (double nx, double ny) {
+        setBottomRightX (nx);
+        setBottomRightY (ny);
+    }
+
+    @Override
+    public void setBottomRight (Vector2dc nPos) {
+        setBottomRight (nPos.x (), nPos.y ());
+    }
+
+    /* +---------------------------------+ */
+    /* | TRANFORMATION AND INTERPOLATION | */
+    /* +---------------------------------+ */
+
+    public Quad4x2d transform (Matrix3x2dc mat) {
+        mat.transformPosition (a);
+        mat.transformPosition (b);
+        mat.transformPosition (c);
+        mat.transformPosition (d);
+        return this;
+    }
+
+    public Quad4x2d transform (Matrix3x2dc mat, Quad4x2d dest) {
+        mat.transformPosition (a, dest.a);
+        mat.transformPosition (b, dest.b);
+        mat.transformPosition (c, dest.c);
+        mat.transformPosition (d, dest.d);
+        return dest;
     }
 
     public Interpolator interpolate (Quad4x2d to) {
