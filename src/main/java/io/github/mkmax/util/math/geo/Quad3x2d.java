@@ -1,7 +1,6 @@
 package io.github.mkmax.util.math.geo;
 
-import static io.github.mkmax.util.math.LinearAlgebraStatics.*;
-
+import io.github.mkmax.util.math.LinearAlgebraStatics;
 import org.joml.Matrix3x2dc;
 import org.joml.Vector2dc;
 import org.joml.Matrix3x2d;
@@ -37,9 +36,9 @@ public class Quad3x2d implements Quad2d {
             final double Fx = to.c.x;
             final double Fy = to.c.y;
 
-            final double detBA = det (Bx, By, Ax, Ay);
-            final double detCB = det (Cx, Cy, Bx, By);
-            final double detAC = det (Ax, Ay, Cx, Cy);
+            final double detBA = LinearAlgebraStatics.det (Bx, By, Ax, Ay);
+            final double detCB = LinearAlgebraStatics.det (Cx, Cy, Bx, By);
+            final double detAC = LinearAlgebraStatics.det (Ax, Ay, Cx, Cy);
 
             final double iQ = 1d / (detBA + detCB + detAC);
 

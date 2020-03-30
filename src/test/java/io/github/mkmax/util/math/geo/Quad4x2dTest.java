@@ -1,11 +1,9 @@
-package io.github.mkmax.util.math;
+package io.github.mkmax.util.math.geo;
 
-import static io.github.mkmax.util.math.FloatingPoint.*;
+import static io.github.mkmax.util.math.FloatingPoint.F64_EPSILON_STRICT;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.github.mkmax.util.math.geo.Quad4x2d;
 import org.junit.jupiter.api.Test;
-
 import org.joml.Vector2d;
 
 public class Quad4x2dTest {

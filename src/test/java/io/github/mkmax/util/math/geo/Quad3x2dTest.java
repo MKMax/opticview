@@ -1,12 +1,9 @@
-package io.github.mkmax.util.math;
+package io.github.mkmax.util.math.geo;
 
 import static io.github.mkmax.util.math.FloatingPoint.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.github.mkmax.util.math.geo.Quad3x2d;
 import org.junit.jupiter.api.Test;
-
-import org.joml.Matrix3x2d;
 import org.joml.Vector2d;
 
 public class Quad3x2dTest {
