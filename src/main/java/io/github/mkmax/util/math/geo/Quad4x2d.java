@@ -1,7 +1,5 @@
 package io.github.mkmax.util.math.geo;
 
-import static io.github.mkmax.util.math.ComputationStatics.max;
-import static io.github.mkmax.util.math.ComputationStatics.min;
 import static io.github.mkmax.util.math.LinearAlgebraStatics.*;
 import io.github.mkmax.util.math.FloatingPoint;
 
@@ -294,16 +292,6 @@ public class Quad4x2d implements Quad2d {
     }
 
     @Override
-    public Vector2d getTopLeft () {
-        return getTopLeft (new Vector2d ());
-    }
-
-    @Override
-    public Vector2d getTopLeft (Vector2d dest) {
-        return dest.set (getTopLeftX (), getTopLeftY ());
-    }
-
-    @Override
     public void setTopLeftX (double nx) {
         c.x = nx;
     }
@@ -311,17 +299,6 @@ public class Quad4x2d implements Quad2d {
     @Override
     public void setTopLeftY (double ny) {
         c.y = ny;
-    }
-
-    @Override
-    public void setTopLeft (double nx, double ny) {
-        setTopLeftX (nx);
-        setTopLeftY (ny);
-    }
-
-    @Override
-    public void setTopLeft (Vector2dc nPos) {
-        setTopLeft (nPos.x (), nPos.y ());
     }
 
     /* +------------------+ */
@@ -339,16 +316,6 @@ public class Quad4x2d implements Quad2d {
     }
 
     @Override
-    public Vector2d getTopRight () {
-        return getTopRight (new Vector2d ());
-    }
-
-    @Override
-    public Vector2d getTopRight (Vector2d dest) {
-        return dest.set (getTopRightX (), getTopRightY ());
-    }
-
-    @Override
     public void setTopRightX (double nx) {
         d.x = nx;
     }
@@ -356,17 +323,6 @@ public class Quad4x2d implements Quad2d {
     @Override
     public void setTopRightY (double ny) {
         d.y = ny;
-    }
-
-    @Override
-    public void setTopRight (double nx, double ny) {
-        setTopRightX (nx);
-        setTopRightY (ny);
-    }
-
-    @Override
-    public void setTopRight (Vector2dc nPos) {
-        setTopRight (nPos.x (), nPos.y ());
     }
 
     /* +--------------------+ */
@@ -384,16 +340,6 @@ public class Quad4x2d implements Quad2d {
     }
 
     @Override
-    public Vector2d getBottomLeft () {
-        return getBottomLeft (new Vector2d ());
-    }
-
-    @Override
-    public Vector2d getBottomLeft (Vector2d dest) {
-        return dest.set (getBottomLeftX (), getBottomLeftY ());
-    }
-
-    @Override
     public void setBottomLeftX (double nx) {
         a.x = nx;
     }
@@ -401,17 +347,6 @@ public class Quad4x2d implements Quad2d {
     @Override
     public void setBottomLeftY (double ny) {
         a.y = ny;
-    }
-
-    @Override
-    public void setBottomLeft (double nx, double ny) {
-        setBottomLeftX (nx);
-        setBottomLeftY (ny);
-    }
-
-    @Override
-    public void setBottomLeft (Vector2dc nPos) {
-        setBottomLeft (nPos.x (), nPos.y ());
     }
 
     /* +---------------------+ */
@@ -429,16 +364,6 @@ public class Quad4x2d implements Quad2d {
     }
 
     @Override
-    public Vector2d getBottomRight () {
-        return getBottomRight (new Vector2d ());
-    }
-
-    @Override
-    public Vector2d getBottomRight (Vector2d dest) {
-        return dest.set (getBottomRightX (), getBottomRightY ());
-    }
-
-    @Override
     public void setBottomRightX (double nx) {
         b.x = nx;
     }
@@ -446,17 +371,6 @@ public class Quad4x2d implements Quad2d {
     @Override
     public void setBottomRightY (double ny) {
         b.y = ny;
-    }
-
-    @Override
-    public void setBottomRight (double nx, double ny) {
-        setBottomRightX (nx);
-        setBottomRightY (ny);
-    }
-
-    @Override
-    public void setBottomRight (Vector2dc nPos) {
-        setBottomRight (nPos.x (), nPos.y ());
     }
 
     /* +---------------------------------+ */
