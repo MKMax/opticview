@@ -141,9 +141,9 @@ public class Bezier2x2d {
         end.set (extern.end);
     }
 
-    /* +------------+ */
-    /* | Evaluators | */
-    /* +------------+ */
+    /* +--------------+ */
+    /* | Computations | */
+    /* +--------------+ */
 
     public double evalX (double p) {
         return Math.fma (end.x - start.x, p, start.x);
@@ -161,5 +161,40 @@ public class Bezier2x2d {
         dest.x = evalX (p);
         dest.y = evalY (p);
         return dest;
+    }
+
+    public boolean intersect (Bezier2x2d other) {
+        return intersect (other, null);
+    }
+
+    public boolean intersect (Bezier2x2d other, Vector2d dest) {
+        final double Ax = start.x;
+        final double Ay = start.y;
+        final double Bx = end.x;
+        final double By = end.y;
+        final double Cx = other.start.x;
+        final double Cy = other.start.y;
+        final double Dx = other.end.x;
+        final double Dy = other.end.y;
+
+        final double a = Bx - Ax;
+        final double b = Cx - Dx;
+        final double c = Cx - Ax;
+        final double x = By - Ay;
+        final double y = Cy - Dy;
+        final double z = Cy - Ay;
+
+        final double P = (c * y - b * z) / (a * y - b * x);
+        final double Q = (c * x - a * z) / (b * x - a * y);
+
+        if (0.0d <= P && P <= 1.0d &&
+            0.0d <= Q && Q <= 1.0d)
+        {
+            if (dest != null)
+                eval (P, dest);
+            return true;
+        }
+
+        return false;
     }
 }

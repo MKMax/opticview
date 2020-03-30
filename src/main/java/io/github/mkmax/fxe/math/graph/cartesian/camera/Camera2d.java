@@ -1,13 +1,8 @@
 package io.github.mkmax.fxe.math.graph.cartesian.camera;
 
-import io.github.mkmax.util.math.geo.ReadBox2d;
 import org.joml.Vector2d;
 
 public interface Camera2d {
-
-    ReadBox2d getViewport ();
-
-    void setViewport (ReadBox2d box);
 
     void setViewport (
         double left,
