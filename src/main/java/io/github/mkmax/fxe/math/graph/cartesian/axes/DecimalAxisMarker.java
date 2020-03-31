@@ -47,11 +47,11 @@ public class DecimalAxisMarker implements AxisMarker {
         double          intervalEnd,
         AxisMark.Degree degree)
     {
-        return switch (degree) {
-            case MAJOR -> getMajorMarks (intervalBegin, intervalEnd);
-            case MINOR -> getMinorMarks (intervalBegin, intervalEnd);
-            default    -> EmptyIterable.adaptedInstance ();
-        };
+        switch (degree) {
+        case MAJOR: return getMajorMarks (intervalBegin, intervalEnd);
+        case MINOR: return getMinorMarks (intervalBegin, intervalEnd);
+        default:    return EmptyIterable.adaptedInstance ();
+        }
     }
 
     public Iterable<AxisMark> getMajorMarks (
