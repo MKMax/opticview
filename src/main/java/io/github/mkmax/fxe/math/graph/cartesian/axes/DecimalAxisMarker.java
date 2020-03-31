@@ -1,7 +1,6 @@
-package io.github.mkmax.fxe.math.graph.cartesian;
+package io.github.mkmax.fxe.math.graph.cartesian.axes;
 
-import io.github.mkmax.fxe.math.graph.cartesian.AxisMark.Type;
-import io.github.mkmax.util.math.Intervald;
+import io.github.mkmax.fxe.math.graph.cartesian.axes.AxisMark.Type;
 import io.github.mkmax.util.data.ArrayIterable;
 import io.github.mkmax.util.math.FloatingPoint;
 
@@ -44,20 +43,17 @@ public class DecimalAxisMarker implements AxisMarker {
 
     @Override
     public Iterable<AxisMark> getMajorMarks (
-        Intervald unitInterval,
-        Intervald fragmentInterval)
+        double min,
+        double max,
+        double afpu)
     {
-        final double unitNumericRange     = unitInterval.range ();
-        final double fragmentNumericRange = fragmentInterval.range ();
-
         /* Obtain the current fragments per unit (C-FPU) defined
-         * by the unit space (unitInterval) & fragment space
+         * by the unit space ( & fragment space
          * (fragmentInterval).
          *
          * NOTE: 'cfpu' is guaranteed to be positive because we use
          * the absRange() function of the DoubleRange class.
          */
-        final double cfpu = fragmentNumericRange / unitNumericRange;
 
         /* Compute the exact number of units it would take
          * to create an axis point exactly 'fpu' in length.
@@ -68,7 +64,7 @@ public class DecimalAxisMarker implements AxisMarker {
          * be positive from the expression above. This ensures that we
          * can use it in logarithms safely.
          */
-        final double unitsInMin = fpu / cfpu;
+        final double unitsInMin = fpu / afpu;
 
         /* Because the pattern in the axis points repeats every
          * power of 10, we will compute it and take the ceiling
@@ -156,8 +152,8 @@ public class DecimalAxisMarker implements AxisMarker {
          * that 'start' != 'unitRange.min' which may happen if 'unitRange.min'
          * is perfectly divisible by 'step'.
          */
-        if (unitInterval.min < 0)
-            start = unitInterval.min - (unitInterval.min % step);
+        if (min < 0)
+            start = min - (min % step);
         else
             /* Although this computation here should already ensure
              * that 'start' != 'realAxisRange.min', the way floating
@@ -166,19 +162,19 @@ public class DecimalAxisMarker implements AxisMarker {
              * in such a way that when computing the 'axisCount' further
              * on, we end up actually including 'unitRange.min'.
              */
-            start = unitInterval.min + (step - unitInterval.min % step);
+            start = min + (step - min % step);
 
         /* ensure the criteria mentioned above is met
          * by simply adding 'step' if needed.
          */
-        if (FloatingPoint.strictEq (unitInterval.min, start))
+        if (FloatingPoint.strictEq (min, start))
             start += step;
 
         /* Trivially, if 'start' is actually ahead (or equal to) the end of
          * our window/function space, there will be no major axis points
          * emitted so we may safely return an empty iterator.
          */
-        if (start >= unitInterval.max)
+        if (start >= max)
             return ArrayIterable.empty ();
 
         /* Straight forward intrinsic computation of the total number of axes we
@@ -193,7 +189,7 @@ public class DecimalAxisMarker implements AxisMarker {
          * a positive constant multiplied by variable whose function is positive
          * on all real numbers.
          */
-        final int markCount = (int) Math.ceil ((unitInterval.max - start) / step);
+        final int markCount = (int) Math.ceil ((max - start) / step);
 
         /* Caching already allocated axis point array in the hopes of saving some
          * performance as this function is expected to be called in rather rapid
@@ -234,8 +230,9 @@ public class DecimalAxisMarker implements AxisMarker {
 
     @Override
     public Iterable<AxisMark> getMinorMarks (
-        Intervald unitInterval,
-        Intervald fragmentInterval)
+        double min,
+        double max,
+        double afpu)
     {
         /* WARNING: The following comments may be slightly outdated as I have
          * refactored the majority of how the system actually works. The part
@@ -260,12 +257,9 @@ public class DecimalAxisMarker implements AxisMarker {
          *       major axis computations since they're not all needed once
          *       you find the fragments per major axis point.
          */
-        final double unitNumericRange     = unitInterval.range ();
-        final double fragmentNumericRange = fragmentInterval.range ();
 
         /* See identical comments in computeMajorPoints(...) */
-        final double cfpu            = fragmentNumericRange / unitNumericRange;
-        final double unitsInMin      = fpu / cfpu;
+        final double unitsInMin      = fpu / afpu;
         final double log10           = Math.ceil (Math.log10 (unitsInMin));
         final double pow10           = Math.pow (10, log10);
         final double normalizedUnits = unitsInMin / pow10;
@@ -317,30 +311,30 @@ public class DecimalAxisMarker implements AxisMarker {
          * that the major axis might even be disabled, we are doing twice the
          * work for nothing.
          */
-        if (unitInterval.min < 0) {
-            majorStart = unitInterval.min - (unitInterval.min % majorStep);
-            minorStart = unitInterval.min - (unitInterval.min % minorStep);
+        if (min < 0) {
+            majorStart = min - (min % majorStep);
+            minorStart = min - (min % minorStep);
 
-            if (FloatingPoint.strictEq (unitInterval.min, majorStart))
+            if (FloatingPoint.strictEq (min, majorStart))
                 majorStart += majorStep;
-            if (FloatingPoint.strictEq (unitInterval.min, minorStart))
+            if (FloatingPoint.strictEq (min, minorStart))
                 minorStart += minorStep;
         }
         else {
-            majorStart = unitInterval.min + (majorStep - unitInterval.min % majorStep);
-            minorStart = unitInterval.min + (minorStep - unitInterval.min % minorStep);
+            majorStart = min + (majorStep - min % majorStep);
+            minorStart = min + (minorStep - min % minorStep);
         }
 
         /* We only check 'minorStart' since that is what ultimately matters.
          * For additional comments, see the comments in computeMajorPoints(...)
          */
-        if (minorStart >= unitInterval.max)
+        if (minorStart >= max)
             return ArrayIterable.empty ();
 
         /* Similar situation as described by the identical comments in the
          * computeMajorPoints(...) at this point in the function.
          */
-        final int markCount = (int) Math.ceil ((unitInterval.max - minorStart) / minorStep);
+        final int markCount = (int) Math.ceil ((max - minorStart) / minorStep);
 
         /* See equivalent comment in computeMajorAxis(...) describing the problems
          * with this approach of caching.

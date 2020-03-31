@@ -1,28 +1,12 @@
 package io.github.mkmax.util.math.geo;
 
-import static io.github.mkmax.util.math.ComputationStatics.max;
-import static io.github.mkmax.util.math.ComputationStatics.min;
-
 import org.joml.Vector2dc;
-import org.joml.Vector2d;
 
-public interface Quad2d {
+public interface Quad2d extends Quad2dc {
 
     /* +-----------------+ */
     /* | TOP LEFT VERTEX | */
     /* +-----------------+ */
-
-    double getTopLeftX ();
-
-    double getTopLeftY ();
-
-    default Vector2d getTopLeft () {
-        return getTopLeft (new Vector2d ());
-    }
-
-    default Vector2d getTopLeft (Vector2d dest) {
-        return dest.set (getTopLeftX (), getTopLeftY ());
-    }
 
     void setTopLeftX (double nx);
 
@@ -41,18 +25,6 @@ public interface Quad2d {
     /* | TOP RIGHT VERTEX | */
     /* +------------------+ */
 
-    double getTopRightX ();
-
-    double getTopRightY ();
-
-    default Vector2d getTopRight () {
-        return getTopRight (new Vector2d ());
-    }
-
-    default Vector2d getTopRight (Vector2d dest) {
-        return dest.set (getTopRightX (), getTopRightY ());
-    }
-
     void setTopRightX (double nx);
 
     void setTopRightY (double ny);
@@ -69,18 +41,6 @@ public interface Quad2d {
     /* +--------------------+ */
     /* | BOTTOM LEFT VERTEX | */
     /* +--------------------+ */
-
-    double getBottomLeftX ();
-
-    double getBottomLeftY ();
-
-    default Vector2d getBottomLeft () {
-        return getBottomLeft (new Vector2d ());
-    }
-
-    default Vector2d getBottomLeft (Vector2d dest) {
-        return dest.set (getBottomLeftX (), getBottomLeftY ());
-    }
 
     void setBottomLeftX (double nx);
 
@@ -99,18 +59,6 @@ public interface Quad2d {
     /* | BOTTOM RIGHT VERTEX | */
     /* +---------------------+ */
 
-    double getBottomRightX ();
-
-    double getBottomRightY ();
-
-    default Vector2d getBottomRight () {
-        return getBottomRight (new Vector2d ());
-    }
-
-    default Vector2d getBottomRight (Vector2d dest) {
-        return dest.set (getBottomRightX (), getBottomRightY ());
-    }
-
     void setBottomRightX (double nx);
 
     void setBottomRightY (double ny);
@@ -122,46 +70,6 @@ public interface Quad2d {
 
     default void setBottomRight (Vector2dc nPos) {
         setBottomRight (nPos.x (), nPos.y ());
-    }
-
-    /* +--------------------+ */
-    /* | LIGHT COMPUTATIONS | */
-    /* +--------------------+ */
-
-    default double getLeft () {
-        return min (
-            getTopLeftX (),
-            getTopRightX (),
-            getBottomLeftX (),
-            getBottomRightX ()
-        );
-    }
-
-    default double getRight () {
-        return max (
-            getTopLeftX (),
-            getTopRightX (),
-            getBottomLeftX (),
-            getBottomRightX ()
-        );
-    }
-
-    default double getBottom () {
-        return min (
-            getTopLeftY (),
-            getTopRightY (),
-            getBottomLeftY (),
-            getBottomRightY ()
-        );
-    }
-
-    default double getTop () {
-        return max (
-            getTopLeftY (),
-            getTopRightY (),
-            getBottomLeftY (),
-            getBottomRightY ()
-        );
     }
 
 }

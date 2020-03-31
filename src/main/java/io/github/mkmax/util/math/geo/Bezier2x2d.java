@@ -8,7 +8,7 @@ import org.joml.Vector2dc;
  *
  * https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Linear_B%C3%A9zier_curves
  */
-public class Bezier2x2d {
+public class Bezier2x2d implements Bezier2d {
 
     public static Vector2d quickEval (
         Vector2d start,
@@ -58,109 +58,66 @@ public class Bezier2x2d {
         end.set (1d, 1d);
     }
 
-    /* +---------+ */
-    /* | Getters | */
-    /* +---------+ */
+    /* +-------+ */
+    /* | START | */
+    /* +-------+ */
 
+    @Override
     public double getStartX () {
         return start.x;
     }
 
+    @Override
     public double getStartY () {
         return start.y;
     }
 
-    public Vector2d getStart () {
-        return new Vector2d (start);
+    @Override
+    public void setStartX (double nx) {
+        start.x = nx;
     }
 
-    public Vector2d getStart (Vector2d dest) {
-        return dest.set (start);
+    @Override
+    public void setStartY (double ny) {
+        start.y = ny;
     }
 
+    /* +-----+ */
+    /* | END | */
+    /* +-----+ */
+
+    @Override
     public double getEndX () {
         return end.x;
     }
 
+    @Override
     public double getEndY () {
         return end.y;
     }
 
-    public Vector2d getEnd () {
-        return new Vector2d (end);
+    @Override
+    public void setEndX (double nx) {
+        end.x = nx;
     }
 
-    public Vector2d getEnd (Vector2d dest) {
-        return dest.set (end);
+    @Override
+    public void setEndY (double ny) {
+        end.y = ny;
     }
 
-    public Bezier2x2d get (Bezier2x2d dest) {
-        dest.start.set (start);
-        dest.end.set (end);
-        return dest;
-    }
+    /* +-------------+ */
+    /* | COMPUTATION | */
+    /* +-------------+ */
 
-    /* +---------+ */
-    /* | Setters | */
-    /* +---------+ */
-
-    public void setStart (double ax, double ay) {
-        start.set (ax, ay);
-    }
-
-    public void setStart (Vector2dc pA) {
-        start.set (pA);
-    }
-
-    public void setEnd (double bx, double by) {
-        end.set (bx, by);
-    }
-
-    public void setEnd (Vector2dc pB) {
-        end.set (pB);
-    }
-
-    public void set (
-        double ax, double ay,
-        double bx, double by)
-    {
-        start.set (ax, ay);
-        end.set (bx, by);
-    }
-
-    public void set (
-        Vector2dc pA,
-        Vector2dc pB)
-    {
-        start.set (pA);
-        end.set (pB);
-    }
-
-    public void set (Bezier2x2d extern) {
-        start.set (extern.start);
-        end.set (extern.end);
-    }
-
-    /* +--------------+ */
-    /* | Computations | */
-    /* +--------------+ */
-
+    @Override
     public double evalX (double p) {
         return Math.fma (end.x - start.x, p, start.x);
     }
 
+    @Override
     public double evalY (double p) {
         return Math.fma (end.y - start.y, p, start.y);
-    }
-
-    public Vector2d eval (double p) {
-        return eval (p, new Vector2d ());
-    }
-
-    public Vector2d eval (double p, Vector2d dest) {
-        dest.x = evalX (p);
-        dest.y = evalY (p);
-        return dest;
     }
 
     public boolean intersect (Bezier2x2d other) {

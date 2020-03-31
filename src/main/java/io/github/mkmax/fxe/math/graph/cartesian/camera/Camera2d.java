@@ -5,18 +5,21 @@ import org.joml.Vector2d;
 public interface Camera2d {
 
     void setViewport (
-        double left,
-        double right,
-        double bottom,
-        double top
-    );
+        double x,
+        double y,
+        double width,
+        double height);
 
-    Vector2d unproject (Vector2d vpSpace);
+    void setViewport (
+        double width,
+        double height);
 
-    Vector2d unproject (Vector2d vpSpace, Vector2d funcSpace);
+    Vector2d unproject (Vector2d dest);
 
-    Vector2d project (Vector2d funcSpace);
+    Vector2d unproject (Vector2d dest, Vector2d src);
 
-    Vector2d project (Vector2d funcSpace, Vector2d vpSpace);
+    Vector2d project (Vector2d src);
+
+    Vector2d project (Vector2d src, Vector2d dest);
 
 }
