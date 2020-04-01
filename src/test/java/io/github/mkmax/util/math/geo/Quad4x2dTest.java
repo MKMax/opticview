@@ -24,7 +24,7 @@ public class Quad4x2dTest {
             2d, 2d
         );
 
-        Quad4x2d.Interpolator interp = from.interpolate (to);
+        Quad2dInterpolator interp = new BezierQuad2dInterpolator (from, to);
         Vector2d pointA = new Vector2d ( 0d, -1d);
         Vector2d pointB = new Vector2d ( 1d,  0d);
         Vector2d pointC = new Vector2d (-1d,  0d);
@@ -72,7 +72,7 @@ public class Quad4x2dTest {
             1d, 1d
         );
 
-        Quad4x2d.Interpolator interp = from.interpolate (to);
+        Quad2dInterpolator interp = new BezierQuad2dInterpolator (from, to);
         Vector2d pointA = new Vector2d (1d, 1d);
         Vector2d pointB = new Vector2d (2d, 0d);
         Vector2d pointC = new Vector2d (1d, 2d);

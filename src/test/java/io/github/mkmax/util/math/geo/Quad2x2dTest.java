@@ -20,7 +20,7 @@ public class Quad2x2dTest {
             128d, 128d
         );
 
-        Quad2x2d.Interpolator interp = from.interpolate (to);
+        Quad2dInterpolator interp = new Affine2Quad2dInterpolator (from, to);
         Vector2d pointA = new Vector2d (-1d, -1d);
         Vector2d pointB = new Vector2d ( 1d, -1d);
         Vector2d pointC = new Vector2d ( 1d,  1d);

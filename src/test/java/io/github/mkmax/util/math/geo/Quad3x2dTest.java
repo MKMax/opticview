@@ -21,7 +21,7 @@ public class Quad3x2dTest {
             2d, 2d
         );
 
-        Quad3x2d.Interpolator interp = qA.interpolate (qB);
+        Quad2dInterpolator interp = new Affine3Quad2dInterpolator (qA, qB);
         Vector2d pointA = new Vector2d (-1d, -1d);
         Vector2d pointB = new Vector2d ( 1d, -1d);
         Vector2d pointC = new Vector2d ( 1d,  1d);
@@ -55,7 +55,7 @@ public class Quad3x2dTest {
             1d, 1d
         );
 
-        Quad3x2d.Interpolator interp  = qA.interpolate (qB);
+        Quad2dInterpolator interp = new Affine3Quad2dInterpolator (qA, qB);
         Vector2d pointA = new Vector2d ( 0d, -1d);
         Vector2d pointB = new Vector2d ( 1d,  0d);
         Vector2d pointC = new Vector2d ( 0d,  1d);
