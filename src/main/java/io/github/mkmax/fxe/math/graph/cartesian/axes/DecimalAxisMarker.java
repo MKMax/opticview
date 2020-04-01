@@ -54,7 +54,7 @@ public class DecimalAxisMarker implements AxisMarker {
         }
     }
 
-    public Iterable<AxisMark> getMajorMarks (
+    private Iterable<AxisMark> getMajorMarks (
         double begin,
         double end)
     {
@@ -102,7 +102,7 @@ public class DecimalAxisMarker implements AxisMarker {
 
         for (int i = 0; i < markCount; ++i) {
             final AxisMark mark = majorBuffer.get (i);
-            mark.setPosition (start);
+            mark.setPosition (start + step * i);
             mark.setDegree   (AxisMark.Degree.MAJOR);
             mark.setOverlap  (false);
         }
@@ -110,7 +110,7 @@ public class DecimalAxisMarker implements AxisMarker {
         return majorIterable.withRange (0, markCount);
     }
 
-    public Iterable<AxisMark> getMinorMarks (
+    private Iterable<AxisMark> getMinorMarks (
         double begin,
         double end)
     {
@@ -171,28 +171,21 @@ public class DecimalAxisMarker implements AxisMarker {
                 minorBuffer.add (new AxisMark ());
         }
 
-        int maj = 0, i = 0;
-        while (i < markCount) {
-            final double majLocation = majorStart + (majorStep * maj);
+        int maj = 0;
+        for (int i = 0; i < markCount; ++i) {
+            final double majPosition = majorStart + (majorStep * maj);
+            final double minPosition = minorStart + (minorStep * i);
 
-            final Type    type             = Type.MINOR;
-            final double  minLocation      = minorStart + (minorStep * i);
-                  boolean overlapPossible  = false;
+            final AxisMark mark = minorBuffer.get (i);
+            mark.setDegree   (AxisMark.Degree.MINOR);
+            mark.setPosition (minPosition);
 
-            /* If there is a possibility of overlapping, we must flag it
-             * so that the graph renderer can take appropriate action when
-             * rendering the grid.
-             */
-            if (FloatingPoint.leanEq (majLocation, minLocation)) {
-                overlapPossible = true;
+            if (FloatingPoint.strictEq (majPosition, minPosition)) {
+                mark.setOverlap (true);
                 ++maj;
             }
-
-            cachedMinorMarks[i++] = new AxisMark (
-                type,
-                minLocation,
-                overlapPossible
-            );
+            else
+                mark.setOverlap (false);
         }
 
         return minorIterable.withRange (0, markCount);

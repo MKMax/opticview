@@ -39,6 +39,7 @@ public final class RangeIterator<T> implements Iterator<T> {
 
     @Override
     public T next () {
+        ++index;
         return source.next ();
     }
 }
