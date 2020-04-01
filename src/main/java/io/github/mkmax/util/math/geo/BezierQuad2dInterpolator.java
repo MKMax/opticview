@@ -1,8 +1,7 @@
 package io.github.mkmax.util.math.geo;
 
-import java.util.Objects;
-
 import org.joml.Vector2d;
+import java.util.Objects;
 
 public class BezierQuad2dInterpolator implements Quad2dInterpolator {
 
@@ -16,7 +15,11 @@ public class BezierQuad2dInterpolator implements Quad2dInterpolator {
         Quad2dc pSource,
         Quad2dc pDestination)
     {
-        set (pSource, pDestination);
+        src  = Objects.requireNonNull (pSource);
+        dest = Objects.requireNonNull (pDestination);
+
+        projection = new UniBezierQuad2dInterpolator (src, dest);
+        inverse    = new UniBezierQuad2dInterpolator (dest, src);
     }
 
     @Override
@@ -50,25 +53,26 @@ public class BezierQuad2dInterpolator implements Quad2dInterpolator {
 
     @Override
     public Vector2d unmap (Vector2d dest) {
-        return null;
+        return inverse.map (dest);
     }
 
     @Override
     public Vector2d unmap (Vector2d dest, Vector2d src) {
-        return null;
+        return inverse.map (dest, src);
     }
 
     @Override
     public Vector2d map (Vector2d src) {
-        return null;
+        return projection.map (src);
     }
 
     @Override
     public Vector2d map (Vector2d src, Vector2d dest) {
-        return null;
+        return projection.map (src, dest);
     }
 
     private void update () {
-
+        projection.set (src, dest);
+        inverse.set (dest, src);
     }
 }
