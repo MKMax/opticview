@@ -16,23 +16,31 @@ import java.util.ArrayList;
  * with desmos and that is what I used to derive the computations
  * for the major & minor axis points for this profile.
  */
-public class DecimalAxisMarker implements AxisMarker {
+public class DecimalAxisMarkerd implements AxisMarkerd {
 
-    private final ArrayList<AxisMark> majorBuffer = new ArrayList<> ();
-    private final ArrayList<AxisMark> minorBuffer = new ArrayList<> ();
+    /* +---------------------+ */
+    /* | DATA + CONSTRUCTORS | */
+    /* +---------------------+ */
 
-    private final RangeIterable<AxisMark> majorIterable = new RangeIterable<> (majorBuffer);
-    private final RangeIterable<AxisMark> minorIterable = new RangeIterable<> (minorBuffer);
+    private final ArrayList<Markd> majorBuffer = new ArrayList<> ();
+    private final ArrayList<Markd> minorBuffer = new ArrayList<> ();
+
+    private final RangeIterable<Markd> majorIterable = new RangeIterable<> (majorBuffer);
+    private final RangeIterable<Markd> minorIterable = new RangeIterable<> (minorBuffer);
 
     private int partitionLimit = 8;
 
-    public DecimalAxisMarker (int partitionLimit) {
+    public DecimalAxisMarkerd (int partitionLimit) {
         setPartitionLimit (partitionLimit);
     }
 
-    public DecimalAxisMarker () {
+    public DecimalAxisMarkerd () {
         /* initial state reached */
     }
+
+    /* +-------------------+ */
+    /* | GETTERS + SETTERS | */
+    /* +-------------------+ */
 
     public int getPartitionLimit () {
         return partitionLimit;
@@ -42,25 +50,18 @@ public class DecimalAxisMarker implements AxisMarker {
         partitionLimit = Math.max (1, nPartitionLimit);
     }
 
-    public Iterable<AxisMark> getMarks (
-        double          intervalBegin,
-        double          intervalEnd,
-        AxisMark.Degree degree)
-    {
-        switch (degree) {
-        case MAJOR: return getMajorMarks (intervalBegin, intervalEnd);
-        case MINOR: return getMinorMarks (intervalBegin, intervalEnd);
-        default:    return EmptyIterable.adaptedInstance ();
-        }
-    }
+    /* +-------------------+ */
+    /* | MARK COMPUTATIONS | */
+    /* +-------------------+ */
 
-    private Iterable<AxisMark> getMajorMarks (
-        double begin,
-        double end)
+    @Override
+    public Iterable<Markd> computeMajorMarks (
+        double intervalBegin,
+        double intervalEnd)
     {
         /* General computation */
-        final double min = Math.min (begin, end);
-        final double max = Math.max (begin, end);
+        final double min = Math.min (intervalBegin, intervalEnd);
+        final double max = Math.max (intervalBegin, intervalEnd);
 
         final double unit     = (max - min) / partitionLimit;
         final double log10    = Math.ceil (Math.log10 (unit));
@@ -97,26 +98,27 @@ public class DecimalAxisMarker implements AxisMarker {
         if (majorBuffer.size () < markCount) {
             majorBuffer.ensureCapacity (markCount);
             while (majorBuffer.size () < markCount)
-                majorBuffer.add (new AxisMark ());
+                majorBuffer.add (new Markd ());
         }
 
         for (int i = 0; i < markCount; ++i) {
-            final AxisMark mark = majorBuffer.get (i);
-            mark.setPosition (start + step * i);
-            mark.setDegree   (AxisMark.Degree.MAJOR);
-            mark.setOverlap  (false);
+            final Markd mark = majorBuffer.get (i);
+            mark.position = start + (i * step);
+            mark.merged   = true;
+            mark.origin   = FloatingPoint.strictEq (0d, mark.position);
         }
 
         return majorIterable.withRange (0, markCount);
     }
 
-    private Iterable<AxisMark> getMinorMarks (
-        double begin,
-        double end)
+    @Override
+    public Iterable<Markd> computeMinorMarks (
+        double intervalBegin,
+        double intervalEnd)
     {
         /* General computation */
-        final double min = Math.min (begin, end);
-        final double max = Math.max (begin, end);
+        final double min = Math.min (intervalBegin, intervalEnd);
+        final double max = Math.max (intervalBegin, intervalEnd);
 
         final double unit     = (max - min) / partitionLimit;
         final double log10    = Math.ceil (Math.log10 (unit));
@@ -168,7 +170,7 @@ public class DecimalAxisMarker implements AxisMarker {
         if (minorBuffer.size () < markCount) {
             minorBuffer.ensureCapacity (markCount);
             while (minorBuffer.size () < markCount)
-                minorBuffer.add (new AxisMark ());
+                minorBuffer.add (new Markd ());
         }
 
         int maj = 0;
@@ -176,16 +178,15 @@ public class DecimalAxisMarker implements AxisMarker {
             final double majPosition = majorStart + (majorStep * maj);
             final double minPosition = minorStart + (minorStep * i);
 
-            final AxisMark mark = minorBuffer.get (i);
-            mark.setDegree   (AxisMark.Degree.MINOR);
-            mark.setPosition (minPosition);
+            final Markd mark = minorBuffer.get (i);
+            mark.position = minPosition;
+            mark.merged   = false;
+            mark.origin   = FloatingPoint.strictEq (0d, minPosition);
 
             if (FloatingPoint.strictEq (majPosition, minPosition)) {
-                mark.setOverlap (true);
+                mark.merged = true;
                 ++maj;
             }
-            else
-                mark.setOverlap (false);
         }
 
         return minorIterable.withRange (0, markCount);

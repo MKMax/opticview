@@ -14,7 +14,8 @@ public interface Quad2dInterpolator {
 
     void set (
         Quad2dc nSource,
-        Quad2dc nDestination);
+        Quad2dc nDestination
+    );
 
     Vector2d unmap (Vector2d dest);
 

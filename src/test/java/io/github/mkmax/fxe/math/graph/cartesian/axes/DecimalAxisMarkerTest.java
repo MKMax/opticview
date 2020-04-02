@@ -13,9 +13,10 @@ public class DecimalAxisMarkerTest {
 
     @Test
     void testGetMarks_0 () {
-        DecimalAxisMarker dac = new DecimalAxisMarker ();
+        DecimalAxisMarkerd dac = new DecimalAxisMarkerd ();
 
-        final List<AxisMark> marksA = Iteration.toArrayList (dac.getMarks (-2.5d, 2.5d, AxisMark.Degree.MAJOR));
+        final List<AxisMarkerd.Markd> marksA = Iteration.toArrayList (
+            dac.computeMajorMarks (-2.5d, 2.5d));
 
         assertEquals (5, marksA.size ());
         assertTrue (FloatingPoint.strictEq (-2d, marksA.get (0).getPosition ()));
@@ -26,7 +27,8 @@ public class DecimalAxisMarkerTest {
 
         dac.setPartitionLimit (2);
 
-        final List<AxisMark> marksB = Iteration.toArrayList (dac.getMarks (-2.5d, 2.5d, AxisMark.Degree.MAJOR));
+        final List<AxisMarkerd.Markd> marksB = Iteration.toArrayList (
+            dac.computeMajorMarks (-2.5d, 2.5d));
 
         assertEquals (1, marksB.size ());
         assertTrue (FloatingPoint.strictEq (0d, marksB.get (0).getPosition ()));
