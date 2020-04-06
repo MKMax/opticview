@@ -2,7 +2,7 @@ package io.github.mkmax.util.math.geo;
 
 import static io.github.mkmax.util.math.LinearAlgebraStatics.det;
 
-import io.github.mkmax.util.math.FloatingPoint;
+import io.github.mkmax.util.math.Floats;
 import org.joml.Vector2d;
 import java.util.Objects;
 
@@ -96,7 +96,7 @@ public class UniBezierQuad2dInterpolator {
          * TODO: Perhaps revise this if statement as we compute 'Ma' once per
          *       update() and not per function call.
          */
-        if (FloatingPoint.strictEq (Ma, 0d)) {
+        if (Floats.strictEq (Ma, 0d)) {
             /* When Mb is zero, but Mc is non-zero, then we have no
              * solution to the system. Because we want to avoid throwing
              * exceptions in critical code, we will yield a bogus result
@@ -106,8 +106,8 @@ public class UniBezierQuad2dInterpolator {
              * solutions, it may be wise for the client to reconsider their
              * transforms and use a more suited structure.
              */
-            if (FloatingPoint.strictEq (Mb, 0d) &&
-                FloatingPoint.strictEq (Mc, 0d))
+            if (Floats.strictEq (Mb, 0d) &&
+                Floats.strictEq (Mc, 0d))
             {
                 P = (Rx - Ax) / (Bx - Ax);
                 Q = 0d;

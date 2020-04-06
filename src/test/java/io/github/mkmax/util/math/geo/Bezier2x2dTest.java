@@ -1,6 +1,6 @@
 package io.github.mkmax.util.math.geo;
 
-import static io.github.mkmax.util.math.FloatingPoint.F64_EPSILON_STRICT;
+import static io.github.mkmax.util.math.Floats.F64_EPSILON_STRICT;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

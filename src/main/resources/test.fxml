@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import io.github.mkmax.fxe.math.graph.cartesian.GraphView2d ?>
+<?import io.github.mkmax.fxe.math.graph.cartesian.GraphView ?>
 <?import javafx.scene.layout.StackPane?>
 
 <?import java.net.URL?>
 <?import javafx.scene.control.Button?>
 <StackPane>
-    <GraphView2d>
+    <GraphView>
 
-    </GraphView2d>
+    </GraphView>
 
     <Button text="Hello"/>
 

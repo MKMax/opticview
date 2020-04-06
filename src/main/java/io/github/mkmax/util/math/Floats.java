@@ -1,6 +1,6 @@
 package io.github.mkmax.util.math;
 
-public class FloatingPoint {
+public class Floats {
 
     public static final float  F32_EPSILON_STRICT = 1e-6f;
     public static final float  F32_EPSILON_LEAN   = 1e-5f;
