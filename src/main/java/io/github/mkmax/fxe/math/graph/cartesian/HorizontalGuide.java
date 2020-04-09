@@ -1,85 +1,96 @@
 package io.github.mkmax.fxe.math.graph.cartesian;
 
-import javafx.scene.control.Label;
-import javafx.scene.shape.Rectangle;
+import io.github.mkmax.util.math.Floats;
+import io.github.mkmax.util.math.LinearInterpolatord;
+import org.joml.Rectangled;
 
-public class HorizontalGuide extends AbstractGuide {
+import java.text.DecimalFormat;
 
-    /* +---------------------+ */
-    /* | DATA + CONSTRUCTORS | */
-    /* +---------------------+ */
+public final class HorizontalGuide extends Guide {
 
-    private final Rectangle guide = new Rectangle ();
-    private final Label     label = new Label ();
-
-    HorizontalGuide (Grid pView) {
-        super (pView);
-        getChildren ().addAll (guide, label);
-        update ();
-    }
-
-    /* +-------------------------------------+ */
-    /* | LISTENERS + DISPOSE IMPLEMENTATIONS | */
-    /* +-------------------------------------+ */
-
-    @Override
-    public void dispose () {
-        super.dispose ();
-        getChildren ().removeAll (guide, label);
-    }
-
-    @Override
-    protected void update () {
-        setWidth (grid.getWidth ());
+    protected HorizontalGuide () {
         setMaxHeight (0d);
-        setHeight (0d);
+    }
 
+    @Override
+    protected void update (
+        Rectangled          window,
+        Rectangled          viewport,
+        LinearInterpolatord xmap,
+        LinearInterpolatord ymap)
+    {
+        if (!(getParent () instanceof Grid))
+            return;
+        final Grid grid = (Grid) getParent ();
+
+        /* adjust pane so it would work with most JavaFX layouts */
         setLayoutX (0d);
-        setLayoutY (getPosition ());
+        setLayoutY (pos);
+        setWidth (grid.getWidth ());
 
-        updateGuide ();
-        updateLabel ();
-    }
-
-    private void updateGuide () {
-        guide.setFill (grid.getGuideFill (getDegree ()));
-        guide.setHeight (grid.getGuideWidth (getDegree ()));
-
-        guide.setWidth (getWidth ());
+        /* Adjust the position and dimension of the guiding line */
+        guide.setWidth (grid.getWidth ());
+        guide.setHeight (span);
         guide.setLayoutX (0d);
-        guide.setLayoutY (-guide.getHeight () / 2);
-    }
+        guide.setLayoutY (-span * 0.5d);
 
-    private void updateLabel () {
-        /* (x,y) is the real position of the label */
-        double x;
-        double y;
+        /* Set the label text before adjusting to receive proper layout bounds */
+        label.setText (grid.format (val));
+        double lw = label.getWidth ();
+        double lh = label.getHeight ();
+        double hlw = lw / 2;
+        double hlh = lh / 2;
 
-        switch (grid.getHorLabelJustify ()) {
+        /* We define the center of the label to act as a basis point */
+        double lx = 0d, ly = 0d;
+
+        /* We define the label position offsets to account for the fact that
+         * positioning nodes on the scene graph is relative to the top left corner
+         * of the content.
+         */
+        double dx = 0d, dy = 0d;
+
+        /* Now we properly position the label */
+        switch (labelJustification) {
         case LEFT:
-            x = getLabelPosition () - label.getWidth ();
-            y = -label.getHeight () / 2;
+            dx = -lw;
+            dy = -hlh;
             break;
         case RIGHT:
-            x = getLabelPosition ();
-            y = -label.getHeight () / 2;
+            dx = 0d;
+            dy = -hlh;
+            break;
         case BOTTOM:
-            x = getLabelPosition () - label.getWidth () / 2;
-            y = 0d;
+            dx = -hlw;
+            dy = 0d;
+            break;
         case TOP:
-            x = getLabelPosition () - label.getWidth () / 2;
-            y = -label.getHeight ();
-        default:
-            /* should never reach here but ok */
-            x = getLabelPosition ();
-            y = 0d;
+            dx = -hlw;
+            dy = -lh;
+            break;
+        case CENTER:
+            dx = -hlw;
+            dy = -hlh;
+            break;
         }
 
-        label.setTextFill (grid.getLabelForeground (getDegree ()));
-        label.setBackground (grid.getLabelBackground (getDegree ()));
+        /* We find the X value of the Y axis so we can adjust the position of the label */
+        final double yaxis = xmap.map (0d);
+        lx = Floats.clamp (
+            yaxis,
+            grid.getLabelPadding () - dx,
+            grid.getWidth () - grid.getLabelPadding () - lw - dx);
+        ly = 0d;
 
-        label.setText (grid.formatGuideValue (getValue ()));
-        label.setLayoutX (x);
-        label.setLayoutY (y);
+        /* we now make sure the components are visible, if not, we hide them */
+        final double hMaxHeight = Math.max (span / 2, hlh);
+        if (pos + hMaxHeight <= 0 || grid.getHeight () <= pos - hMaxHeight) {
+            guide.setVisible (false);
+            label.setVisible (false);
+        }
+        else {
+            guide.setVisible (true);
+            label.setVisible (true);
+        }
     }
 }

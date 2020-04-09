@@ -23,4 +23,8 @@ public class Floats {
     public static boolean leanEq (double a, double b) {
         return Math.abs (a - b) <= F64_EPSILON_LEAN;
     }
+
+    public static double clamp (double v, double l, double r) {
+        return Math.max (Math.min (r, v), l);
+    }
 }

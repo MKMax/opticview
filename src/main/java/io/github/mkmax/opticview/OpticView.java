@@ -1,9 +1,7 @@
 package io.github.mkmax.opticview;
 
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
@@ -11,17 +9,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-
 public class OpticView extends Application {
 
     public static void main (String... args) {
-        DecimalFormat df = new DecimalFormat ("0");
-        df.setRoundingMode (RoundingMode.HALF_UP);
-        System.out.println (df.format (99999.5394d));
-
-        //launch (args);
+        launch (args);
     }
 
     @Override
@@ -35,25 +26,34 @@ public class OpticView extends Application {
 //            System.out.println (gv.getOpacity ());
 //        });
 
-        StackPane sp   = new StackPane ();
-        Pane      grid = new Pane ();
-        grid.setMinWidth (540);
-        grid.setMinHeight (460);
+        Pane cPane = new Pane ();
+        cPane.setPrefWidth (512d);
+        cPane.setPrefHeight (512d);
 
-        Rectangle gline = new Rectangle ();
-        gline.setX (10);
-        gline.setY (0);
-        gline.setWidth (2);
-        gline.setHeight (grid.getMinHeight ());
-        gline.setFill (Color.LIGHTGRAY);
+        Pane hPane = new Pane ();
+        hPane.setMaxWidth (0d);
+        hPane.setMaxHeight (0d);
+        hPane.setLayoutX (  0d);
+        hPane.setLayoutY (128d);
 
-        grid.getChildren ().addAll (gline);
-        sp.getChildren ().addAll (grid);
-        Scene scene = new Scene (sp);
+        Rectangle hGuide = new Rectangle ();
+        hGuide.setFill (Color.LIGHTGRAY);
+        hGuide.setWidth (512d);
+        hGuide.setHeight (16d);
+        hGuide.setLayoutX (0d);
+        hGuide.setLayoutY (-8d);
 
-        stage.setOnShown (event -> {
+        Rectangle iGuide = new Rectangle ();
+        iGuide.setFill (Color.RED);
+        iGuide.setWidth (512d);
+        iGuide.setHeight (8d);
+        iGuide.setLayoutX (0d);
+        iGuide.setLayoutY (-4d);
 
-        });
+        hPane.getChildren ().addAll (hGuide, iGuide);
+        cPane.getChildren ().addAll (hPane);
+
+        Scene scene = new Scene (cPane);
 
         stage.setScene (scene);
         stage.sizeToScene ();
