@@ -1,6 +1,6 @@
 package io.github.mkmax.util.math.geo;
 
-import static io.github.mkmax.util.math.Floats.*;
+import static io.github.mkmax.util.math.Float64.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;

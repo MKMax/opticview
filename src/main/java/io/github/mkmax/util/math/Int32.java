@@ -1,6 +1,6 @@
 package io.github.mkmax.util.math;
 
-public class Ints {
+public class Int32 {
 
     public static int clamp (int v, int l, int r) {
         if (l > r)

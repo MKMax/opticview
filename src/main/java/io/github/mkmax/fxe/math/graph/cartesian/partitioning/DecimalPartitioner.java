@@ -1,6 +1,6 @@
 package io.github.mkmax.fxe.math.graph.cartesian.partitioning;
 
-import io.github.mkmax.util.math.Floats;
+import io.github.mkmax.util.math.Float64;
 
 public class DecimalPartitioner implements Partitioner {
 
@@ -165,9 +165,9 @@ public class DecimalPartitioner implements Partitioner {
         /* ensure the criteria mentioned above is met
          * by simply adding 'step' if needed.
          */
-        if (Floats.strictEq (intervalMin, majorStart))
+        if (Float64.strictEq (intervalMin, majorStart))
             majorStart += majorStep;
-        if (Floats.strictEq (intervalMin, minorStart))
+        if (Float64.strictEq (intervalMin, minorStart))
             minorStart += minorStep;
 
         /* Trivially, if 'start' is actually ahead (or equal to) the end of
@@ -202,7 +202,7 @@ public class DecimalPartitioner implements Partitioner {
             final double majUnitPosition = majorStart + (maj * majorStep);
             final double minUnitPosition = minorStart + (  i * minorStep);
             final double minFragPosition = Mx * minUnitPosition + Kx;
-            if (Floats.leanEq (minUnitPosition, majUnitPosition)) {
+            if (Float64.leanEq (minUnitPosition, majUnitPosition)) {
                 consumer.accept (minUnitPosition, minFragPosition, true, true, maj);
                 consumer.accept (minUnitPosition, minFragPosition, false, true, i);
                 ++maj;

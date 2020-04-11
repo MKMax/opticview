@@ -1,6 +1,6 @@
 package io.github.mkmax.util;
 
-import io.github.mkmax.util.math.Ints;
+import io.github.mkmax.util.math.Int32;
 
 import java.text.DecimalFormat;
 
@@ -29,7 +29,7 @@ public class ScientificDecimalFormat extends DecimalFormat {
     }
 
     public void setSignificantDigits (int nSignificantDigits) {
-        significantDigits = Ints.clamp (nSignificantDigits, MIN_SIGNIFICANT_DIGITS, MAX_SIGNIFICANT_DIGITS);
+        significantDigits = Int32.clamp (nSignificantDigits, MIN_SIGNIFICANT_DIGITS, MAX_SIGNIFICANT_DIGITS);
         super.applyPattern (generatePattern (significantDigits));
     }
 

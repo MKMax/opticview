@@ -1,6 +1,6 @@
 package io.github.mkmax.util;
 
-import io.github.mkmax.util.math.Ints;
+import io.github.mkmax.util.math.Int32;
 
 import java.text.DecimalFormat;
 
@@ -29,7 +29,7 @@ public class PrecisionDecimalFormat extends DecimalFormat {
     }
 
     public void setPrecision (int nPrecision) {
-        precision = Ints.clamp (nPrecision, MIN_PRECISION, MAX_PRECISION);
+        precision = Int32.clamp (nPrecision, MIN_PRECISION, MAX_PRECISION);
         super.applyPattern (generatePattern (precision));
     }
 
