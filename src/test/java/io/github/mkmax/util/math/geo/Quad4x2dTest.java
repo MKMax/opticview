@@ -1,6 +1,6 @@
 package io.github.mkmax.util.math.geo;
 
-import static io.github.mkmax.util.math.Float64.F64_EPSILON_STRICT;
+import static io.github.mkmax.util.math.Float64.EPSILON_STRICT;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -37,11 +37,11 @@ public class Quad4x2dTest {
         interp.map (pointD);
         interp.map (pointE);
 
-        assertTrue(pointA.equals (new Vector2d (0d, 0d), F64_EPSILON_STRICT));
-        assertTrue(pointB.equals (new Vector2d (2d, 0d), F64_EPSILON_STRICT));
-        assertTrue(pointC.equals (new Vector2d (0d, 2d), F64_EPSILON_STRICT));
-        assertTrue(pointD.equals (new Vector2d (2d, 2d), F64_EPSILON_STRICT));
-        assertTrue(pointE.equals (new Vector2d (1d, 1d), F64_EPSILON_STRICT));
+        assertTrue(pointA.equals (new Vector2d (0d, 0d), EPSILON_STRICT));
+        assertTrue(pointB.equals (new Vector2d (2d, 0d), EPSILON_STRICT));
+        assertTrue(pointC.equals (new Vector2d (0d, 2d), EPSILON_STRICT));
+        assertTrue(pointD.equals (new Vector2d (2d, 2d), EPSILON_STRICT));
+        assertTrue(pointE.equals (new Vector2d (1d, 1d), EPSILON_STRICT));
 
         interp.unmap (pointA);
         interp.unmap (pointB);
@@ -49,11 +49,11 @@ public class Quad4x2dTest {
         interp.unmap (pointD);
         interp.unmap (pointE);
 
-        assertTrue (pointA.equals (new Vector2d ( 0d, -1d), F64_EPSILON_STRICT));
-        assertTrue (pointB.equals (new Vector2d ( 1d,  0d), F64_EPSILON_STRICT));
-        assertTrue (pointC.equals (new Vector2d (-1d,  0d), F64_EPSILON_STRICT));
-        assertTrue (pointD.equals (new Vector2d ( 0d,  1d), F64_EPSILON_STRICT));
-        assertTrue (pointE.equals (new Vector2d ( 0d,  0d), F64_EPSILON_STRICT));
+        assertTrue (pointA.equals (new Vector2d ( 0d, -1d), EPSILON_STRICT));
+        assertTrue (pointB.equals (new Vector2d ( 1d,  0d), EPSILON_STRICT));
+        assertTrue (pointC.equals (new Vector2d (-1d,  0d), EPSILON_STRICT));
+        assertTrue (pointD.equals (new Vector2d ( 0d,  1d), EPSILON_STRICT));
+        assertTrue (pointE.equals (new Vector2d ( 0d,  0d), EPSILON_STRICT));
     }
 
     @Test
@@ -85,11 +85,11 @@ public class Quad4x2dTest {
         interp.map (pointD);
         interp.map (pointE);
 
-        assertTrue (pointA.equals (new Vector2d (0d, 0d),     F64_EPSILON_STRICT));
-        assertTrue (pointB.equals (new Vector2d (1d, 0d),     F64_EPSILON_STRICT));
-        assertTrue (pointC.equals (new Vector2d (0d, 1d),     F64_EPSILON_STRICT));
-        assertTrue (pointD.equals (new Vector2d (1d, 1d),     F64_EPSILON_STRICT));
-        assertTrue (pointE.equals (new Vector2d (0.5d, 0.5d), F64_EPSILON_STRICT));
+        assertTrue (pointA.equals (new Vector2d (0d, 0d), EPSILON_STRICT));
+        assertTrue (pointB.equals (new Vector2d (1d, 0d), EPSILON_STRICT));
+        assertTrue (pointC.equals (new Vector2d (0d, 1d), EPSILON_STRICT));
+        assertTrue (pointD.equals (new Vector2d (1d, 1d), EPSILON_STRICT));
+        assertTrue (pointE.equals (new Vector2d (0.5d, 0.5d), EPSILON_STRICT));
 
         interp.unmap (pointA);
         interp.unmap (pointB);
@@ -97,10 +97,10 @@ public class Quad4x2dTest {
         interp.unmap (pointD);
         interp.unmap (pointE);
 
-        assertTrue (pointA.equals (new Vector2d (1d, 1d),     F64_EPSILON_STRICT));
-        assertTrue (pointB.equals (new Vector2d (2d, 0d),     F64_EPSILON_STRICT));
-        assertTrue (pointC.equals (new Vector2d (1d, 2d),     F64_EPSILON_STRICT));
-        assertTrue (pointD.equals (new Vector2d (2d, 3d),     F64_EPSILON_STRICT));
-        assertTrue (pointE.equals (new Vector2d (1.5d, 1.5d), F64_EPSILON_STRICT));
+        assertTrue (pointA.equals (new Vector2d (1d, 1d), EPSILON_STRICT));
+        assertTrue (pointB.equals (new Vector2d (2d, 0d), EPSILON_STRICT));
+        assertTrue (pointC.equals (new Vector2d (1d, 2d), EPSILON_STRICT));
+        assertTrue (pointD.equals (new Vector2d (2d, 3d), EPSILON_STRICT));
+        assertTrue (pointE.equals (new Vector2d (1.5d, 1.5d), EPSILON_STRICT));
     }
 }

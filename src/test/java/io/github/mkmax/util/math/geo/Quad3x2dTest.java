@@ -34,11 +34,11 @@ public class Quad3x2dTest {
         interp.map (pointD);
         interp.map (pointE);
 
-        assertTrue (pointA.equals (new Vector2d (0d, 0d), F64_EPSILON_STRICT));
-        assertTrue (pointB.equals (new Vector2d (2d, 0d), F64_EPSILON_STRICT));
-        assertTrue (pointC.equals (new Vector2d (2d, 2d), F64_EPSILON_STRICT));
-        assertTrue (pointD.equals (new Vector2d (0d, 2d), F64_EPSILON_STRICT));
-        assertTrue (pointE.equals (new Vector2d (1d, 1d), F64_EPSILON_STRICT));
+        assertTrue (pointA.equals (new Vector2d (0d, 0d), EPSILON_STRICT));
+        assertTrue (pointB.equals (new Vector2d (2d, 0d), EPSILON_STRICT));
+        assertTrue (pointC.equals (new Vector2d (2d, 2d), EPSILON_STRICT));
+        assertTrue (pointD.equals (new Vector2d (0d, 2d), EPSILON_STRICT));
+        assertTrue (pointE.equals (new Vector2d (1d, 1d), EPSILON_STRICT));
     }
 
     @Test
@@ -68,10 +68,10 @@ public class Quad3x2dTest {
         interp.map (pointD);
         interp.map (pointE);
 
-        assertTrue (pointA.equals (new Vector2d (0d, 0d),     F64_EPSILON_STRICT));
-        assertTrue (pointB.equals (new Vector2d (1d, 0d),     F64_EPSILON_STRICT));
-        assertTrue (pointC.equals (new Vector2d (1d, 1d),     F64_EPSILON_STRICT));
-        assertTrue (pointD.equals (new Vector2d (0d, 1d),     F64_EPSILON_STRICT));
-        assertTrue (pointE.equals (new Vector2d (0.5d, 0.5d), F64_EPSILON_STRICT));
+        assertTrue (pointA.equals (new Vector2d (0d, 0d), EPSILON_STRICT));
+        assertTrue (pointB.equals (new Vector2d (1d, 0d), EPSILON_STRICT));
+        assertTrue (pointC.equals (new Vector2d (1d, 1d), EPSILON_STRICT));
+        assertTrue (pointD.equals (new Vector2d (0d, 1d), EPSILON_STRICT));
+        assertTrue (pointE.equals (new Vector2d (0.5d, 0.5d), EPSILON_STRICT));
     }
 }

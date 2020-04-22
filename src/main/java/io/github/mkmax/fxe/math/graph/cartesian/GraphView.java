@@ -1,8 +1,7 @@
 package io.github.mkmax.fxe.math.graph.cartesian;
 
-import javafx.scene.layout.StackPane;
+import io.github.mkmax.fxe.util.ProjectingStackPane;
 
-public class GraphView extends StackPane {
-
-
+public class GraphView extends ProjectingStackPane {
+    
 }

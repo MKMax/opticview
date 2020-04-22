@@ -2,7 +2,7 @@ package io.github.mkmax.util.math;
 
 import org.joml.Rectangled;
 
-public class LinearInterpolatord {
+public class LinearInterpolatord implements LinearInterpolatordc {
 
     public static LinearInterpolatord mapX (
         Rectangled from,
@@ -60,10 +60,19 @@ public class LinearInterpolatord {
         );
     }
 
+    public LinearInterpolatord () {
+        redefine (
+            -1d, -1d,
+             1d,  1d
+        );
+    }
+
+    @Override
     public double map (double p) {
         return M * p + B;
     }
 
+    @Override
     public double unmap (double q) {
         return (q - B) * iM;
     }

@@ -1,6 +1,6 @@
 package io.github.mkmax.util.math.geo;
 
-import static io.github.mkmax.util.math.Float64.F64_EPSILON_STRICT;
+import static io.github.mkmax.util.math.Float64.EPSILON_STRICT;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -16,7 +16,7 @@ public class Bezier2x2dTest {
 
         Vector2d intersection = new Vector2d ();
         assertTrue (AB.intersect (CD, intersection));
-        assertTrue (intersection.equals (new Vector2d (0d, 0d), F64_EPSILON_STRICT));
+        assertTrue (intersection.equals (new Vector2d (0d, 0d), EPSILON_STRICT));
     }
 
     @Test
@@ -26,7 +26,7 @@ public class Bezier2x2dTest {
 
         Vector2d intersection = new Vector2d ();
         assertTrue (AB.intersect (CD, intersection));
-        assertTrue (intersection.equals (new Vector2d (0d, 0d), F64_EPSILON_STRICT));
+        assertTrue (intersection.equals (new Vector2d (0d, 0d), EPSILON_STRICT));
     }
 
     @Test
@@ -36,6 +36,6 @@ public class Bezier2x2dTest {
 
         Vector2d intersection = new Vector2d (0d, 0d);
         assertFalse (AB.intersect (CD, intersection));
-        assertTrue (intersection.equals (new Vector2d (0d, 0d), F64_EPSILON_STRICT));
+        assertTrue (intersection.equals (new Vector2d (0d, 0d), EPSILON_STRICT));
     }
 }
