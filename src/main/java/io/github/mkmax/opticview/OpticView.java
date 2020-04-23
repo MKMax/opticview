@@ -1,14 +1,9 @@
 package io.github.mkmax.opticview;
 
-import io.github.mkmax.fxe.math.graph.cartesian.HorizontalGuide;
-import io.github.mkmax.fxe.math.graph.cartesian.LabeledRectangleGuide;
-import io.github.mkmax.fxe.math.graph.cartesian.TextGuide;
-import io.github.mkmax.fxe.math.graph.cartesian.VerticalGuide;
-
+import io.github.mathfx.cartesian.GraphView;
 import javafx.application.Application;
 import javafx.scene.layout.Pane;
 import javafx.scene.Scene;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 public class OpticView extends Application {
@@ -23,28 +18,15 @@ public class OpticView extends Application {
         pane.setPrefWidth (512);
         pane.setPrefHeight (512);
 
-        LabeledRectangleGuide g = new HorizontalGuide ();
-        TextGuide.Appearance ga = g.getAppearance ();
-        ga.setTextFont (Font.font ("Consolas", 24));
-        ga.setTextPadding (5d);
-        ga.setSize (2.5d);
-        g.setText ("Hello, world!");
-        g.setJustify (TextGuide.Justify.CENTER);
-        g.setOrtho (256 + 128);
-        g.setParallel (256 + 128);
+        GraphView gv = new GraphView ();
+        gv.setStyle ("-mfx-major-axis-foreground: red;");
 
-        LabeledRectangleGuide h = new VerticalGuide ();
-        TextGuide.Appearance ha = h.getAppearance ();
-        ha.setTextFont (Font.font ("Consolas", 24));
-        ha.setTextPadding (5d);
-        ha.setSize (2.5d);
-        h.setText ("Another, world!");
-        h.setJustify (TextGuide.Justify.CENTER);
-        h.setOrtho (256 - 128);
-        h.setParallel (256 - 128);
+        gv.majorGuideForegroundProperty ().addListener ((obs, old, now) -> System.out.println (now));
 
-        pane.getChildren ().addAll (g, h);
+        gv.setPrefWidth (256);
+        gv.setPrefHeight (256);
 
+        pane.getChildren ().add (gv);
         Scene scene = new Scene (pane);
 
         stage.setScene (scene);
