@@ -1,11 +1,15 @@
 package io.github.mathfx.util;
 
+import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.layout.Region;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Manages a collection of {@link javafx.beans.value.ObservableValue} objects
@@ -29,6 +33,63 @@ import java.util.List;
 public final class ObservableGroup<T> implements Disposable {
 
     /**
+     * Creates a dynamically changing {@link ObservableGroup} whose properties
+     * change whenever the parent node of the {@code child} parameter changes.
+     * <p>
+     * The resulting {@link ObservableGroup} will always receive change events
+     * of the parent component's dimension, even if the parent component changes.
+     *
+     * @param child The child component whose parent to monitor (must not be null).
+     * @param widthOut An optional property to write new parent widths to.
+     * @param heightOut An optional property to write new parent heights to.
+     * @return An {@link ObservableGroup} that monitors the child's parent node for
+     *                                    dimension changes.
+     */
+    public static ObservableGroup<?> observeParentSize (
+        Node                     child,
+        Property<? super Double> widthOut,
+        Property<? super Double> heightOut)
+    {
+        Objects.requireNonNull (child, "child component must not be null");
+
+        final ObservableGroup<Object> result = new ObservableGroup<> (child.parentProperty ());
+        if (child.getParent () instanceof Region) {
+            final Region region = (Region) child.getParent ();
+            result.add (region.widthProperty ());
+            result.add (region.heightProperty ());
+        }
+
+        final ChangeListener<Object> listener = (obs, old, now) -> {
+            if (obs == child.parentProperty ()) {
+                if (old instanceof Region) {
+                    final Region region = (Region) old;
+                    result.remove (region.widthProperty ());
+                    result.remove (region.heightProperty ());
+                }
+                if (now instanceof Region) {
+                    final Region region = (Region) now;
+                    result.add (region.widthProperty ());
+                    result.add (region.heightProperty ());
+                    if (widthOut != null) widthOut.setValue (region.getWidth ());
+                    if (heightOut != null) heightOut.setValue (region.getHeight ());
+                }
+            }
+            else if (child.getParent () instanceof Region && now instanceof Number) {
+                final Region region = (Region) child.getParent ();
+                final Number change = (Number) now;
+                if (obs == region.widthProperty () && widthOut != null)
+                    widthOut.setValue (change.doubleValue ());
+                else if (obs == region.heightProperty () && heightOut != null)
+                    heightOut.setValue (change.doubleValue ());
+            }
+        };
+
+        result.add (listener);
+
+        return result;
+    }
+
+    /**
      * A callback to simply be notified when a change event is fired from
      * any property registered in a particular group.
      * <p>
@@ -46,6 +107,7 @@ public final class ObservableGroup<T> implements Disposable {
     }
 
     private final List<ObservableValue<? extends T>> properties = new ArrayList<> ();
+    private final List<ObservableGroup<? extends T>> groups = new ArrayList<> ();
     private final List<ChangeListener<? super T>> fullListeners = new ArrayList<> ();
     private final List<SimpleListener> simpleListeners = new ArrayList<> ();
     private final ChangeListener<T> master = (obs, old, now) -> {
@@ -69,6 +131,17 @@ public final class ObservableGroup<T> implements Disposable {
     @SafeVarargs
     public ObservableGroup (ObservableValue<? extends T>... obs) {
         addAll (obs);
+    }
+
+    /**
+     * Creates a new {@code ObservableGroup} with some initial subgroups
+     * but no change listeners.
+     *
+     * @param sub An initial batch of subgroups.
+     */
+    @SafeVarargs
+    public ObservableGroup (ObservableGroup<? extends T>... sub) {
+        addAll (sub);
     }
 
     /**
@@ -114,6 +187,54 @@ public final class ObservableGroup<T> implements Disposable {
         if (obs != null) {
             obs.removeListener (master);
             properties.remove (obs);
+        }
+    }
+
+    /**
+     * Adds the specified {@link ObservableGroup} to this group.
+     * <p>
+     * If {@code sub == null} or is already present in this group,
+     * it is discarded and this method does nothing. Adding subgroups
+     * to groups allows component designers to provide an easy
+     * event interface for multiple events that span across multiple
+     * groups.
+     *
+     * @param sub The sub group to add
+     */
+    public final void add (ObservableGroup<? extends T> sub) {
+        if (sub != null && !groups.contains (sub)) {
+            sub.add (master);
+            groups.add (sub);
+        }
+    }
+
+    /**
+     * Adds all of the specified {@link ObservableGroup} objects using
+     * {@link #add(ObservableGroup)}.
+     * <p>
+     * If {@code sub == null} or it does not contain any elements, it
+     * is discarded and this method does nothing.
+     *
+     * @see #add(ObservableGroup) for more details on registering groups.
+     * @param sub A batch of subgroups to be added to this group.
+     */
+    @SafeVarargs
+    public final void addAll (ObservableGroup<? extends T>... sub) {
+        if (sub != null) for (var i : sub) add (i);
+    }
+
+    /**
+     * Removes the specified subgroup from this group.
+     * <p>
+     * If {@code sub == null} or was never registered, this method
+     * does nothing.
+     *
+     * @param sub The subgroup to remove from this group.
+     */
+    public final void remove (ObservableGroup<? extends T> sub) {
+        if (sub != null) {
+            sub.remove (master);
+            groups.remove (sub);
         }
     }
 
@@ -223,14 +344,35 @@ public final class ObservableGroup<T> implements Disposable {
     }
 
     /**
-     * Removes any listeners bounds to this group and clears the collection
-     * of properties registered in this group, effectively purging this
-     * group of any properties or listeners.
+     * Disposes of any listeners and properties in this group. However,
+     * all registered subgroups are themselves <strong>not</strong>
+     * disposed. To dispose subgroups also, use {@link #dispose(boolean)}.
      */
     @Override
     public void dispose () {
+        dispose (false);
+    }
+
+    /**
+     * Disposes of any listeners and properties in this group. If
+     * {@code disposeSubgroups == true}, this method invocation
+     * will also call {@code dispose(true)} on all subgroups that
+     * are still registered.
+     *
+     * @param disposeSubgroups If true, this method will also invoke
+     *                         {@code dispose(true)} on any remaining
+     *                         subgroup. If false, all subgroups are
+     *                         simply removed from the groups container.
+     */
+    public void dispose (boolean disposeSubgroups) {
+        if (disposeSubgroups)
+            groups.forEach (i -> i.dispose (true));
+        groups.forEach (i -> i.remove (master));
+        groups.clear ();
+
         properties.forEach (i -> i.removeListener (master));
         properties.clear ();
+
         fullListeners.clear ();
         simpleListeners.clear ();
     }

@@ -1,9 +1,25 @@
-GraphView2a {
-    -fx-background-color: black;
-    -fx-opacity: 0.75;
+HorizontalGuide {
+    -mfx-span: 2;
+    -mfx-font-family: Consolas;
+    -mfx-font-size: 13;
+    -mfx-font-weight: bold;
+    -mfx-label-justify: top-right;
+    -mfx-label-padding: 5px;
+    -mfx-foreground-color: firebrick;
+    -mfx-background-color: black;
 }
 
-Button {
-    -fx-background-color: orange;
-    -fx-opacity: 0.5;
+VerticalGuide {
+    -mfx-span: 2;
+    -mfx-font-family: Consolas;
+    -mfx-font-size: 13;
+    -mfx-font-weight: bold;
+    -mfx-label-justify: top-right;
+    -mfx-label-padding: 5px;
+    -mfx-foreground-color: firebrick;
+    -mfx-background-color: black;
+}
+
+#big {
+    -mfx-font-size: 36;
 }

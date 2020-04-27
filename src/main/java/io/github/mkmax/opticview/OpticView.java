@@ -1,9 +1,12 @@
 package io.github.mkmax.opticview;
 
 import io.github.mathfx.cartesian.GraphView;
+import io.github.mathfx.cartesian.HorizontalGuide;
 import javafx.application.Application;
-import javafx.scene.layout.Pane;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 public class OpticView extends Application {
@@ -13,21 +16,14 @@ public class OpticView extends Application {
     }
 
     @Override
-    public void start (Stage stage) {
-        Pane pane = new Pane ();
-        pane.setPrefWidth (512);
-        pane.setPrefHeight (512);
+    public void start (Stage stage) throws Exception {
+        final FXMLLoader loader = new FXMLLoader (getClass ().getClassLoader ().getResource ("main.fxml"));
 
-        GraphView gv = new GraphView ();
-        gv.setStyle ("-mfx-major-axis-foreground: red;");
+        StackPane stackPane = loader.load ();
+        Pane pane = (Pane) stackPane.getChildren ().get (0);
+        HorizontalGuide hg = (HorizontalGuide) pane.getChildren ().get (0);
 
-        gv.majorGuideForegroundProperty ().addListener ((obs, old, now) -> System.out.println (now));
-
-        gv.setPrefWidth (256);
-        gv.setPrefHeight (256);
-
-        pane.getChildren ().add (gv);
-        Scene scene = new Scene (pane);
+        Scene scene = new Scene (stackPane);
 
         stage.setScene (scene);
         stage.sizeToScene ();
