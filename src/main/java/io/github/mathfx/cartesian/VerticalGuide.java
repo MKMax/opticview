@@ -20,7 +20,10 @@ public class VerticalGuide extends AbstractGuide {
             label.heightProperty ()
         );
         setMaxWidth (0d);
+        guide.setTranslateZ (0d);
+        label.setTranslateZ (1d);
         getChildren ().addAll (guide, label);
+        guideRestyle (); /* initialize the style for the guide */
     }
 
     public VerticalGuide (

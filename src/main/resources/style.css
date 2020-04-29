@@ -1,25 +1,11 @@
-HorizontalGuide {
-    -mfx-span: 2;
-    -mfx-font-family: Consolas;
-    -mfx-font-size: 13;
-    -mfx-font-weight: bold;
-    -mfx-label-justify: top-right;
-    -mfx-label-padding: 5px;
-    -mfx-foreground-color: firebrick;
+.origin-guide {
     -mfx-background-color: black;
 }
 
-VerticalGuide {
-    -mfx-span: 2;
-    -mfx-font-family: Consolas;
-    -mfx-font-size: 13;
-    -mfx-font-weight: bold;
-    -mfx-label-justify: top-right;
-    -mfx-label-padding: 5px;
-    -mfx-foreground-color: firebrick;
-    -mfx-background-color: black;
+.major-guide {
+    -mfx-background-color: gray;
 }
 
-#big {
-    -mfx-font-size: 36;
+.minor-guide {
+    -mfx-background-color: lightgray;
 }

@@ -20,7 +20,10 @@ public class HorizontalGuide extends AbstractGuide {
             label.heightProperty ()
         );
         setMaxHeight (0d);
+        guide.setTranslateZ (0d);
+        label.setTranslateZ (1d);
         getChildren ().addAll (guide, label);
+        guideRestyle (); /* initialize the style for the guide */
     }
 
     public HorizontalGuide (

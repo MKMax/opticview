@@ -1,23 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import io.github.mathfx.cartesian.GraphView?>
-<?import io.github.mathfx.cartesian.HorizontalGuide?>
-
 <?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.Pane?>
 
-<?import java.lang.String?>
 <?import java.net.URL?>
 
-<?import io.github.mathfx.cartesian.VerticalGuide?>
+<?import javafx.scene.layout.Pane?>
+<?import io.github.mathfx.cartesian.HorizontalGuide?>
+<?import io.github.mathfx.cartesian.GuideContainer?>
 <StackPane xmlns:fx="https://openjfx.io/"
            prefWidth="512"
            prefHeight="512">
 
-    <Pane>
-        <HorizontalGuide text="Hello" ortho="128" parallel="256"/>
-        <VerticalGuide text="Goodbye" ortho="128" parallel="256"/>
-    </Pane>
+    <GraphView/>
 
     <stylesheets>
         <URL value="@style.css"/>

@@ -45,7 +45,7 @@ public final class ObservableGroup<T> implements Disposable {
      * @return An {@link ObservableGroup} that monitors the child's parent node for
      *                                    dimension changes.
      */
-    public static ObservableGroup<?> observeParentSize (
+    public static ObservableGroup<Object> observeParentSize (
         Node                     child,
         Property<? super Double> widthOut,
         Property<? super Double> heightOut)

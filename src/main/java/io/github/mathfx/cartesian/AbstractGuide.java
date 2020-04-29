@@ -2,10 +2,7 @@ package io.github.mathfx.cartesian;
 
 import io.github.mathfx.util.Disposable;
 import io.github.mathfx.util.ObservableGroup;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.css.*;
 import javafx.geometry.Insets;
@@ -72,6 +69,10 @@ public abstract class AbstractGuide extends Pane implements Disposable {
         FACTORY.createColorCssMetaData  (                    "-mfx-foreground-color", ag -> ag.foregroundColor, Default.FGCOLOR);
     }
 
+    public static List<CssMetaData<? extends Styleable, ?>> getClassCssMetaData () {
+        return FACTORY.getCssMetaData ();
+    }
+
     /* +----------------------+ */
     /* | STYLEABLE PROPERTIES | */
     /* +----------------------+ */
@@ -88,7 +89,7 @@ public abstract class AbstractGuide extends Pane implements Disposable {
         span.set (nSpan == null || nSpan.doubleValue () < 0.5d ? 0.5d :nSpan.doubleValue ());
     }
 
-    public StyleableObjectProperty<Number> spanProperty () {
+    public ReadOnlyObjectProperty<Number> spanProperty () {
         return span;
     }
 
@@ -104,7 +105,7 @@ public abstract class AbstractGuide extends Pane implements Disposable {
         font.set (Objects.requireNonNullElse (nFont, Default.FONT));
     }
 
-    public StyleableObjectProperty<Font> fontProperty () {
+    public ReadOnlyObjectProperty<Font> fontProperty () {
         return font;
     }
 
@@ -120,7 +121,7 @@ public abstract class AbstractGuide extends Pane implements Disposable {
         labelJustify.set (Objects.requireNonNullElse (nJustify, Default.LABEL_JUSTIFY));
     }
 
-    public StyleableObjectProperty<LabelJustify> labelJustifyProperty () {
+    public ReadOnlyObjectProperty<LabelJustify> labelJustifyProperty () {
         return labelJustify;
     }
 
@@ -136,7 +137,7 @@ public abstract class AbstractGuide extends Pane implements Disposable {
         labelPadding.set (Objects.requireNonNullElse (nPadding, Default.LABEL_PADDING));
     }
 
-    public StyleableObjectProperty<Insets> labelPaddingProperty () {
+    public ReadOnlyObjectProperty<Insets> labelPaddingProperty () {
         return labelPadding;
     }
 
@@ -152,7 +153,7 @@ public abstract class AbstractGuide extends Pane implements Disposable {
         backgroundColor.set (Objects.requireNonNullElse (nBg, Default.BGCOLOR));
     }
 
-    public StyleableObjectProperty<Color> backgroundColorProperty () {
+    public ReadOnlyObjectProperty<Color> backgroundColorProperty () {
         return backgroundColor;
     }
 
@@ -168,7 +169,7 @@ public abstract class AbstractGuide extends Pane implements Disposable {
         foregroundColor.set (Objects.requireNonNullElse (nFg, Default.FGCOLOR));
     }
 
-    public StyleableObjectProperty<Color> foregroundColorProperty () {
+    public ReadOnlyObjectProperty<Color> foregroundColorProperty () {
         return foregroundColor;
     }
 
@@ -184,30 +185,9 @@ public abstract class AbstractGuide extends Pane implements Disposable {
     protected final DoubleProperty width  = new SimpleDoubleProperty ();
     protected final DoubleProperty height = new SimpleDoubleProperty ();
 
-    private final ChangeListener<Number> L_PWIDTH  = (__obs, __old, now) -> width.set (now.doubleValue ());
-    private final ChangeListener<Number> L_PHEIGHT = (__obs, __old, now) -> height.set (now.doubleValue ());
-    private final ChangeListener<Parent> L_PARENT  = (__obs, old, now) -> {
-        if (old instanceof Region) {
-            final Region oRegion = (Region) old;
-            oRegion.widthProperty ().removeListener (L_PWIDTH);
-            oRegion.heightProperty ().removeListener (L_PHEIGHT);
-        }
-        if (now instanceof Region) {
-            final Region nRegion = (Region) now;
-            nRegion.widthProperty ().addListener (L_PWIDTH);
-            nRegion.heightProperty ().addListener (L_PHEIGHT);
-            L_PWIDTH.changed (null, Double.NaN, nRegion.getWidth ());
-            L_PHEIGHT.changed (null, Double.NaN, nRegion.getHeight ());
-        }
-    };
-
-    {
-        parentProperty ().addListener (L_PARENT);
-    }
-
+    protected final ObservableGroup<Object> parentGroup   = ObservableGroup.observeParentSize (this, width, height);
     protected final ObservableGroup<Number> positionGroup = new ObservableGroup<> (ortho, parallel);
-    protected final ObservableGroup<Number> sizeGroup     = new ObservableGroup<> (width, height);
-    protected final ObservableGroup<Number> layoutGroup   = new ObservableGroup<> (positionGroup, sizeGroup);
+    protected final ObservableGroup<Object> layoutGroup   = new ObservableGroup<> (positionGroup, parentGroup);
     protected final ObservableGroup<Object> styleGroup    = new ObservableGroup<> (
         text, span, font, labelJustify, labelPadding, backgroundColor, foregroundColor);
 
@@ -270,14 +250,14 @@ public abstract class AbstractGuide extends Pane implements Disposable {
     @Override
     public void dispose () {
         positionGroup.dispose ();
-        sizeGroup.dispose ();
+        parentGroup.dispose ();
         layoutGroup.dispose ();
         styleGroup.dispose ();
     }
 
     @Override
     public List<CssMetaData<? extends Styleable, ?>> getCssMetaData () {
-        return FACTORY.getCssMetaData ();
+        return getClassCssMetaData ();
     }
 
     /* Layouts the guide based on the current dimensional and
