@@ -1,6 +1,7 @@
 package io.github.mathfx.cartesian;
 
 import io.github.mathfx.util.Disposable;
+import io.github.mathfx.util.Interval;
 import io.github.mathfx.util.ObservableGroup;
 import io.github.mathfx.util.css.CssMetaDataBuilder;
 import javafx.beans.property.DoubleProperty;
@@ -14,14 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class GraphView extends StackPane implements Disposable {
-
-    private static final List<CssMetaData<? extends Styleable, ?>> CSS_META_DATA_RECORD = new ArrayList<> ();
-
-    final CssMetaData<GraphView, Boolean> epic = CssMetaDataBuilder.<GraphView, Boolean>create (CSS_META_DATA_RECORD)
-        .setProperty     ("-mfx-graph-view-epic")
-        .setConverter    (StyleConverter.getBooleanConverter ())
-        .setInitialValue (true)
-        .build           ();
 
     private final GuideContainer guides = new GuideContainer ();
 
@@ -88,6 +81,48 @@ public final class GraphView extends StackPane implements Disposable {
     /* +---------+ */
     /* | UTILITY | */
     /* +---------+ */
+
+    /**
+     * Returns the interval on which the X coordinates are displayed
+     * in the graph window.
+     * <p>
+     * This is equivalent to {@code new Interval(getLeft(), getRight())}.
+     *
+     * @return The horizontal interval.
+     */
+    public Interval getHorizontalWindowInterval () {
+        return new Interval (getLeft (), getRight ());
+    }
+
+    /**
+     * Returns the interval on which the Y coordinates are displayed
+     * in the graph window.
+     * <p>
+     * This is equivalent to {@code new Interval(getBottom(), getTop())}.
+     *
+     * @return The vertical interval.
+     */
+    public Interval getVerticalWindowInterval () {
+        return new Interval (getBottom (), getTop ());
+    }
+
+    /**
+     * Returns the interval of the component's horizontal span.
+     *
+     * @return The horizontal span interval.
+     */
+    public Interval getHorizontalComponentInterval () {
+        return new Interval (0d, getWidth ());
+    }
+
+    /**
+     * Returns the interval of the component's vertical span.
+     *
+     * @return The vertical span interval.
+     */
+    public Interval getVerticalComponentInterval () {
+        return new Interval (0d, getHeight ());
+    }
 
     /**
      * Maps a window space X coordinate to component or viewport

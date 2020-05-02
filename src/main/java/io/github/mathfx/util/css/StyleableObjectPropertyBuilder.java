@@ -62,6 +62,10 @@ public class StyleableObjectPropertyBuilder<S extends Styleable, V> {
             private final String name = StyleableObjectPropertyBuilder.this.name;
             private final CssMetaData<? extends Styleable, V> cssMetaData = md;
 
+            {
+                addListener ();
+            }
+
             @Override
             public Object getBean () {
                 return this.bean;

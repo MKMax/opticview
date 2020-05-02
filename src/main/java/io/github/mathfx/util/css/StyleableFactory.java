@@ -2,6 +2,7 @@ package io.github.mathfx.util.css;
 
 import javafx.css.CssMetaData;
 import javafx.css.Styleable;
+import javafx.css.converter.SizeConverter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,6 +20,10 @@ public class StyleableFactory<S extends Styleable> {
 
     public <V> CssMetaDataBuilder<S, V> buildCssMetaData () {
         return new CssMetaDataBuilder<> (this);
+    }
+
+    public CssMetaDataBuilder<S, Number> buildSizeCssMetaData () {
+        return new CssMetaDataBuilder<S, Number> (this).setConverter (SizeConverter.getInstance ());
     }
 
     public <V> StyleableObjectPropertyBuilder<S, V> buildStyleableProperty () {

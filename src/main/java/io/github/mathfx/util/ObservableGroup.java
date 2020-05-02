@@ -37,7 +37,24 @@ public final class ObservableGroup<T> implements Disposable {
      * change whenever the parent node of the {@code child} parameter changes.
      * <p>
      * The resulting {@link ObservableGroup} will always receive change events
-     * of the parent component's dimension, even if the parent component changes.
+     * of the parent component's dimensions, even if the parent component changes.
+     *
+     * @see #observeParentSize(Node, Property, Property) for more information.
+     *
+     * @param child The child component whose parent to monitor (must not be null).
+     * @return An {@link ObservableGroup} that monitors the child's parent node for
+     *                                    dimension changes.
+     */
+    public static ObservableGroup<Object> observeParentSize (Node child) {
+        return observeParentSize (child, null, null);
+    }
+
+    /**
+     * Creates a dynamically changing {@link ObservableGroup} whose properties
+     * change whenever the parent node of the {@code child} parameter changes.
+     * <p>
+     * The resulting {@link ObservableGroup} will always receive change events
+     * of the parent component's dimensions, even if the parent component changes.
      *
      * @param child The child component whose parent to monitor (must not be null).
      * @param widthOut An optional property to write new parent widths to.

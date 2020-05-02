@@ -2,6 +2,10 @@ package io.github.mathfx.cartesian.part;
 
 import io.github.mkmax.util.math.Float64;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class DecimalPartitionScheme implements PartitionScheme {
 
     private static final class Holder {
@@ -16,7 +20,7 @@ public class DecimalPartitionScheme implements PartitionScheme {
     }
 
     @Override
-    public Parcel[] partition (
+    public List<Index> partition (
         double iBegin,
         double iEnd,
         double fBegin,
@@ -73,10 +77,10 @@ public class DecimalPartitionScheme implements PartitionScheme {
             minorStart += minorStep;
 
         if (minorStart >= iMax)
-            return EMPTY_PARCEL;
+            return Collections.emptyList ();
 
         final int total = (int) Math.floor ((iMax - minorStart) / minorStep) + 1;
-        final Parcel[] parcels = new Parcel[total];
+        final List<Index> indices = new ArrayList<> (total);
 
         int maj = 0;
         for (int min = 0; min < total; ++min) {
@@ -92,9 +96,9 @@ public class DecimalPartitionScheme implements PartitionScheme {
             if (Float64.strictEq (minpos, 0d))
                 type = Type.ORIGIN;
 
-            parcels[min] = new Parcel (type, minpos);
+            indices.add (new Index (type, minpos));
         }
 
-        return parcels;
+        return indices;
     }
 }
