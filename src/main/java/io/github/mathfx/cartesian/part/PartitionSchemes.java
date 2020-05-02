@@ -1,4 +1,4 @@
-package io.github.mathfx.cartesian;
+package io.github.mathfx.cartesian.part;
 
 import java.util.Objects;
 

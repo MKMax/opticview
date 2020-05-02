@@ -2,11 +2,26 @@ package io.github.mathfx.cartesian;
 
 import io.github.mathfx.util.Disposable;
 import io.github.mathfx.util.ObservableGroup;
+import io.github.mathfx.util.css.CssMetaDataBuilder;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.css.CssMetaData;
+import javafx.css.StyleConverter;
+import javafx.css.Styleable;
 import javafx.scene.layout.StackPane;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public final class GraphView extends StackPane implements Disposable {
+
+    private static final List<CssMetaData<? extends Styleable, ?>> CSS_META_DATA_RECORD = new ArrayList<> ();
+
+    final CssMetaData<GraphView, Boolean> epic = CssMetaDataBuilder.<GraphView, Boolean>create (CSS_META_DATA_RECORD)
+        .setProperty     ("-mfx-graph-view-epic")
+        .setConverter    (StyleConverter.getBooleanConverter ())
+        .setInitialValue (true)
+        .build           ();
 
     private final GuideContainer guides = new GuideContainer ();
 

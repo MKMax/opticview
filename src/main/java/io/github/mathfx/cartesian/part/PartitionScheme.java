@@ -1,4 +1,4 @@
-package io.github.mathfx.cartesian;
+package io.github.mathfx.cartesian.part;
 
 import java.util.Objects;
 
@@ -39,5 +39,7 @@ public interface PartitionScheme {
         double fBegin,
         double fEnd,
         double ppu);
+
+
 
 }
