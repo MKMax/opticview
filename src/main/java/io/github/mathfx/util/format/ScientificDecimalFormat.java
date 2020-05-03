@@ -36,6 +36,8 @@ public class ScientificDecimalFormat extends DecimalFormat {
     }
 
     public void setPrecision (int nPrecision) {
+        if (nPrecision == precision)
+            return;
         precision = clamp (nPrecision);
         super.applyPattern (createPattern (precision));
     }

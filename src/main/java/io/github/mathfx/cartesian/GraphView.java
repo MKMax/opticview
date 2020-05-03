@@ -3,20 +3,13 @@ package io.github.mathfx.cartesian;
 import io.github.mathfx.util.Disposable;
 import io.github.mathfx.util.Interval;
 import io.github.mathfx.util.ObservableGroup;
-import io.github.mathfx.util.css.CssMetaDataBuilder;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.css.CssMetaData;
-import javafx.css.StyleConverter;
-import javafx.css.Styleable;
 import javafx.scene.layout.StackPane;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class GraphView extends StackPane implements Disposable {
 
-    private final GuideContainer guides = new GuideContainer ();
+    private final GuideContainer guideOverlay = new GuideContainer ();
 
     private final DoubleProperty left   = new SimpleDoubleProperty (-1d);
     private final DoubleProperty right  = new SimpleDoubleProperty ( 1d);
@@ -36,7 +29,7 @@ public final class GraphView extends StackPane implements Disposable {
     public GraphView () {
         projectionGroup.add (this::reproject);
 
-        getChildren ().addAll (guides);
+        getChildren ().addAll (guideOverlay);
     }
 
     /* +-----------------+ */
