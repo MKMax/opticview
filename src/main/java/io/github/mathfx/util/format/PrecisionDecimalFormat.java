@@ -18,6 +18,7 @@ public class PrecisionDecimalFormat extends DecimalFormat {
         if (precision > 0) pattern.append ('.');
         for (int i = 0; i < precision; ++i)
             pattern.append ('0');
+        System.out.println ("pat: " + pattern.toString ());
         return pattern.toString ();
     }
 

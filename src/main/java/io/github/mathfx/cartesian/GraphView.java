@@ -1,7 +1,6 @@
 package io.github.mathfx.cartesian;
 
 import io.github.mathfx.util.Disposable;
-import io.github.mathfx.util.Interval;
 import io.github.mathfx.util.ObservableGroup;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -9,7 +8,7 @@ import javafx.scene.layout.StackPane;
 
 public final class GraphView extends StackPane implements Disposable {
 
-    private final GuideContainer guideOverlay = new GuideContainer ();
+    private final GuideContainer guideContainer = new GuideContainer ();
 
     private final DoubleProperty left   = new SimpleDoubleProperty (-1d);
     private final DoubleProperty right  = new SimpleDoubleProperty ( 1d);
@@ -26,10 +25,10 @@ public final class GraphView extends StackPane implements Disposable {
     private double My = 1d;
     private double Ky = 0d;
 
-    public GraphView () {
-        projectionGroup.add (this::reproject);
+    {
+        getChildren ().addAll (guideContainer);
 
-        getChildren ().addAll (guideOverlay);
+        projectionGroup.add (this::reproject);
     }
 
     /* +-----------------+ */
@@ -37,85 +36,44 @@ public final class GraphView extends StackPane implements Disposable {
     /* +-----------------+ */
 
     /* LEFT */
-    public double getLeft () { return left.get (); }
-    public void setLeft (double nLeft) { left.set (nLeft); }
-    public DoubleProperty leftProperty () { return left; }
+    public double getLeft () {
+        return left.get ();
+    }
+
+    public void setLeft (double nLeft) {
+        left.set (nLeft);
+    }
 
     /* RIGHT */
-    public double getRight () { return right.get (); }
-    public void setRight (double nRight) { right.set (nRight); }
-    public DoubleProperty rightProperty () { return right; }
+    public double getRight () {
+        return right.get ();
+    }
+
+    public void setRight (double nRight) {
+        right.set (nRight);
+    }
 
     /* BOTTOM */
-    public double getBottom () { return bottom.get (); }
-    public void setBottom (double nBottom) { bottom.set (nBottom); }
-    public DoubleProperty bottomProperty () { return bottom; }
+    public double getBottom () {
+        return bottom.get ();
+    }
+
+    public void setBottom (double nBottom) {
+        bottom.set (nBottom);
+    }
 
     /* TOP */
-    public double getTop () { return top.get (); }
-    public void setTop (double nTop) { top.set (nTop); }
-    public DoubleProperty topProperty () { return top; }
+    public double getTop () {
+        return top.get ();
+    }
 
-    /**
-     * Returns an observable group that monitors the changes in
-     * the {@code left, right, bottom,} and {@code top} properties.
-     * <p>
-     * This may be used by components that are contained within this
-     * {@link GraphView} to observe changes in the viewing window and
-     * change accordingly. A good example of such component is the
-     * {@link GuideContainer}.
-     *
-     * @return The observable group monitoring the window bounds.
-     */
-    public ObservableGroup<Number> getOrthoGroup () {
-        return orthoGroup;
+    public void setTop (double nTop) {
+        top.set (nTop);
     }
 
     /* +---------+ */
     /* | UTILITY | */
     /* +---------+ */
-
-    /**
-     * Returns the interval on which the X coordinates are displayed
-     * in the graph window.
-     * <p>
-     * This is equivalent to {@code new Interval(getLeft(), getRight())}.
-     *
-     * @return The horizontal interval.
-     */
-    public Interval getHorizontalWindowInterval () {
-        return new Interval (getLeft (), getRight ());
-    }
-
-    /**
-     * Returns the interval on which the Y coordinates are displayed
-     * in the graph window.
-     * <p>
-     * This is equivalent to {@code new Interval(getBottom(), getTop())}.
-     *
-     * @return The vertical interval.
-     */
-    public Interval getVerticalWindowInterval () {
-        return new Interval (getBottom (), getTop ());
-    }
-
-    /**
-     * Returns the interval of the component's horizontal span.
-     *
-     * @return The horizontal span interval.
-     */
-    public Interval getHorizontalComponentInterval () {
-        return new Interval (0d, getWidth ());
-    }
-
-    /**
-     * Returns the interval of the component's vertical span.
-     *
-     * @return The vertical span interval.
-     */
-    public Interval getVerticalComponentInterval () {
-        return new Interval (0d, getHeight ());
-    }
 
     /**
      * Maps a window space X coordinate to component or viewport

@@ -2,7 +2,10 @@ package io.github.mathfx.util.css;
 
 import javafx.css.CssMetaData;
 import javafx.css.Styleable;
+import javafx.css.converter.ColorConverter;
+import javafx.css.converter.EnumConverter;
 import javafx.css.converter.SizeConverter;
+import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +27,14 @@ public class StyleableFactory<S extends Styleable> {
 
     public CssMetaDataBuilder<S, Number> buildSizeCssMetaData () {
         return new CssMetaDataBuilder<S, Number> (this).setConverter (SizeConverter.getInstance ());
+    }
+
+    public CssMetaDataBuilder<S, Color> buildColorCssMetaData () {
+        return new CssMetaDataBuilder<S, Color> (this).setConverter (ColorConverter.getInstance ());
+    }
+
+    public <E extends Enum<E>> CssMetaDataBuilder<S, E> buildEnumCssMetaData (Class<E> enumc) {
+        return new CssMetaDataBuilder<S, E> (this).setConverter (EnumConverter.getEnumConverter (enumc));
     }
 
     public <V> StyleableObjectPropertyBuilder<S, V> buildStyleableProperty () {

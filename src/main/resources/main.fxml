@@ -5,9 +5,6 @@
 
 <?import java.net.URL?>
 
-<?import javafx.scene.layout.Pane?>
-<?import io.github.mathfx.cartesian.HorizontalGuide?>
-<?import io.github.mathfx.cartesian.GuideContainer?>
 <StackPane xmlns:fx="https://openjfx.io/"
            prefWidth="512"
            prefHeight="512">

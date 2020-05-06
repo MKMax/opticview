@@ -1,7 +1,5 @@
 package io.github.mathfx.cartesian.part;
 
-import io.github.mathfx.util.Interval;
-
 import java.util.List;
 import java.util.Objects;
 
@@ -30,16 +28,4 @@ public interface PartitionScheme {
         double fEnd,
         double ppu);
 
-    default List<Index> partition (
-        Interval interval,
-        Interval fragment,
-        double   ppu)
-    {
-        return partition (
-            interval.min,
-            interval.max,
-            fragment.min,
-            fragment.max,
-            ppu);
-    }
 }

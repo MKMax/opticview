@@ -4,7 +4,6 @@ import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.layout.Region;
 
 import java.util.ArrayList;
@@ -28,9 +27,72 @@ import java.util.Objects;
  * {@link javafx.beans.value.ChangeListener} objects, but maintaining that becomes
  * a hassle rather quickly.
  *
+ * @param <T> The type of the properties that this group will be monitoring.
+ *
  * @author Maxim Kasyanenko
  */
 public final class ObservableGroup<T> implements Disposable {
+
+    /**
+     * A utility class that makes code look cleaner when a combination of
+     * properties and groups must initialize an {@link ObservableGroup}.
+     *
+     * @param <U> The type for the {@link ObservableGroup}.
+     */
+    public static final class Builder<U> {
+
+        private final ObservableGroup<U> instance = new ObservableGroup<> ();
+
+        /**
+         * A private constructor to prevent external initialization.
+         */
+        private Builder () {
+        }
+
+        /**
+         * Adds all of the specified properties using {@link ObservableGroup#addAll(ObservableValue[])}.
+         *
+         * @param props The properties to add to the {@link ObservableGroup}.
+         * @return This builder.
+         */
+        @SafeVarargs
+        public final Builder<U> addAll (ObservableValue<? extends U>... props) {
+            instance.addAll (props);
+            return this;
+        }
+
+        /**
+         * Adds all of the specified groups using {@link ObservableGroup#addAll(ObservableGroup[])}.
+         *
+         * @param groups The groups to add to the {@link ObservableGroup}.
+         * @return This builder.
+         */
+        @SafeVarargs
+        public final Builder<U> addAll (ObservableGroup<? extends U>... groups) {
+            instance.addAll (groups);
+            return this;
+        }
+
+        /**
+         * Returns a built instance of an {@link ObservableGroup} with the specified
+         * initial parameters.
+         *
+         * @return The instance of an {@link ObservableGroup}.
+         */
+        public ObservableGroup<U> build () {
+            return instance;
+        }
+    }
+
+    /**
+     * Creates a new {@link Builder}.
+     *
+     * @param <U> The monitoring type of the {@link ObservableGroup}.
+     * @return A new builder instance.
+     */
+    public static <U> Builder<U> builder () {
+        return new Builder<> ();
+    }
 
     /**
      * Creates a dynamically changing {@link ObservableGroup} whose properties
