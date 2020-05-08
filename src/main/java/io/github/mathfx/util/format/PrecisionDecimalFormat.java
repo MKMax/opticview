@@ -18,14 +18,13 @@ public class PrecisionDecimalFormat extends DecimalFormat {
         if (precision > 0) pattern.append ('.');
         for (int i = 0; i < precision; ++i)
             pattern.append ('0');
-        System.out.println ("pat: " + pattern.toString ());
         return pattern.toString ();
     }
 
-    private int precision = DEF_PRECISION;
+    private int precision;
 
     public PrecisionDecimalFormat () {
-        setPrecision (precision);
+        setPrecision (DEF_PRECISION);
     }
 
     public PrecisionDecimalFormat (int pPrecision) {
@@ -37,8 +36,6 @@ public class PrecisionDecimalFormat extends DecimalFormat {
     }
 
     public void setPrecision (int nPrecision) {
-        if (nPrecision == precision)
-            return;
         precision = clamp (nPrecision);
         super.applyPattern (createPattern (precision));
     }

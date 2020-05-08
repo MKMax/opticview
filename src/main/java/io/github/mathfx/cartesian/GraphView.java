@@ -8,26 +8,54 @@ import javafx.scene.layout.StackPane;
 
 public final class GraphView extends StackPane implements Disposable {
 
-    private final GuideContainer guideContainer = new GuideContainer ();
+    /* +--------------------------+ */
+    /* | INITIALIZATION & MEMBERS | */
+    /* +--------------------------+ */
 
-    private final DoubleProperty left   = new SimpleDoubleProperty (-1d);
-    private final DoubleProperty right  = new SimpleDoubleProperty ( 1d);
-    private final DoubleProperty bottom = new SimpleDoubleProperty (-1d);
-    private final DoubleProperty top    = new SimpleDoubleProperty ( 1d);
+    private final DoubleProperty
+        left   = new SimpleDoubleProperty (),
+        right  = new SimpleDoubleProperty (),
+        bottom = new SimpleDoubleProperty (),
+        top    = new SimpleDoubleProperty ();
 
-    private final ObservableGroup<Number> orthoGroup      = new ObservableGroup<> (left, right, bottom, top);
-    private final ObservableGroup<Number> dimensionsGroup = new ObservableGroup<> (widthProperty (), heightProperty ());
-    private final ObservableGroup<Number> projectionGroup = new ObservableGroup<> (orthoGroup, dimensionsGroup);
+    private double Gx, Kx;
+    private double Gy, Ky;
 
-    private double Mx = 1d;
-    private double Kx = 0d;
+    private final ObservableGroup<Number> windowGroup     = new ObservableGroup<> (left, right, bottom, top);
+    private final ObservableGroup<Number> sizeGroup       = new ObservableGroup<> (widthProperty (), heightProperty ());
+    private final ObservableGroup<Number> projectionGroup = new ObservableGroup<> (windowGroup, sizeGroup);
 
-    private double My = 1d;
-    private double Ky = 0d;
+    private final GuidePanel guidepanel = new GuidePanel ();
 
+    public GraphView (
+        double pLeft,
+        double pRight,
+        double pBottom,
+        double pTop)
     {
-        getChildren ().addAll (guideContainer);
+        left  .set (pLeft);
+        right .set (pRight);
+        bottom.set (pBottom);
+        top   .set (pTop);
+        reproject ();
+        postInit ();
+    }
 
+    public GraphView (double pUniform) {
+        this (
+            -pUniform,
+             pUniform,
+            -pUniform,
+             pUniform);
+    }
+
+    public GraphView () {
+        this (1d);
+    }
+
+    private void postInit () {
+        getChildren ().addAll (
+            guidepanel);
         projectionGroup.add (this::reproject);
     }
 
@@ -44,6 +72,10 @@ public final class GraphView extends StackPane implements Disposable {
         left.set (nLeft);
     }
 
+    public DoubleProperty leftProperty () {
+        return left;
+    }
+
     /* RIGHT */
     public double getRight () {
         return right.get ();
@@ -51,6 +83,10 @@ public final class GraphView extends StackPane implements Disposable {
 
     public void setRight (double nRight) {
         right.set (nRight);
+    }
+
+    public DoubleProperty rightProperty () {
+        return right;
     }
 
     /* BOTTOM */
@@ -62,6 +98,10 @@ public final class GraphView extends StackPane implements Disposable {
         bottom.set (nBottom);
     }
 
+    public DoubleProperty bottomProperty () {
+        return bottom;
+    }
+
     /* TOP */
     public double getTop () {
         return top.get ();
@@ -71,9 +111,25 @@ public final class GraphView extends StackPane implements Disposable {
         top.set (nTop);
     }
 
+    public DoubleProperty topProperty () {
+        return top;
+    }
+
     /* +---------+ */
     /* | UTILITY | */
     /* +---------+ */
+
+    public ObservableGroup<Number> getWindowGroup () {
+        return windowGroup;
+    }
+
+    public ObservableGroup<Number> getSizeGroup () {
+        return sizeGroup;
+    }
+
+    public ObservableGroup<Number> getProjectionGroup () {
+        return projectionGroup;
+    }
 
     /**
      * Maps a window space X coordinate to component or viewport
@@ -88,7 +144,7 @@ public final class GraphView extends StackPane implements Disposable {
      * @return The viewport space X coordinate.
      */
     public double projectX (double p) {
-        return Mx * p + Kx;
+        return Gx * p + Kx;
     }
 
     /**
@@ -104,7 +160,7 @@ public final class GraphView extends StackPane implements Disposable {
      * @return The viewport space Y coordinate.
      */
     public double projectY (double p) {
-        return My * p + Ky;
+        return Gy * p + Ky;
     }
 
     /**
@@ -120,7 +176,7 @@ public final class GraphView extends StackPane implements Disposable {
      * @return The window space X coordinate.
      */
     public double unprojectX (double q) {
-        return (q - Kx) / Mx;
+        return (q - Kx) / Gx;
     }
 
     /**
@@ -136,21 +192,21 @@ public final class GraphView extends StackPane implements Disposable {
      * @return The window space Y coordinate.
      */
     public double unprojectY (double q) {
-        return (q - Ky) / My;
+        return (q - Ky) / Gy;
     }
+
+    /* +----------------------------------+ */
+    /* | PRIVATE, LISTENERS, & MANAGEMENT | */
+    /* +----------------------------------+ */
 
     @Override
     public void dispose () {
-        /* I opt to dispose each group individually instead of invoking
-         * projectionGroup.dispose(true) to make the code more clear of
-         * its purpose.
-         */
-        orthoGroup.dispose ();
-        dimensionsGroup.dispose ();
+        windowGroup.dispose ();
+        sizeGroup.dispose ();
         projectionGroup.dispose ();
     }
 
-    public void reproject () {
+    private void reproject () {
         final double width  = getWidth ();
         final double height = getHeight ();
 
@@ -159,10 +215,10 @@ public final class GraphView extends StackPane implements Disposable {
         final double bottom = getBottom ();
         final double top    = getTop ();
 
-        Mx = width / (right - left);
-        Kx = -Mx * left;
+        Gx = width / (right - left);
+        Kx = -Gx * left;
 
-        My = height / (bottom - top);
-        Ky = -My * top;
+        Gy = height / (bottom - top);
+        Ky = -Gy * top;
     }
 }

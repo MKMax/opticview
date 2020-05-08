@@ -21,10 +21,10 @@ public class ScientificDecimalFormat extends DecimalFormat {
         return pattern.append ("E0").toString ();
     }
 
-    private int precision = DEF_PRECISION;
+    private int precision;
 
     public ScientificDecimalFormat () {
-        setPrecision (precision);
+        setPrecision (DEF_PRECISION);
     }
 
     public ScientificDecimalFormat (int pPrecision) {
@@ -36,8 +36,6 @@ public class ScientificDecimalFormat extends DecimalFormat {
     }
 
     public void setPrecision (int nPrecision) {
-        if (nPrecision == precision)
-            return;
         precision = clamp (nPrecision);
         super.applyPattern (createPattern (precision));
     }
