@@ -1,5 +1,6 @@
 package io.github.mkmax.mathfx.graph;
 
+import io.github.mkmax.mathfx.Disposable;
 import javafx.beans.NamedArg;
 
 /**
@@ -18,7 +19,7 @@ import javafx.beans.NamedArg;
  *
  * @author Maxim Kasyanenko
  */
-public class CartesianView extends BiSpacialPane {
+public class CartesianView extends BiSpacialPane implements Disposable {
 
     /**
      * An extension to the {@link BiSpacialPane} that provides additional
@@ -34,6 +35,14 @@ public class CartesianView extends BiSpacialPane {
      */
     public static class Component extends BiSpacialPane {
 
+    }
+
+    private final CartesianGrid grid = new CartesianGrid ();
+
+    {
+        getChildren ().addAll (
+            grid);
+        grid.bind (this);
     }
 
     /**
@@ -75,5 +84,15 @@ public class CartesianView extends BiSpacialPane {
      */
     public CartesianView () {
         super ();
+    }
+
+    /**
+     * Releases any event listeners and other acquired resources to prevent
+     * memory leaks. A call to this method invalidates this {@link CartesianView}
+     * and from here on out, any interaction with this object is undefined.
+     */
+    @Override
+    public void dispose () {
+        grid.dispose ();
     }
 }
