@@ -13,5 +13,4 @@ package io.github.mkmax.mathfx.graph;
  */
 public class CartesianGrid extends CartesianView.Component {
 
-    private static
 }

@@ -1,5 +1,7 @@
 package io.github.mkmax.mathfx.graph;
 
+import javafx.beans.NamedArg;
+
 /**
  * A complex UI component that permits the rendering of mathematical
  * functions in {@code R^2}, i.e., {@code F: R -> R} or of similar
@@ -34,4 +36,44 @@ public class CartesianView extends BiSpacialPane {
 
     }
 
+    /**
+     * Creates a new {@link CartesianView} with the given graph window.
+     *
+     * @see BiSpacialPane for more information.
+     *
+     * @param pLeft the left-most bound of the graph window.
+     * @param pRight the right-most bound of the graph window.
+     * @param pBottom the bottom-most bound of the graph window.
+     * @param pTop the top-most bound of the graph window.
+     */
+    public CartesianView (
+        @NamedArg ("left")   double pLeft,
+        @NamedArg ("right")  double pRight,
+        @NamedArg ("bottom") double pBottom,
+        @NamedArg ("top")    double pTop)
+    {
+        super (pLeft, pRight, pBottom, pTop);
+    }
+
+    /**
+     * Creates a new {@link CartesianView} with a uniform graph window
+     * centered about the origin.
+     *
+     * @see BiSpacialPane for more information.
+     *
+     * @param pUniform the uniform size of the graph window.
+     */
+    public CartesianView (@NamedArg ("uniform") double pUniform) {
+        super (pUniform);
+    }
+
+    /**
+     * Creates a new {@link CartesianView} with the default graph window
+     * bounds.
+     *
+     * @see BiSpacialPane for more information.
+     */
+    public CartesianView () {
+        super ();
+    }
 }

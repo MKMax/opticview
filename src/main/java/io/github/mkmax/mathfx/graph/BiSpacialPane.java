@@ -6,9 +6,6 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.layout.Pane;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * An extension to the {@link Pane} component that provides
  * mapping from an arbitrary region in {@code R^2} space to
@@ -18,25 +15,6 @@ import java.util.List;
  * @author Maxim Kasyanenko
  */
 public class BiSpacialPane extends Pane implements Disposable {
-
-    /**
-     * Provides a way to listen for changes in the transform matrix
-     * of a {@link BiSpacialPane}.
-     *
-     * @author Maxim Kasyanenko
-     */
-    public interface TransformListener {
-        /**
-         * Invoked whenever {@code of} changes its transform matrix.
-         * <p>
-         * Modifying the state of {@code of} while in this method will
-         * result in an infinite loop and a possible stack overflow.
-         *
-         * @param of The pane whose transform matrix changed. The state
-         *           of this object <b>must not</b> be modified.
-         */
-        void changed (BiSpacialPane of);
-    }
 
     /* Represents the constants used to evaluate the linear mapping from
      * the arbitrary R^2 space to the component's R^2 space. Gx and Gy are
@@ -57,27 +35,9 @@ public class BiSpacialPane extends Pane implements Disposable {
         left   = new SimpleDoubleProperty (),
         right  = new SimpleDoubleProperty (),
         bottom = new SimpleDoubleProperty (),
-        top    = new SimpleDoubleProperty ();
-
-    /* I've debated whether this feature should be added, but binding enables
-     * any BiSpacialPane to automatically update the arbitrary and component
-     * region state as well as the transform matrix state whenever the state
-     * of this object changes. The only issue is that whenever a property is
-     * changed, it will emit a change event that will be captured by the
-     * updateMapping listener. There are two options to handle this situation:
-     * (1) create a flag to prevent the listener from doing anything, or (2)
-     * let the listener recompute the transform matrix every single time a
-     * member is set. To facilitate correct practices, I will opt the
-     * binding mechanism to follow the latter solution by continuously
-     * recomputing the transform matrix as the members are copied.
-     */
-    private final List<BiSpacialPane> bindings = new ArrayList<> ();
-
-    /* A collection of callbacks that are invoked whenever updateMapping(...) below
-     * receives a change event from any one property of the arbitrary or component
-     * region.
-     */
-    private final List<TransformListener> transformListeners = new ArrayList<> ();
+        top    = new SimpleDoubleProperty (),
+        width  = new SimpleDoubleProperty (), /* we need the width property to be able to bind to different properties */
+        height = new SimpleDoubleProperty (); /* we need the height property to be able to bind to different properties */
 
     /* The listener which updates the transform matrix whenever the arbitrary window
      * or the component dimensions change. We use a lambda object instead of function
@@ -86,27 +46,22 @@ public class BiSpacialPane extends Pane implements Disposable {
      */
     private final ChangeListener<Object> updateMapping = (__obs, __old, __now) -> {
         /* we don't care about the parameters so they are marked with underscores */
-        final double width   = getWidth ();
-        final double height  = getHeight ();
+        final double cWidth  = width.get ();
+        final double cHeight = height.get ();
 
         final double wLeft   = left  .get ();
         final double wRight  = right .get ();
         final double wBottom = bottom.get ();
         final double wTop    = top   .get ();
 
-        Gx = width / (wRight - wLeft);
+        Gx = cWidth / (wRight - wLeft);
         Kx = -Gx * wLeft;
 
         /* because UIs flips the Y axis, we say that the top is zero and the bottom is the actual height */
-        Gy = height / (wBottom - wTop);
+        Gy = cHeight / (wBottom - wTop);
         Ky = -Gy * wTop;
 
-        /* we warn the client implementation that changing the state
-         * of this pane within any of the callbacks will result in an
-         * infinite loop as we are not going to attempt to prevent such
-         * errors.
-         */
-        transformListeners.forEach (i -> i.changed (BiSpacialPane.this));
+        onTransformChanged ();
     };
 
     /* +--------------+ */
@@ -128,18 +83,20 @@ public class BiSpacialPane extends Pane implements Disposable {
         double pBottom,
         double pTop)
     {
+        width .bind (widthProperty ());
+        height.bind (heightProperty ());
         left  .set (pLeft);
         right .set (pRight);
         bottom.set (pBottom);
         top   .set (pTop);
 
         /* Make sure to register the listeners or this thing breaks */
-        widthProperty  ().addListener (updateMapping);
-        heightProperty ().addListener (updateMapping);
-        left             .addListener (updateMapping);
-        right            .addListener (updateMapping);
-        bottom           .addListener (updateMapping);
-        top              .addListener (updateMapping);
+        width .addListener (updateMapping);
+        height.addListener (updateMapping);
+        left  .addListener (updateMapping);
+        right .addListener (updateMapping);
+        bottom.addListener (updateMapping);
+        top   .addListener (updateMapping);
 
         /* We invoke the updateMapping listener to initialize the mapping equations*/
         updateMapping.changed (null, null, null);
@@ -216,36 +173,47 @@ public class BiSpacialPane extends Pane implements Disposable {
     /* +---------+ */
 
     /**
-     * Registers a listener that will be notified whenever the transform
-     * from the arbitrary to component region changes.
+     * Binds <b>this</b> {@link BiSpacialPane} to {@code lead}.
      * <p>
-     * If {@code ls == null}, this method does nothing. However, if
-     * {@code ls} has already been registered, it will be registered again
-     * and will receive multiple updates per event.
+     * Binding allows this object to automatically inherit the state
+     * of the {@code lead} pane whenever it changes. When bound, a pane
+     * will not receive updates from its own width/height properties. It
+     * is also worthy to note that, when bound, many setter methods will
+     * now throw an exception as modifying a bound property is undefined.
      *
-     * @see TransformListener for a warning about what should be avoided
-     *                        when handling events.
-     *
-     * @param ls The listener to register.
+     * @param lead The pane to bind to.
      */
-    public void addTransformListener (TransformListener ls) {
-        if (ls != null) transformListeners.add (ls);
+    public void bind (BiSpacialPane lead) {
+        /* binding will automatically fetch the correct values so we don't have to do anything else */
+        left  .bind (lead.left);
+        right .bind (lead.right);
+        bottom.bind (lead.bottom);
+        top   .bind (lead.top);
+        width .bind (lead.width);
+        height.bind (lead.height);
     }
 
     /**
-     * Removes the specified transform listener.
+     * Unbinds <b>this</b> {@link BiSpacialPane} from another pane,
+     * if any.
      * <p>
-     * If {@code ls} has been registered multiple times, this
-     * function will remove the first instance that was registered
-     * only.
-     *
-     * @see TransformListener for a warning about what should be avoided
-     *                        when handling events.
-     *
-     * @param ls The listener to remove.
+     * This will restore the width/height dependence of this pane to
+     * its own properties and it will once again become an independent
+     * pane component.
      */
-    public void removeTransformListener (TransformListener ls) {
-        transformListeners.remove (ls);
+    public void unbind () {
+        /* unbinding will leave the properties the same, however,
+         * the width/height will be rebound to withProperty() and
+         * heightProperty() respectively, automatically updating
+         * the width/height attributes to the current width/height
+         * of the component.
+         */
+        left  .unbind ();
+        right .unbind ();
+        bottom.unbind ();
+        top   .unbind ();
+        width .bind (widthProperty ());
+        height.bind (heightProperty ());
     }
 
     /**
@@ -300,15 +268,27 @@ public class BiSpacialPane extends Pane implements Disposable {
      */
     @Override
     public void dispose () {
-        widthProperty  ().removeListener (updateMapping);
-        heightProperty ().removeListener (updateMapping);
-        left             .removeListener (updateMapping);
-        right            .removeListener (updateMapping);
-        bottom           .removeListener (updateMapping);
-        top              .removeListener (updateMapping);
+        /* ensure the properties are not bound to another BiSpacialPane */
+        width .unbind ();
+        height.unbind ();
+        left  .unbind ();
+        right .unbind ();
+        bottom.unbind ();
+        top   .unbind ();
 
-        transformListeners.clear ();
+        /* now remove the listeners */
+        width .removeListener (updateMapping);
+        height.removeListener (updateMapping);
+        left  .removeListener (updateMapping);
+        right .removeListener (updateMapping);
+        bottom.removeListener (updateMapping);
+        top   .removeListener (updateMapping);
     }
 
-    private void
+    /**
+     * An optional callback that may be overridden by an extending
+     * class to be notified whenever the transform matrix has changed.
+     */
+    protected void onTransformChanged () {
+    }
 }
