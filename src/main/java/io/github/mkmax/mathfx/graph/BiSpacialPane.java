@@ -4,6 +4,7 @@ import io.github.mkmax.mathfx.Disposable;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.layout.Pane;
 
 /**
@@ -32,12 +33,22 @@ public class BiSpacialPane extends Pane implements Disposable {
      * widthProperty() and heightProperty().
      */
     protected final DoubleProperty
+        width  = new SimpleDoubleProperty (), /* we need the width property to be able to bind to different properties */
+        height = new SimpleDoubleProperty (), /* we need the height property to be able to bind to different properties */
         left   = new SimpleDoubleProperty (),
         right  = new SimpleDoubleProperty (),
         bottom = new SimpleDoubleProperty (),
-        top    = new SimpleDoubleProperty (),
-        width  = new SimpleDoubleProperty (), /* we need the width property to be able to bind to different properties */
-        height = new SimpleDoubleProperty (); /* we need the height property to be able to bind to different properties */
+        top    = new SimpleDoubleProperty ();
+
+    /* These two properties are a reference to the current property that the
+     * width and height member properties are bound to. For some reason
+     * JavaFX doesn't provide a getBoundTo() method, or something similar, to
+     * identify the binding point, so we have to improvise. These are used
+     * in the updateMapping callback to ensure we update the component's
+     * dimensions when we're not bound to widthProperty() and heightProperty().
+     */
+    private ObservableValue<? extends Number> widthBindingPoint;
+    private ObservableValue<? extends Number> heightBindingPoint;
 
     /* The listener which updates the transform matrix whenever the arbitrary window
      * or the component dimensions change. We use a lambda object instead of function
@@ -48,6 +59,19 @@ public class BiSpacialPane extends Pane implements Disposable {
         /* we don't care about the parameters so they are marked with underscores */
         final double cWidth  = width.get ();
         final double cHeight = height.get ();
+
+        /* make sure we also update the component width if we are bound to an external
+         * component's dimensions. The reason we want to avoid updating the width when
+         * we aren't bound is that it would cause infinite recursion and the program would
+         * die.
+         *
+         * NOTE: Using binding points may not be correct practice and instead we
+         * should compare the dimension values.
+         */
+        if (widthBindingPoint != widthProperty ())
+            setWidth (cWidth);
+        if (heightBindingPoint != heightProperty ())
+            setHeight (cHeight);
 
         final double wLeft   = left  .get ();
         final double wRight  = right .get ();
@@ -83,8 +107,8 @@ public class BiSpacialPane extends Pane implements Disposable {
         double pBottom,
         double pTop)
     {
-        width .bind (widthProperty ());
-        height.bind (heightProperty ());
+        width .bind (widthBindingPoint = widthProperty ());
+        height.bind (heightBindingPoint = heightProperty ());
         left  .set (pLeft);
         right .set (pRight);
         bottom.set (pBottom);
@@ -189,8 +213,8 @@ public class BiSpacialPane extends Pane implements Disposable {
         right .bind (lead.right);
         bottom.bind (lead.bottom);
         top   .bind (lead.top);
-        width .bind (lead.width);
-        height.bind (lead.height);
+        width .bind (widthBindingPoint = lead.width);
+        height.bind (heightBindingPoint = lead.height);
     }
 
     /**
@@ -212,8 +236,8 @@ public class BiSpacialPane extends Pane implements Disposable {
         right .unbind ();
         bottom.unbind ();
         top   .unbind ();
-        width .bind (widthProperty ());
-        height.bind (heightProperty ());
+        width .bind (widthBindingPoint = widthProperty ());
+        height.bind (heightBindingPoint = heightProperty ());
     }
 
     /**

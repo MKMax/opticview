@@ -2,10 +2,16 @@ package io.github.mkmax.mathfx.graph;
 
 import static io.github.mkmax.jim.JimStatics.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import io.github.mkmax.mathfx.Disposable;
+import javafx.beans.value.ChangeListener;
+import javafx.css.CssMetaData;
+import javafx.css.Styleable;
+import javafx.css.StyleableObjectProperty;
+import javafx.css.StyleablePropertyFactory;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+
+import java.util.*;
 
 /**
  * An component of a {@link CartesianView} that is responsible for providing
@@ -21,64 +27,104 @@ import java.util.Objects;
 public class CartesianGrid extends CartesianView.Component {
 
     /**
-     * A utility structure used by the {@link Partitioner} to report a
-     * collection of partition marks made on a certain axis which will
-     * be used to render grid lines and labels.
+     * Specifies the type of index emitted by a partitioner. A
+     * {@link CartesianGrid} supports three types: Minor, Major,
+     * and Origin indices which determine the appearance of the
+     * grid when rendered onto the component.
+     */
+    public enum IndexType {
+        /**
+         * A minor index is the most common mark, and it is used to
+         * represent the smallest logical partition unit currently
+         * displayed on the grid.
+         */
+        MINOR,
+
+        /**
+         * A major index is used to represent a macro partition to better
+         * aid visibility when a user is analyzing a graph.
+         */
+        MAJOR,
+
+        /**
+         * An origin index is used to represent the two X & Y axes on the
+         * grid. This is used to aid in the visibility of the graph and
+         * assist the user in orientation when traversing it.
+         */
+        ORIGIN
+    }
+
+    /**
+     * A specialized collection of indices. An index is calculated point
+     * emitted by a {@link Partitioner} with a {@link IndexType} and
+     * a floating point value position.
+     * <p>
+     * This structure specializes in the reuse of these indices to improve
+     * performance when calculating the grid layout.
      *
      * @author Maxim Kasyanenko
      */
-    public static final class Index {
+    public static final class IndexBuffer {
+
+        private static final int INITIAL_SIZE = 16;
+
+        private static final IndexType INITIAL_INDEX_TYPE = IndexType.MINOR;
+
+        /* Both of these members will have the same length attribute, therefore
+         * typeBuffer.length and posBuffer.length are synonymous within this
+         * class.
+         */
+        private IndexType[] typeBuffer;
+        private double   [] posBuffer;
+
+        /* The pointer to the next available element to read or write. Both
+         * operations use the same pointer.
+         */
+        private int pointer = 0;
 
         /**
-         * Specifies the type of index emitted. A {@link CartesianGrid}
-         * supports three types: Minor, Major, and Origin indices which
-         * determine the appearance of the grid line and label when rendered
-         * onto the component.
+         * Creates a new {@link IndexBuffer} with an initial size of
+         * {@value #INITIAL_SIZE} entries, each with an index type of
+         * {@link IndexType#MINOR}.
          */
-        public enum Type {
-            /**
-             * A minor index is the most common mark, and it is used to
-             * represent the smallest logical partition unit currently
-             * displayed on the grid.
-             */
-            MINOR,
-
-            /**
-             * A major index is used to represent a macro partition to better
-             * aid visibility when a user is analyzing a graph.
-             */
-            MAJOR,
-
-            /**
-             * An origin index is used to represent the two X & Y axes on the
-             * grid. This is used to aid in the visibility of the graph and
-             * assist the user in orientation when traversing it.
-             */
-            ORIGIN
+        public IndexBuffer () {
+            typeBuffer = new IndexType[INITIAL_SIZE];
+            posBuffer  = new double   [INITIAL_SIZE];
+            Arrays.fill (typeBuffer, INITIAL_INDEX_TYPE);
         }
 
-        /* We opt to simply make the two members public and final because
-         * it is redundant to provide getters/setters for objects of disposable
-         * lifespan. This class in general could be substituted by records provided
-         * in Java 14.
-         */
-        public final Type   type;
+        public void reset () {
+            pointer = 0;
+        }
 
-        /* It should be noted that this position represents the graph space
-         * position, NOT the component position. In other words, this value should
-         * first be transformed to obtain the actual position on the UI component.
-         */
-        public final double pos;
+        public void setType (IndexType type) {
+            typeBuffer[pointer] = Objects.requireNonNull (type, "a type must be specified for an index buffer entry");
+        }
 
-        /**
-         * Creates a new {@link Index} given the type and position.
-         *
-         * @param pType the type of index that this is.
-         * @param pPos the position of this index in graph space.
-         */
-        public Index (Type pType, double pPos) {
-            type = Objects.requireNonNull (pType, "the partition type must be specified");
-            pos  = pPos;
+        public IndexType getType () {
+            return typeBuffer[pointer];
+        }
+
+        public void setPosition (double pos) {
+            posBuffer[pointer] = pos;
+        }
+
+        public double getPosition () {
+            return posBuffer[pointer];
+        }
+
+        public void pull () {
+            if (pointer > 0) --pointer;
+        }
+
+        public void push () {
+            if (pointer == typeBuffer.length) {
+                int nSize = typeBuffer.length * 2;
+                typeBuffer = Arrays.copyOf (typeBuffer, nSize);
+                posBuffer  = Arrays.copyOf (posBuffer, nSize);
+                Arrays.fill (typeBuffer, pointer, nSize, INITIAL_INDEX_TYPE);
+            }
+            ++pointer;
         }
     }
 
@@ -219,4 +265,5 @@ public class CartesianGrid extends CartesianView.Component {
             throw new IllegalStateException ("partitioner must implement the partition(...) function");
         }
     }
+
 }

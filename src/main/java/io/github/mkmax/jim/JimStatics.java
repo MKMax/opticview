@@ -44,4 +44,33 @@ public class JimStatics {
         return Math.abs (a - b) <= F64_EPSILON;
     }
 
+    /**
+     * Clamps the given double value in {@code [min, max]}.
+     *
+     * @param v the value to clamp.
+     * @param min the lower value of the interval.
+     * @param max the higher value of the interval.
+     * @return the clamped value.
+     */
+    public static double clamp (double v, double min, double max) {
+        if (min > max)
+            return clamp (v, max, min);
+        return Math.max (Math.min (v, max), min);
+    }
+
+    /**
+     * Equivalent: {@code obj == null ? fallback : obj}.
+     * <p>
+     * This is fundamentally equivalent to
+     * {@link java.util.Objects#requireNonNullElse(Object, Object)}
+     * except with a shorter method signature.
+     *
+     * @param obj the object required to not be null.
+     * @param fallback the fallback of the object is null.
+     * @param <T> the generic type.
+     * @return {@code obj} if {@code obj != null}, {@code fallback} otherwise.
+     */
+    public static <T> T nonull (T obj, T fallback) {
+        return obj == null ? fallback : obj;
+    }
 }
