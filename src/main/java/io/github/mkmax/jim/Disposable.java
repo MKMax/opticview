@@ -1,4 +1,4 @@
-package io.github.mkmax.mathfx;
+package io.github.mkmax.jim;
 
 /**
  * Implemented by classes that require explicit notification of

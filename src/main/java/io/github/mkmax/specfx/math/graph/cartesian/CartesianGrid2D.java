@@ -1,14 +1,16 @@
-package io.github.mkmax.mathfx.graph;
-
-import javafx.beans.NamedArg;
-import javafx.scene.layout.Pane;
+package io.github.mkmax.specfx.math.graph.cartesian;
 
 import static io.github.mkmax.jim.JimStatics.*;
+import io.github.mkmax.jim.Disposable;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.layout.Pane;
 
 import java.util.*;
 
 /**
- * An component of a {@link CartesianView} that is responsible for providing
+ * An component of a {@link CartesianView2D} that is responsible for providing
  * the grid interface that lays atop the graph among other features.
  * <p>
  * The grid includes the guiding lines for a selected partition scheme and
@@ -18,25 +20,10 @@ import java.util.*;
  *
  * @author Maxim Kasyanenko
  */
-public final class CartesianGrid extends CartesianView.Component {
-
-    public enum IndexType {
-        MINOR,
-        MAJOR,
-        ORIGIN
-    }
-
-    public static final class IndexBuffer {
-
-        public void add (IndexType type, double pos) {
-
-        }
-
-        public
-    }
+public final class CartesianGrid2D extends MappedPane2D implements Disposable {
 
     /**
-     * A utility structure used by the {@link Partitioner} to report a
+     * A utility structure used by the {@link PartitionScheme} to report a
      * collection of partition marks made on a certain axis which will
      * be used to render grid lines and labels.
      *
@@ -45,7 +32,7 @@ public final class CartesianGrid extends CartesianView.Component {
     public static final class Index {
 
         /**
-         * Specifies the type of index emitted. A {@link CartesianGrid}
+         * Specifies the type of index emitted. A {@link CartesianGrid2D}
          * supports three types: Minor, Major, and Origin indices which
          * determine the appearance of the grid line and label when rendered
          * onto the component.
@@ -98,24 +85,24 @@ public final class CartesianGrid extends CartesianView.Component {
     }
     /**
      * A collection of different partition implementations specifically designed
-     * for the architecture of a {@link CartesianGrid}.
+     * for the architecture of a {@link CartesianGrid2D}.
      *
      * @author Maxim Kasyanenko
      */
-    public enum Partitioner {
+    public enum PartitionScheme {
         /**
          * This is the default partitioner that uses the standard partitioning convention
          * established by other graphing utilities. The partitioning scheme is based on
          * the <a href="https://www.desmos.com/calculator">desmos graphing utility</a>.
          */
         DECIMAL {
-            /** @see Partitioner#partition(double, double, double, double, double) for more information*/
+            /** @see PartitionScheme#partition(double, double, double, double, double) for more information */
             @Override public List<Index> partition (
                 double iBegin,
                 double iEnd,
                 double fBegin,
                 double fEnd,
-                double ppu)
+                double ppt)
             {
                 /* TODO: comment this code later */
                 final double iMin = Math.min (iBegin, iEnd);
@@ -127,7 +114,7 @@ public final class CartesianGrid extends CartesianView.Component {
 
 
                 final double appu  = (fMax - fMin) / (iMax - iMin);
-                final double unit  = ppu / appu;
+                final double unit  = ppt / appu;
                 final double log10 = Math.ceil (Math.log10 (unit));
                 final double pow10 = Math.pow (10, log10);
                 final double norm  = unit / pow10;
@@ -220,7 +207,7 @@ public final class CartesianGrid extends CartesianView.Component {
          * @param iEnd the interval space (arbitrary axis) ending point.
          * @param fBegin the fragment space (component/UI axis) starting point.
          * @param fEnd the fragment space (component/UI axis) ending point.
-         * @param ppu The minimum pixels (fragments) per unit (partition).
+         * @param ppt The minimum pixels (fragments) per tick (partition).
          * @return A collection of emitted partition indices. This shall never be null.
          */
         public List<Index> partition (
@@ -228,35 +215,99 @@ public final class CartesianGrid extends CartesianView.Component {
             double iEnd,
             double fBegin,
             double fEnd,
-            double ppu)
+            double ppt)
         {
-            throw new IllegalStateException ("partitioner must implement the partition(...) function");
+            throw new IllegalStateException ("partition scheme must implement the partition(...) method");
         }
+    }
+
+    /* +------------+ */
+    /* | PROPERTIES | */
+    /* +------------+ */
+
+    private static final double
+        MIN_PPT = 64d,
+        MAX_PPT = 65536d,
+        DEF_PPT = 256d;
+
+    private static final PartitionScheme DEF_PARTITION_SCHEME = PartitionScheme.DECIMAL;
+
+    /* HORIZONTAL PIXELS PER TICK (HPPT) */
+    private final ObjectProperty<Number> hppt = new SimpleObjectProperty<> (DEF_PPT);
+
+    public double getHorizontalPixelsPerTick () {
+        return hppt.get () == null ? DEF_PPT : clamp (hppt.get ().doubleValue (), MIN_PPT, MAX_PPT);
+    }
+
+    public void setHorizontalPixelsPerTick (double nHppt) {
+        hppt.set (clamp (nHppt, MIN_PPT, MAX_PPT));
+    }
+
+    /* VERTICAL PIXELS PER TICK (VPPT) */
+    private final ObjectProperty<Number> vppt = new SimpleObjectProperty<> (DEF_PPT);
+
+    public double getVerticalPixelsPerTick () {
+        return vppt.get () == null ? DEF_PPT : clamp (vppt.get ().doubleValue (), MIN_PPT, MAX_PPT);
+    }
+
+    public void setVerticalPixelsPerUnit (double nVppt) {
+        vppt.set (clamp (nVppt, MIN_PPT, MAX_PPT));
+    }
+
+    /* HORIZONTAL PARTITION SCHEME */
+    private final ObjectProperty<PartitionScheme> horizontalPartitionScheme = new SimpleObjectProperty<> (DEF_PARTITION_SCHEME);
+
+    public PartitionScheme getHorizontalPartitionScheme () {
+        return horizontalPartitionScheme.get () == null ?
+            DEF_PARTITION_SCHEME : horizontalPartitionScheme.get ();
+    }
+
+    public void setHorizontalPartitionScheme (PartitionScheme nScheme) {
+        horizontalPartitionScheme.set (nScheme == null ? DEF_PARTITION_SCHEME : nScheme);
+    }
+
+    /* VERTICAL PARTITION SCHEME */
+    private final ObjectProperty<PartitionScheme> verticalPartitionScheme = new SimpleDoubleProperty (DEF_PARTITION_SCHEME);
+
+    public PartitionScheme getVerticalPartitionScheme () {
+        return verticalPartitionScheme.get () == null ?
+            DEF_PARTITION_SCHEME : verticalPartitionScheme.get ();
+    }
+
+    public void setVerticalPartitionScheme (PartitionScheme nScheme) {
+        verticalPartitionScheme.set (nScheme == null ? DEF_PARTITION_SCHEME : nScheme);
     }
 
     /* +----------------+ */
     /* | INITIALIZATION | */
     /* +----------------+ */
 
+    private final Pane lineContainer  = new Pane ();
+    private final Pane labelContainer = new Pane ();
+
+    {
+
+    }
+
     /**
-     * Creates a new instance of a {@link CartesianGrid} that may only
-     * be invoked by a class within the {@link io.github.mkmax.mathfx.graph}
+     * Creates a new instance of a {@link CartesianGrid2D} that may only
+     * be invoked by a class within the {@link io.github.mkmax.specfx.math.graph.cartesian.two}
      * package. Usually, the class that instantiates this grid, is the
-     * {@link CartesianView} itself.
+     * {@link CartesianView2D} itself.
      */
-    CartesianGrid () {
+    CartesianGrid2D () {
+        addUpdateListener (this::update);
     }
 
     /* +--------------+ */
     /* | LISTENERS/UI | */
     /* +--------------+ */
 
-    @Override
-    protected void onTransformChanged () {
-        update ();
-    }
-
     private void update () {
+        final List<Index> hIndices = getHorizontalPartitionScheme ().partition (
+            getLeft (), getRight (), 0d, getWidth (), getHorizontalPixelsPerTick ());
+        final List<Index> vIndices = getVerticalPartitionScheme ().partition (
+            getBottom (), getTop (), getHeight (), 0d, getVerticalPixelsPerTick ());
 
     }
 }

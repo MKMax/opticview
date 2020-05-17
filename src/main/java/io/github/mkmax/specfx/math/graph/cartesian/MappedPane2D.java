@@ -1,11 +1,15 @@
-package io.github.mkmax.mathfx.graph;
+package io.github.mkmax.specfx.math.graph.cartesian;
 
-import io.github.mkmax.mathfx.Disposable;
+import io.github.mkmax.jim.Disposable;
+
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.layout.Pane;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * An extension to the {@link Pane} component that provides
@@ -15,15 +19,33 @@ import javafx.scene.layout.Pane;
  *
  * @author Maxim Kasyanenko
  */
-public class BiSpacialPane extends Pane implements Disposable {
+public class MappedPane2D extends Pane implements Disposable {
+
+    /**
+     * A functional interface whose instances may be registered to
+     * be notified whenever this {@link MappedPane2D}'s transform
+     * matrix changes state.
+     *
+     * @author Maxim Kasyanenko
+     */
+    public interface UpdateListener {
+        void updated ();
+    }
+
+    /* Any time the updateMapping callback is called to update the transform
+     * matrix, these listeners will receive a notification of the update
+     * immediately after the transform matrix has been recomputed.
+     */
+    private final List<UpdateListener> updateListeners = new ArrayList<> ();
 
     /* Represents the constants used to evaluate the linear mapping from
      * the arbitrary R^2 space to the component's R^2 space. Gx and Gy are
      * the gradients (or slopes) for the X and Y axis mappings respectively.
      * Kx and Ky are the intercepts for the X and Y axis mappings respectively.
      */
-    private double Gx, Kx;
-    private double Gy, Ky;
+    private double
+        Gx, Kx,
+        Gy, Ky;
 
     /* The four properties that define the arbitrary R^2 space that will be mapped
      * onto the component's R^2 space (X in [0, getWidth()]; Y in [0, getHeight()]).
@@ -85,7 +107,7 @@ public class BiSpacialPane extends Pane implements Disposable {
         Gy = cHeight / (wBottom - wTop);
         Ky = -Gy * wTop;
 
-        onTransformChanged ();
+        updateListeners.forEach (UpdateListener::updated);
     };
 
     /* +--------------+ */
@@ -93,7 +115,7 @@ public class BiSpacialPane extends Pane implements Disposable {
     /* +--------------+ */
 
     /**
-     * Creates a new {@link BiSpacialPane} given the specified arbitrary
+     * Creates a new {@link MappedPane2D} given the specified arbitrary
      * region.
      *
      * @param pLeft the left-most value of the arbitrary region.
@@ -101,7 +123,7 @@ public class BiSpacialPane extends Pane implements Disposable {
      * @param pBottom the bottom-most value of the arbitrary region.
      * @param pTop the top-most value of the arbitrary region.
      */
-    public BiSpacialPane (
+    public MappedPane2D (
         double pLeft,
         double pRight,
         double pBottom,
@@ -127,15 +149,15 @@ public class BiSpacialPane extends Pane implements Disposable {
     }
 
     /**
-     * Creates a new {@link BiSpacialPane} with a square arbitrary region
+     * Creates a new {@link MappedPane2D} with a square arbitrary region
      * centered at the origin. This is equivalent to
-     * {@code BiSpacialPane(-pUniform, pUniform, -pUniform, pUniform)}.
+     * {@code MappedPane2D(-pUniform, pUniform, -pUniform, pUniform)}.
      *
      * @param pUniform The left, right, bottom, and top component of the
      *                 arbitrary region. This value is negated for {@code left}
      *                 and {@code right}.
      */
-    public BiSpacialPane (double pUniform) {
+    public MappedPane2D (double pUniform) {
         this (
             -pUniform,
              pUniform,
@@ -144,11 +166,11 @@ public class BiSpacialPane extends Pane implements Disposable {
     }
 
     /**
-     * Creates a new {@link BiSpacialPane} with a unit square arbitrary
+     * Creates a new {@link MappedPane2D} with a unit square arbitrary
      * region centered at the origin. This is equivalent to
-     * {@code BiSpacialPane(1)}.
+     * {@code MappedPane2D(1)}.
      */
-    public BiSpacialPane () {
+    public MappedPane2D () {
         this (1d);
     }
 
@@ -197,7 +219,46 @@ public class BiSpacialPane extends Pane implements Disposable {
     /* +---------+ */
 
     /**
-     * Binds <b>this</b> {@link BiSpacialPane} to {@code lead}.
+     * Registers an {@link UpdateListener} with this {@link MappedPane2D}.
+     * <p>
+     * An {@link UpdateListener} is invoked every time the transform
+     * matrix for this pane is recomputed. That is, any time the state
+     * is changed so that {@link #mapX(double)}, {@link #mapY(double)},
+     * {@link #unmapX(double)}, etc., yield a different result, an update
+     * listener is invoked. Multiple registrations are allowed, and an
+     * update listener is invoked as many times as it has been registered.
+     *
+     * @param listener the update listener to register.
+     */
+    public void addUpdateListener (UpdateListener listener) {
+        if (listener != null) updateListeners.add (listener);
+    }
+
+    /**
+     * Removes the given {@link UpdateListener} from this {@link MappedPane2D}.
+     * <p>
+     * If multiple instances of the same update listener were registered, only
+     * one of the instances is removed. To remove all instances, use
+     * {@link #removeAllUpdateListeners(UpdateListener)}.
+     *
+     * @param listener the listener to remove from this {@link MappedPane2D}.
+     */
+    public void removeUpdateListener (UpdateListener listener) {
+        updateListeners.remove (listener);
+    }
+
+    /**
+     * Removes all instances of the given {@link UpdateListener} from
+     * this {@link MappedPane2D}.
+     *
+     * @param listener the listener to completely remove from this {@link MappedPane2D}.
+     */
+    public void removeAllUpdateListeners (UpdateListener listener) {
+        updateListeners.removeIf (i -> i == listener);
+    }
+
+    /**
+     * Binds <b>this</b> {@link MappedPane2D} to {@code lead}.
      * <p>
      * Binding allows this object to automatically inherit the state
      * of the {@code lead} pane whenever it changes. When bound, a pane
@@ -207,7 +268,7 @@ public class BiSpacialPane extends Pane implements Disposable {
      *
      * @param lead The pane to bind to.
      */
-    public void bind (BiSpacialPane lead) {
+    public void bind (MappedPane2D lead) {
         /* binding will automatically fetch the correct values so we don't have to do anything else */
         left  .bind (lead.left);
         right .bind (lead.right);
@@ -218,7 +279,7 @@ public class BiSpacialPane extends Pane implements Disposable {
     }
 
     /**
-     * Unbinds <b>this</b> {@link BiSpacialPane} from another pane,
+     * Unbinds <b>this</b> {@link MappedPane2D} from another pane,
      * if any.
      * <p>
      * This will restore the width/height dependence of this pane to
@@ -292,7 +353,7 @@ public class BiSpacialPane extends Pane implements Disposable {
      */
     @Override
     public void dispose () {
-        /* ensure the properties are not bound to another BiSpacialPane */
+        /* ensure the properties are not bound to another MappedPane2D */
         width .unbind ();
         height.unbind ();
         left  .unbind ();
@@ -307,12 +368,5 @@ public class BiSpacialPane extends Pane implements Disposable {
         right .removeListener (updateMapping);
         bottom.removeListener (updateMapping);
         top   .removeListener (updateMapping);
-    }
-
-    /**
-     * An optional callback that may be overridden by an extending
-     * class to be notified whenever the transform matrix has changed.
-     */
-    protected void onTransformChanged () {
     }
 }
