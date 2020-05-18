@@ -59,6 +59,20 @@ public class JimStatics {
     }
 
     /**
+     * Clamps the given integer value in {@code [min, max]}.
+     *
+     * @param v the value to clamp.
+     * @param min the lower value of the interval.
+     * @param max the higher value of the interval.
+     * @return the clamped value.
+     */
+    public static int clamp (int v, int min, int max) {
+        if (min > max)
+            return clamp (v, max, min);
+        return Math.max (Math.min (v, max), min);
+    }
+
+    /**
      * Equivalent: {@code obj == null ? fallback : obj}.
      * <p>
      * This is fundamentally equivalent to

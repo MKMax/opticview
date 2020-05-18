@@ -1,10 +1,11 @@
-package io.github.mkmax.specfx;
+package io.github.mkmax.fx;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.css.CssMetaData;
 import javafx.css.Styleable;
 import javafx.css.StyleableProperty;
 
+import java.util.List;
 import java.util.Objects;
 
 public class StyleBinding {
