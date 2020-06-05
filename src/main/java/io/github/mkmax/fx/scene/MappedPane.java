@@ -1,4 +1,4 @@
-package io.github.mkmax.fx;
+package io.github.mkmax.fx.scene;
 
 import io.github.mkmax.jim.Disposable;
 
@@ -208,7 +208,7 @@ public class MappedPane extends Pane implements Disposable {
      *
      * @param lead The pane to bind to.
      */
-    public void bind (MappedPane lead) {
+    public void bindMapping (MappedPane lead) {
         /* binding will automatically fetch the correct values so we don't have to do anything else */
         left  .bind (lead.left);
         right .bind (lead.right);
@@ -226,7 +226,7 @@ public class MappedPane extends Pane implements Disposable {
      * its own properties and it will once again become an independent
      * pane component.
      */
-    public void unbind () {
+    public void unbindMapping () {
         /* unbinding will leave the properties the same, however,
          * the width/height will be rebound to withProperty() and
          * heightProperty() respectively, automatically updating

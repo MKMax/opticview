@@ -1,4 +1,4 @@
-package io.github.mkmax.fx;
+package io.github.mkmax.fx.util;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.css.CssMetaData;

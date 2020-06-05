@@ -5,7 +5,6 @@ plugins {
 }
 
 group               = "io.github.mkmax"
-mainClassName       = "io.github.mkmax.opticview/io.github.mkmax.opticview.OpticView"
 targetCompatibility = "13"
 sourceCompatibility = "13"
 
@@ -20,6 +19,11 @@ test {
 dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.4.2"
     testImplementation "org.junit.jupiter:junit-jupiter-engine:5.4.2"
+}
+
+application {
+    mainModule = "io.github.mkmax.opticview"
+    mainClass = "io.github.mkmax.opticview.OpticView"
 }
 
 javafx {
