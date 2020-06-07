@@ -13,18 +13,11 @@ public class OpticView extends Application {
 
     @Override
     public void start (Stage stage) {
-        HorizontalAxis haxis = new HorizontalAxis ();
-
         StackPane parent = new StackPane ();
         parent.setPrefWidth (512d);
         parent.setPrefHeight (512d);
-        parent.getChildren ().addAll (haxis);
 
         Scene scene = new Scene (parent);
-
-        stage.setOnShown (e -> {
-            System.out.println (haxis.map (0));
-        });
 
         stage.setScene (scene);
         stage.sizeToScene ();

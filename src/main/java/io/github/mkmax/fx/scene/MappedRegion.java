@@ -6,17 +6,17 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 
 /**
- * An extension to the {@link Pane} component that provides
+ * An extension to the {@link Region} component that provides
  * mapping from an arbitrary region in {@code R^2} space to
  * the region bounded by {@code X in [0, getWidth()]} and
  * {@code Y in [0, getHeight()]}.
  *
  * @author Maxim Kasyanenko
  */
-public class MappedPane extends Pane implements Disposable {
+public class MappedRegion extends Region implements Disposable {
 
     /* Represents the constants used to evaluate the linear mapping from
      * the arbitrary R^2 space to the component's R^2 space. Gx and Gy are
@@ -51,15 +51,9 @@ public class MappedPane extends Pane implements Disposable {
     private ObservableValue<? extends Number> widthBindingPoint;
     private ObservableValue<? extends Number> heightBindingPoint;
 
-    /* The listener which updates the transform matrix whenever the arbitrary window
-     * or the component dimensions change. We use a lambda object instead of function
-     * to (1) avoid creating unnecessary duplicate lambdas, and (2) to allow the dispose()
-     * function to remove this listener from any properties to prevent memory leaks.
-     */
-    private final ChangeListener<Object> updateMapping = (__obs, __old, __now) -> {
+    private final ChangeListener<Object> updateHorizontalMapping = (__obs, __old, __now) -> {
         /* we don't care about the parameters so they are marked with underscores */
         final double cWidth  = width.get ();
-        final double cHeight = height.get ();
 
         /* make sure we also update the component width if we are bound to an external
          * component's dimensions. The reason we want to avoid updating the width when
@@ -71,22 +65,35 @@ public class MappedPane extends Pane implements Disposable {
          */
         if (widthBindingPoint != widthProperty ())
             setWidth (cWidth);
-        if (heightBindingPoint != heightProperty ())
-            setHeight (cHeight);
 
         final double wLeft   = left  .get ();
         final double wRight  = right .get ();
-        final double wBottom = bottom.get ();
-        final double wTop    = top   .get ();
 
         Gx = cWidth / (wRight - wLeft);
         Kx = -Gx * wLeft;
+    };
+
+    private final ChangeListener<Object> updateVerticalMapping = (__obs, __old, __now) -> {
+        /* we don't care about the parameters so they are marked with underscores */
+        final double cHeight = height.get ();
+
+        /* make sure we also update the component width if we are bound to an external
+         * component's dimensions. The reason we want to avoid updating the width when
+         * we aren't bound is that it would cause infinite recursion and the program would
+         * die.
+         *
+         * NOTE: Using binding points may not be correct practice and instead we
+         * should compare the dimension values.
+         */
+        if (heightBindingPoint != heightProperty ())
+            setHeight (cHeight);
+
+        final double wBottom = bottom.get ();
+        final double wTop    = top   .get ();
 
         /* because UIs flips the Y axis, we say that the top is zero and the bottom is the actual height */
         Gy = cHeight / (wBottom - wTop);
         Ky = -Gy * wTop;
-
-        onTransformChanged ();
     };
 
     /* +--------------+ */
@@ -94,7 +101,7 @@ public class MappedPane extends Pane implements Disposable {
     /* +--------------+ */
 
     /**
-     * Creates a new {@link MappedPane} given the specified arbitrary
+     * Creates a new {@link MappedRegion} given the specified arbitrary
      * region.
      *
      * @param pLeft the left-most value of the arbitrary region.
@@ -102,7 +109,7 @@ public class MappedPane extends Pane implements Disposable {
      * @param pBottom the bottom-most value of the arbitrary region.
      * @param pTop the top-most value of the arbitrary region.
      */
-    public MappedPane (
+    public MappedRegion (
         double pLeft,
         double pRight,
         double pBottom,
@@ -116,19 +123,20 @@ public class MappedPane extends Pane implements Disposable {
         top   .set (pTop);
 
         /* Make sure to register the listeners or this thing breaks */
-        width .addListener (updateMapping);
-        height.addListener (updateMapping);
-        left  .addListener (updateMapping);
-        right .addListener (updateMapping);
-        bottom.addListener (updateMapping);
-        top   .addListener (updateMapping);
+        width .addListener (updateHorizontalMapping);
+        height.addListener (updateVerticalMapping);
+        left  .addListener (updateHorizontalMapping);
+        right .addListener (updateHorizontalMapping);
+        bottom.addListener (updateVerticalMapping);
+        top   .addListener (updateVerticalMapping);
 
-        /* We invoke the updateMapping listener to initialize the mapping equations*/
-        updateMapping.changed (null, null, null);
+        /* We invoke the updateMapping listener to initialize the mapping equations */
+        updateHorizontalMapping.changed (null, null, null);
+        updateVerticalMapping.changed (null, null, null);
     }
 
     /**
-     * Creates a new {@link MappedPane} with a square arbitrary region
+     * Creates a new {@link MappedRegion} with a square arbitrary region
      * centered at the origin. This is equivalent to
      * {@code MappedPane(-pUniform, pUniform, -pUniform, pUniform)}.
      *
@@ -136,20 +144,20 @@ public class MappedPane extends Pane implements Disposable {
      *                 arbitrary region. This value is negated for {@code left}
      *                 and {@code right}.
      */
-    public MappedPane (double pUniform) {
+    public MappedRegion (double pUniform) {
         this (
             -pUniform,
-            pUniform,
+             pUniform,
             -pUniform,
-            pUniform);
+             pUniform);
     }
 
     /**
-     * Creates a new {@link MappedPane} with a unit square arbitrary
+     * Creates a new {@link MappedRegion} with a unit square arbitrary
      * region centered at the origin. This is equivalent to
      * {@code MappedPane(1)}.
      */
-    public MappedPane () {
+    public MappedRegion () {
         this (1d);
     }
 
@@ -198,7 +206,7 @@ public class MappedPane extends Pane implements Disposable {
     /* +---------+ */
 
     /**
-     * Binds <b>this</b> {@link MappedPane} to {@code lead}.
+     * Binds <b>this</b> {@link MappedRegion} to {@code lead}.
      * <p>
      * Binding allows this object to automatically inherit the state
      * of the {@code lead} pane whenever it changes. When bound, a pane
@@ -208,7 +216,7 @@ public class MappedPane extends Pane implements Disposable {
      *
      * @param lead The pane to bind to.
      */
-    public void bindMapping (MappedPane lead) {
+    public void bindMapping (MappedRegion lead) {
         /* binding will automatically fetch the correct values so we don't have to do anything else */
         left  .bind (lead.left);
         right .bind (lead.right);
@@ -219,7 +227,7 @@ public class MappedPane extends Pane implements Disposable {
     }
 
     /**
-     * Unbinds <b>this</b> {@link MappedPane} from another pane,
+     * Unbinds <b>this</b> {@link MappedRegion} from another pane,
      * if any.
      * <p>
      * This will restore the width/height dependence of this pane to
@@ -302,18 +310,11 @@ public class MappedPane extends Pane implements Disposable {
         top   .unbind ();
 
         /* now remove the listeners */
-        width .removeListener (updateMapping);
-        height.removeListener (updateMapping);
-        left  .removeListener (updateMapping);
-        right .removeListener (updateMapping);
-        bottom.removeListener (updateMapping);
-        top   .removeListener (updateMapping);
-    }
-
-    /**
-     * An optional callback that may be overridden by an extending
-     * class to be notified whenever the transform matrix has changed.
-     */
-    protected void onTransformChanged () {
+        width .removeListener (updateHorizontalMapping);
+        height.removeListener (updateVerticalMapping);
+        left  .removeListener (updateHorizontalMapping);
+        right .removeListener (updateHorizontalMapping);
+        bottom.removeListener (updateVerticalMapping);
+        top   .removeListener (updateVerticalMapping);
     }
 }
