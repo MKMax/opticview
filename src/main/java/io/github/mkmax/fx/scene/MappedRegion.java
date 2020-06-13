@@ -8,6 +8,9 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.layout.Region;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * An extension to the {@link Region} component that provides
  * mapping from an arbitrary region in {@code R^2} space to
@@ -17,6 +20,14 @@ import javafx.scene.layout.Region;
  * @author Maxim Kasyanenko
  */
 public class MappedRegion extends Region implements Disposable {
+
+    public interface HorizontalUpdateListener {
+        void updated ();
+    }
+
+    public interface VerticalUpdateListener {
+        void updated ();
+    }
 
     /* Represents the constants used to evaluate the linear mapping from
      * the arbitrary R^2 space to the component's R^2 space. Gx and Gy are
@@ -51,6 +62,12 @@ public class MappedRegion extends Region implements Disposable {
     private ObservableValue<? extends Number> widthBindingPoint;
     private ObservableValue<? extends Number> heightBindingPoint;
 
+    private final List<HorizontalUpdateListener> horizontalUpdateListeners
+        = new ArrayList<> ();
+
+    private final List<VerticalUpdateListener> verticalUpdateListeners
+        = new ArrayList<> ();
+
     private final ChangeListener<Object> updateHorizontalMapping = (__obs, __old, __now) -> {
         /* we don't care about the parameters so they are marked with underscores */
         final double cWidth  = width.get ();
@@ -71,6 +88,8 @@ public class MappedRegion extends Region implements Disposable {
 
         Gx = cWidth / (wRight - wLeft);
         Kx = -Gx * wLeft;
+
+        horizontalUpdateListeners.forEach (HorizontalUpdateListener::updated);
     };
 
     private final ChangeListener<Object> updateVerticalMapping = (__obs, __old, __now) -> {
@@ -94,6 +113,8 @@ public class MappedRegion extends Region implements Disposable {
         /* because UIs flips the Y axis, we say that the top is zero and the bottom is the actual height */
         Gy = cHeight / (wBottom - wTop);
         Ky = -Gy * wTop;
+
+        verticalUpdateListeners.forEach (VerticalUpdateListener::updated);
     };
 
     /* +--------------+ */
@@ -204,6 +225,22 @@ public class MappedRegion extends Region implements Disposable {
     /* +---------+ */
     /* | UTILITY | */
     /* +---------+ */
+
+    public void addHorizontalListener (HorizontalUpdateListener hul) {
+        if (hul != null) horizontalUpdateListeners.add (hul);
+    }
+
+    public void removeHorizontalListener (HorizontalUpdateListener hul) {
+        horizontalUpdateListeners.remove (hul);
+    }
+
+    public void addVerticalListener (VerticalUpdateListener vul) {
+        if (vul != null) verticalUpdateListeners.add (vul);
+    }
+
+    public void removeVerticalListener (VerticalUpdateListener vul) {
+        verticalUpdateListeners.remove (vul);
+    }
 
     /**
      * Binds <b>this</b> {@link MappedRegion} to {@code lead}.
