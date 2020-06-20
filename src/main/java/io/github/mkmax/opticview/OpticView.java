@@ -2,6 +2,7 @@ package io.github.mkmax.opticview;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
@@ -13,6 +14,7 @@ public class OpticView extends Application {
 
     @Override
     public void start (Stage stage) {
+
         StackPane parent = new StackPane ();
         parent.setPrefWidth (512d);
         parent.setPrefHeight (512d);
