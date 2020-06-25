@@ -1,17 +1,12 @@
-package io.github.mkmax.exfx.layout;
+package io.github.mkmax.opticview;
 
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.value.WeakChangeListener;
-import javafx.css.CssMetaData;
-import javafx.css.Styleable;
+import javafx.beans.value.ChangeListener;
 import javafx.scene.layout.Region;
+import javafx.beans.property.*;
+import javafx.css.*;
+import java.util.*;
 
-import java.util.List;
-import java.util.Objects;
-
-public abstract class OrthoRegion extends Region {
+public abstract class OrthoRegion extends Region implements Disposable {
 
     private double
         Mx, Cx,
@@ -27,6 +22,12 @@ public abstract class OrthoRegion extends Region {
         right  = new SimpleDoubleProperty (+1d),
         bottom = new SimpleDoubleProperty (-1d),
         top    = new SimpleDoubleProperty (+1d);
+
+    /* property getters */
+    public ReadOnlyDoubleProperty leftProperty   () { return left;   }
+    public ReadOnlyDoubleProperty rightProperty  () { return right;  }
+    public ReadOnlyDoubleProperty bottomProperty () { return bottom; }
+    public ReadOnlyDoubleProperty topProperty    () { return top;    }
 
     /* compact getters */
     public double getLeft   () { return left  .get (); }
@@ -54,7 +55,7 @@ public abstract class OrthoRegion extends Region {
 
 
 
-    private final WeakChangeListener<Number> horParameterListener = new WeakChangeListener<> ((obs, __old, __now) -> {
+    private final ChangeListener<Number> horParameterListener = (obs, __old, __now) -> {
         final double
             nwidth = width.get (),
             nleft  = left.get (),
@@ -63,10 +64,9 @@ public abstract class OrthoRegion extends Region {
             setWidth (nwidth);
         Mx = nwidth / (nright - nleft);
         Cx = -Mx * nleft;
-        onHorizontalMapChanged ();
-    });
+    };
 
-    private final WeakChangeListener<Number> verParameterListener = new WeakChangeListener<> ((obs, __old, __now) -> {
+    private final ChangeListener<Number> verParameterListener = (obs, __old, __now) -> {
         final double
             nheight = height.get (),
             nbottom = bottom.get (),
@@ -75,8 +75,7 @@ public abstract class OrthoRegion extends Region {
             setHeight (nheight);
         My = nheight / (nbottom - ntop);
         Cy = -My * ntop;
-        onVerticalMapChanged ();
-    });
+    };
 
     {
         width.bind (widthBindingPoint = widthProperty ());
@@ -130,8 +129,16 @@ public abstract class OrthoRegion extends Region {
         return (q - Cy) / My;
     }
 
-    protected abstract void onHorizontalMapChanged ();
-    protected abstract void onVerticalMapChanged ();
+    @Override
+    public void dispose () {
+        width.removeListener (horParameterListener);
+        left .removeListener (horParameterListener);
+        right.removeListener (horParameterListener);
+
+        height.removeListener (verParameterListener);
+        bottom.removeListener (verParameterListener);
+        top   .removeListener (verParameterListener);
+    }
 
 
 
