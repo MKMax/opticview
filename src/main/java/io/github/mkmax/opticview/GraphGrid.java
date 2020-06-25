@@ -1,12 +1,14 @@
 package io.github.mkmax.opticview;
 
 import javafx.beans.value.ChangeListener;
-import javafx.scene.control.Label;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
+import javafx.geometry.VPos;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -35,7 +37,8 @@ public class GraphGrid extends OrthoRegion {
 
     private final class Guide {
         final Line line = new Line ();
-        final Label label = new Label ();
+        final Text text = new Text ();
+        final Rectangle textbg = new Rectangle ();
     }
 
     /* grid settings */
@@ -48,17 +51,20 @@ public class GraphGrid extends OrthoRegion {
     private static final GuideStyle ORIGIN_STYLE = new GuideStyle (
         Font.getDefault (),
         Color.rgb (224, 224, 224),
-        Color.rgb ( 32,  32,  32));
+        Color.rgb ( 64,  64,  64));
     private static final GuideStyle MAJOR_STYLE = new GuideStyle (
         Font.getDefault (),
         Color.rgb ( 32,  32,  32),
-        Color.rgb (128, 128, 128));
+        Color.rgb (192, 192, 192));
     private static final GuideStyle MINOR_STYLE = new GuideStyle (
         Font.getDefault (),
         Color.rgb ( 32,  32,  32),
-        Color.rgb (192, 192, 192));
+        Color.rgb (224, 224, 224));
 
     /* grid content */
+    private final Pane linePane = new Pane ();
+    private final Pane textPane = new Pane ();
+
     private final List<Guide> horGuides = new ArrayList<> ();
     private final List<Guide> verGuides = new ArrayList<> ();
 
@@ -71,6 +77,7 @@ public class GraphGrid extends OrthoRegion {
         rightProperty  ().addListener (maplistener);
         bottomProperty ().addListener (maplistener);
         topProperty    ().addListener (maplistener);
+        getChildren ().addAll (linePane, textPane); /* order matters */
     }
 
     private void update () {
@@ -87,16 +94,25 @@ public class GraphGrid extends OrthoRegion {
         final var hindices = computeGuideIndicesSp (width, left, right, MIN_GUIDE_GAP);
         final var vindices = computeGuideIndicesSp (height, bottom, top, MIN_GUIDE_GAP);
 
+        /* ensure both panes are correct */
+        linePane.setPrefWidth (width);
+        linePane.setPrefHeight (height);
+
+        textPane.setPrefWidth (width);
+        textPane.setPrefHeight (height);
+
         /* ensure enough guides */
         while (hindices.size () > verGuides.size ())
         {
             Guide nguide = new Guide ();
-            getChildren ().addAll (nguide.line, nguide.label);
+            linePane.getChildren ().add (nguide.line);
+            textPane.getChildren ().addAll (nguide.textbg, nguide.text);
             verGuides.add (nguide);
         }
         while (vindices.size () > horGuides.size ()) {
             Guide nguide = new Guide ();
-            getChildren ().addAll (nguide.line, nguide.label);
+            linePane.getChildren ().add (nguide.line);
+            textPane.getChildren ().addAll (nguide.textbg, nguide.text);
             horGuides.add (nguide);
         }
 
@@ -116,20 +132,36 @@ public class GraphGrid extends OrthoRegion {
             guide.line.setStroke (idx.style.bg);
             guide.line.setVisible (true);
 
-            guide.label.setText (
+            guide.text.setFont (idx.style.font);
+            guide.text.setText (
                 hinterval <= SCI_THRESHOLD_MIN || SCI_THRESHOLD_MAX <= hinterval ?
                     sciform.format (idx.pos) :
                     preform.format (idx.pos));
-            guide.label.setLayoutX (x - 0.5d * guide.label.getWidth ());
-            guide.label.setLayoutY (y);
-            guide.label.setTextFill (idx.style.fg);
-            guide.label.setBackground (new Background (new BackgroundFill (idx.style.bg, null, null)));
-            guide.label.setVisible (true);
+            final double text_w = guide.text.getLayoutBounds ().getWidth ();
+            final double text_h = guide.text.getLayoutBounds ().getHeight ();
+            final double text_x = x - 0.5d * text_w;
+            final double text_y = y;
+            final double text_rx = Math.max (Math.min (text_x, width - text_w), 0d);
+            final double text_ry = Math.max (Math.min (text_y, height - text_h), 0d);
+            guide.text.setTextOrigin (VPos.TOP);
+            guide.text.setTextAlignment (TextAlignment.LEFT);
+            guide.text.setX (text_rx);
+            guide.text.setY (text_ry);
+            guide.text.setFill (idx.style.fg);
+            guide.text.setVisible (true);
+
+            guide.textbg.setX (text_rx);
+            guide.textbg.setY (text_ry);
+            guide.textbg.setWidth (text_w);
+            guide.textbg.setHeight (text_h);
+            guide.textbg.setFill (idx.style.bg);
+            guide.textbg.setVisible (true);
         }
         for (int i = verGuides.size () - 1; i >= hindices.size (); --i) {
             Guide guide = verGuides.get (i);
             guide.line.setVisible (false);
-            guide.label.setVisible (false);
+            guide.text.setVisible (false);
+            guide.textbg.setVisible (false);
         }
 
         /* layout the horizontal guides on the grid */
@@ -148,20 +180,35 @@ public class GraphGrid extends OrthoRegion {
             guide.line.setStroke (idx.style.bg);
             guide.line.setVisible (true);
 
-            guide.label.setText (
+            guide.text.setText (
                 vinterval <= SCI_THRESHOLD_MIN || SCI_THRESHOLD_MAX <= vinterval ?
                     sciform.format (idx.pos) :
                     preform.format (idx.pos));
-            guide.label.setLayoutX (x - 0.5d * guide.label.getWidth ());
-            guide.label.setLayoutY (y);
-            guide.label.setTextFill (idx.style.fg);
-            guide.label.setBackground (new Background (new BackgroundFill (idx.style.bg, null, null)));
-            guide.label.setVisible (true);
+            final double text_w = guide.text.getLayoutBounds ().getWidth ();
+            final double text_h = guide.text.getLayoutBounds ().getHeight ();
+            final double text_x = x - 0.5d * text_w;
+            final double text_y = y;
+            final double text_rx = Math.max (Math.min (text_x, width - text_w), 0d);
+            final double text_ry = Math.max (Math.min (text_y, height - text_h), 0d);
+            guide.text.setTextOrigin (VPos.TOP);
+            guide.text.setTextAlignment (TextAlignment.LEFT);
+            guide.text.setX (text_rx);
+            guide.text.setY (text_ry);
+            guide.text.setFill (idx.style.fg);
+            guide.text.setVisible (true);
+
+            guide.textbg.setX (text_rx);
+            guide.textbg.setY (text_ry);
+            guide.textbg.setWidth (text_w);
+            guide.textbg.setHeight (text_h);
+            guide.textbg.setFill (idx.style.bg);
+            guide.textbg.setVisible (true);
         }
         for (int i = horGuides.size () - 1; i >= vindices.size (); --i) {
             Guide guide = horGuides.get (i);
             guide.line.setVisible (false);
-            guide.label.setVisible (false);
+            guide.text.setVisible (false);
+            guide.textbg.setVisible (false);
         }
     }
 
