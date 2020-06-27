@@ -8,10 +8,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Predicate;
 
 public final class GraphData {
@@ -121,7 +118,7 @@ public final class GraphData {
 
         @Override
         public void changed (ObservableValue<? extends T> obs, T old, T now) {
-            final Entry entrybyobs = gd.findEntry (e -> e.function == obs);
+            final Entry entrybyobs = gd.findFirstEntry (e -> e.function == obs);
             if (entrybyobs == null)
                 throw new RuntimeException ("Failed to find function entry by event source observable");
             specific.forEach (lis -> lis.onChange (gd, entrybyobs, old, now));
@@ -143,11 +140,105 @@ public final class GraphData {
         return immuentries;
     }
 
-    public Entry findEntry (Predicate<? super Entry> pred) {
+    public Entry createEntry (Function reqfunc, Color pcolor, String pname) {
+        final Entry newentry = new Entry (reqfunc, pcolor, pname);
+        entries.add (newentry);
+        return newentry;
+    }
+
+    public Entry createEntry (Function reqfunc, Color pcolor) {
+        return createEntry (reqfunc, pcolor, null);
+    }
+
+    public Entry createEntry (Function reqfunc, String pname) {
+        return createEntry (reqfunc, null, pname);
+    }
+
+    public Entry createEntry (Function reqfunc) {
+        return createEntry (reqfunc, null, null);
+    }
+
+    public Entry findFirstEntryByFunction (Function func) {
+        if (func != null)
+            return findFirstEntry (e -> e.getFunction ().equals (func));
+        return null;
+    }
+
+    public List<Entry> findEntriesByFunction (Function func) {
+        if (func != null)
+            return findEntries (e -> e.getFunction ().equals (func));
+        return null;
+    }
+
+    public Entry findFirstEntryByPrefName (String name) {
+        if (name != null)
+            return findFirstEntry (e -> name.equals (e.getPrefName ()));
+        return findFirstEntry (e -> e.getPrefName () == null);
+    }
+
+    public List<Entry> findEntriesByPrefName (String name) {
+        if (name != null)
+            return findEntries (e -> name.equals (e.getPrefName ()));
+        return findEntries (e -> e.getPrefName () == null);
+    }
+
+    public Entry findFirstEntry (Predicate<? super Entry> pred) {
         if (pred != null)
             for (Entry e : entries)
                 if (pred.test (e)) return e;
         return null;
+    }
+
+    public List<Entry> findEntries (Predicate<? super Entry> pred) {
+        if (pred != null) {
+            final List<Entry> found = new ArrayList<> ();
+            for (Entry e : entries)
+                if (pred.test (e)) found.add (e);
+            return found;
+        }
+        return null;
+    }
+
+    public void removeEntry (Entry target) {
+        entries.remove (target);
+    }
+
+    public void removeFirstEntryByFunction (Function func) {
+        if (func != null) removeFirstEntry (e -> e.getFunction ().equals (func));
+    }
+
+    public void removeEntriesByFunction (Function func) {
+        if (func != null) removeEntries (e -> e.getFunction ().equals (func));
+    }
+
+    public void removeFirstEntryByPrefName (String name) {
+        if (name != null)
+            removeFirstEntry (e -> name.equals (e.getPrefName ()));
+        removeFirstEntry (e -> e.getPrefName () == null);
+    }
+
+    public void removeEntriesByPrefName (String name) {
+        if (name != null)
+            removeEntries (e -> name.equals (e.getPrefName ()));
+        removeEntries (e -> e.getPrefName () == null);
+    }
+
+    public void removeFirstEntry (Predicate<? super Entry> pred) {
+        if (pred == null)
+            return;
+        Iterator<Entry> it = entries.iterator ();
+        while (it.hasNext ()) {
+            if (pred.test (it.next ())) {
+                it.remove ();
+                break;
+            }
+        }
+    }
+
+    public void removeEntries (Predicate<? super Entry> pred) {
+        if (pred == null)
+            return;
+        entries.removeIf (pred);
     }
 
     /* +--------------------------+ */
