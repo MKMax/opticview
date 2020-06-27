@@ -1,4 +1,6 @@
-package io.github.mkmax.opticview;
+package io.github.mkmax.opticview.ui;
+
+import io.github.mkmax.opticview.util.Disposable;
 
 import javafx.beans.value.ChangeListener;
 import javafx.scene.layout.Region;
@@ -7,6 +9,18 @@ import javafx.css.*;
 import java.util.*;
 
 public abstract class OrthoRegion extends Region implements Disposable {
+
+    public interface HorizontalRemapListener {
+        void onRemap ();
+    }
+
+    public interface VerticalRemapListener {
+        void onRemap ();
+    }
+
+    public interface RemapListener {
+        void onRemap ();
+    }
 
     private double
         Mx, Cx,
@@ -22,6 +36,10 @@ public abstract class OrthoRegion extends Region implements Disposable {
         right  = new SimpleDoubleProperty (+1d),
         bottom = new SimpleDoubleProperty (-1d),
         top    = new SimpleDoubleProperty (+1d);
+
+    private final List<HorizontalRemapListener> hrls = new ArrayList<> ();
+    private final List<VerticalRemapListener>   vrls = new ArrayList<> ();
+    private final List<RemapListener>           rls  = new ArrayList<> ();
 
     /* property getters */
     public ReadOnlyDoubleProperty leftProperty   () { return left;   }
@@ -42,15 +60,33 @@ public abstract class OrthoRegion extends Region implements Disposable {
     public void setTop    (double ntop   ) { top   .set (ntop   ); }
 
     /* fused setters */
-    public void setHorizontal (double nleft, double nright) {
+    public void setHorizontal (
+        double nleft,
+        double nright)
+    {
         setLeft (nleft);
         setRight (nright);
     }
-    public void setVertical (double nbottom, double ntop) {
+
+    public void setVertical (
+        double nbottom,
+        double ntop)
+    {
         setBottom (nbottom);
         setTop (ntop);
     }
 
+    public void setWindow (
+        double nleft,
+        double nright,
+        double nbottom,
+        double ntop)
+    {
+        setLeft (nleft);
+        setRight (nright);
+        setBottom (nbottom);
+        setTop (ntop);
+    }
 
 
 
@@ -64,6 +100,9 @@ public abstract class OrthoRegion extends Region implements Disposable {
             setWidth (nwidth);
         Mx = nwidth / (nright - nleft);
         Cx = -Mx * nleft;
+
+        hrls.forEach (HorizontalRemapListener::onRemap);
+        rls.forEach (RemapListener::onRemap);
     };
 
     private final ChangeListener<Number> verParameterListener = (obs, __old, __now) -> {
@@ -75,6 +114,9 @@ public abstract class OrthoRegion extends Region implements Disposable {
             setHeight (nheight);
         My = nheight / (nbottom - ntop);
         Cy = -My * ntop;
+
+        vrls.forEach (VerticalRemapListener::onRemap);
+        rls.forEach (RemapListener::onRemap);
     };
 
     {
@@ -90,9 +132,55 @@ public abstract class OrthoRegion extends Region implements Disposable {
         top   .addListener (verParameterListener);
     }
 
+    public OrthoRegion (
+        double pleft,
+        double pright,
+        double pbottom,
+        double ptop)
+    {
+        setWindow (pleft, pright, pbottom, ptop);
+    }
+
+    public OrthoRegion (double uniform) {
+        this (
+            -uniform,
+             uniform,
+            -uniform,
+             uniform);
+    }
+
+    public OrthoRegion () {
+        /* everything is already initialized properly */
+    }
 
 
 
+
+
+
+    public void addHorizontalRemapListener (HorizontalRemapListener listener) {
+        if (listener != null) hrls.add (listener);
+    }
+
+    public void addVerticalRemapListener (VerticalRemapListener listener) {
+        if (listener != null) vrls.add (listener);
+    }
+
+    public void addRemapListener (RemapListener listener) {
+        if (listener != null) rls.add (listener);
+    }
+
+    public void removeHorizontalRemapListener (HorizontalRemapListener listener) {
+        hrls.remove (listener);
+    }
+
+    public void removeVerticalRemapListener (VerticalRemapListener listener) {
+        vrls.remove (listener);
+    }
+
+    public void removeRemapListener (RemapListener listener) {
+        rls.remove (listener);
+    }
 
     public void bindFrustum (OrthoRegion other) {
         Objects.requireNonNull (other);
@@ -138,6 +226,10 @@ public abstract class OrthoRegion extends Region implements Disposable {
         height.removeListener (verParameterListener);
         bottom.removeListener (verParameterListener);
         top   .removeListener (verParameterListener);
+
+        hrls.clear ();
+        vrls.clear ();
+        rls.clear ();
     }
 
 

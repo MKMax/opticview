@@ -1,6 +1,6 @@
-package io.github.mkmax.opticview;
+package io.github.mkmax.opticview.ui.sci;
 
-import javafx.beans.value.ChangeListener;
+import io.github.mkmax.opticview.ui.OrthoRegion;
 import javafx.geometry.VPos;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class GraphGrid extends OrthoRegion {
+public final class GraphGrid extends OrthoRegion {
 
     private static class GuideStyle {
 
@@ -68,15 +68,9 @@ public class GraphGrid extends OrthoRegion {
     private final List<Guide> horGuides = new ArrayList<> ();
     private final List<Guide> verGuides = new ArrayList<> ();
 
-    private final ChangeListener<Number> maplistener = (__obs, __old, __now) -> update ();
-
     {
-        widthProperty  ().addListener (maplistener);
-        heightProperty ().addListener (maplistener);
-        leftProperty   ().addListener (maplistener);
-        rightProperty  ().addListener (maplistener);
-        bottomProperty ().addListener (maplistener);
-        topProperty    ().addListener (maplistener);
+        addHorizontalRemapListener (this::update);
+        addVerticalRemapListener (this::update);
         getChildren ().addAll (linePane, textPane); /* order matters */
     }
 
