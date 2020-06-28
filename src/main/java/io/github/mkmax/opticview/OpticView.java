@@ -19,6 +19,7 @@ public class OpticView extends Application {
     public void start (Stage stage) {
         GraphData gd = new GraphData ();
 
+
         StackPane parent = new StackPane ();
         parent.setPrefWidth (512d);
         parent.setPrefHeight (512d);

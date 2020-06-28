@@ -140,6 +140,9 @@ public final class GraphData {
         return immuentries;
     }
 
+    /* +----------------+ */
+    /* | CREATE ENTRIES | */
+    /* +----------------+ */
     public Entry createEntry (Function reqfunc, Color pcolor, String pname) {
         final Entry newentry = new Entry (reqfunc, pcolor, pname);
         entries.add (newentry);
@@ -158,6 +161,11 @@ public final class GraphData {
         return createEntry (reqfunc, null, null);
     }
 
+    /* +--------------+ */
+    /* | FIND ENTRIES | */
+    /* +--------------+ */
+
+    /* BY FUNCTION */
     public Entry findFirstEntryByFunction (Function func) {
         if (func != null)
             return findFirstEntry (e -> e.getFunction ().equals (func));
@@ -170,6 +178,8 @@ public final class GraphData {
         return null;
     }
 
+
+    /* BY PREF NAME */
     public Entry findFirstEntryByPrefName (String name) {
         if (name != null)
             return findFirstEntry (e -> name.equals (e.getPrefName ()));
@@ -182,6 +192,8 @@ public final class GraphData {
         return findEntries (e -> e.getPrefName () == null);
     }
 
+
+    /* PREDICATE */
     public Entry findFirstEntry (Predicate<? super Entry> pred) {
         if (pred != null)
             for (Entry e : entries)
@@ -199,10 +211,17 @@ public final class GraphData {
         return null;
     }
 
+    /* +----------------+ */
+    /* | REMOVE ENTRIES | */
+    /* +----------------+ */
+
+    /* BY ENTRY */
     public void removeEntry (Entry target) {
         entries.remove (target);
     }
 
+
+    /* BY FUNCTION */
     public void removeFirstEntryByFunction (Function func) {
         if (func != null) removeFirstEntry (e -> e.getFunction ().equals (func));
     }
@@ -211,6 +230,8 @@ public final class GraphData {
         if (func != null) removeEntries (e -> e.getFunction ().equals (func));
     }
 
+
+    /* BY PREF NAME */
     public void removeFirstEntryByPrefName (String name) {
         if (name != null)
             removeFirstEntry (e -> name.equals (e.getPrefName ()));
@@ -223,6 +244,8 @@ public final class GraphData {
         removeEntries (e -> e.getPrefName () == null);
     }
 
+
+    /* PREDICATE */
     public void removeFirstEntry (Predicate<? super Entry> pred) {
         if (pred == null)
             return;
