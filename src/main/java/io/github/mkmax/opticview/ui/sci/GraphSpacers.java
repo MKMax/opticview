@@ -1,6 +1,6 @@
 package io.github.mkmax.opticview.ui.sci;
 
-import io.github.mkmax.opticview.util.Doubles;
+import io.github.mkmax.opticview.util.Numbers;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,10 +10,11 @@ public class GraphSpacers {
     /* +----------------+ */
     /* | DECIMAL SPACER | */
     /* +----------------+ */
-    public static final GraphSpacer DECIMAL = (start, end, ratio, gap) -> {
+    public static final GraphSpacer DECIMAL = (start, end, codomainspan, gap) -> {
         final double min = Math.min (start, end);
         final double max = Math.max (start, end);
 
+        final double ratio = codomainspan / (end - start);
         final double unit  = gap / Math.abs (ratio);
         final double log10 = Math.ceil (Math.log10 (unit));
         final double pow10 = Math.pow (10, log10);
@@ -43,9 +44,9 @@ public class GraphSpacers {
             minstart = min + (minstep - min % minstep);
         }
 
-        if (Doubles.areEqual (min, majstart))
+        if (Numbers.areEqual (min, majstart))
             majstart += majstep;
-        if (Doubles.areEqual (min, minstart))
+        if (Numbers.areEqual (min, minstart))
             minstart += minstep;
         if (minstart >= max)
             return Collections.emptyList ();
@@ -58,12 +59,12 @@ public class GraphSpacers {
             double minpos = minstart + minpt * minstep;
             double majpos = majstart + majpt * majstep;
 
-            if (Doubles.areEqual (minpos, majpos)) {
+            if (Numbers.areEqual (minpos, majpos)) {
                 stylehint = GraphSpacer.StandardStyleHints.MAJOR;
                 ++majpt;
             }
 
-            if (Doubles.areEqual (minpos, 0d))
+            if (Numbers.areEqual (minpos, 0d))
                 stylehint = GraphSpacer.StandardStyleHints.ORIGIN;
 
             indices.add (new GraphSpacer.Point (minpos, stylehint));

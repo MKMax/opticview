@@ -22,5 +22,5 @@ public interface GraphSpacer {
         }
     }
 
-    List<Point> computePoints (double start, double end, double ratio, double gap);
+    List<Point> computePoints (double start, double end, double codomainspan, double gap);
 }
