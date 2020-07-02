@@ -8,7 +8,7 @@ public final class GraphFrame extends OrthoRegion implements Disposable {
 
     private final GraphData data = new GraphData ();
     private final GraphGrid grid = new GraphGrid ();
-    private final GraphView view = new GraphView ();
+    private final GraphView view = new GraphView (data);
     private final GraphLegend legend = new GraphLegend ();
 
     private final Label ylabel = new Label ();

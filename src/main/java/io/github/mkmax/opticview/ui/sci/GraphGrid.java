@@ -7,11 +7,9 @@ import io.github.mkmax.opticview.ui.OrthoRegion;
 import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Orientation;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 import java.text.DecimalFormat;
@@ -77,7 +75,7 @@ public final class GraphGrid extends OrthoRegion {
         MIN_DECIMAL_PRECISION = 0,
         MAX_DECIMAL_PRECISION = 16;
     private final SimpleIntegerProperty decprecision = new SimpleIntegerProperty (3);
-    public IntegerProperty decimalPrecisionProperty ()
+    public ReadOnlyIntegerProperty decimalPrecisionProperty ()
         { return decprecision; }
     public int getDecimalPrecision ()
         { return decprecision.get (); }
@@ -89,7 +87,7 @@ public final class GraphGrid extends OrthoRegion {
         MIN_SCIENTIFIC_PRECISION = 0,
         MAX_SCIENTIFIC_PRECISION = 16;
     private final SimpleIntegerProperty sciprecision = new SimpleIntegerProperty (3);
-    public IntegerProperty scientificPrecisionProperty ()
+    public ReadOnlyIntegerProperty scientificPrecisionProperty ()
         { return sciprecision; }
     public int getScientificPrecision ()
         { return sciprecision.get (); }
@@ -102,6 +100,7 @@ public final class GraphGrid extends OrthoRegion {
         if (decprec > 0)
             decformat.applyPattern ("0." + "0".repeat (decprec));
         decformat.applyPattern ("0");
+
     }
 
     private void configureScientificFormat () {
@@ -111,129 +110,189 @@ public final class GraphGrid extends OrthoRegion {
         sciformat.applyPattern ("0E0");
     }
 
+    private String toDecimalFormat (double value) {
+        return decformat.format (value);
+    }
+
+    public String toScientificFormat (double value) {
+        return sciformat.format (value);
+    }
+
     /* INITIALIZE FORMAT OBJECTS */
     {
         configureDecimalFormat ();
         configureScientificFormat ();
     }
 
+    /* +-----------------------+ */
+    /* | APPEARANCE MANAGEMENT | */
+    /* +-----------------------+ */
+    private static final GuideAppearance ORIGIN = new GuideAppearance (
+        UIPos.BOTTOM_CENTER,
+        Color.rgb (255, 255, 255),
+        Color.rgb ( 64,  64,  64));
+    private static final GuideAppearance MAJOR = new GuideAppearance (
+        UIPos.BOTTOM_CENTER,
+        Color.rgb (255, 255, 255),
+        Color.rgb (128, 128, 128));
+    private static final GuideAppearance MINOR = new GuideAppearance (
+        UIPos.BOTTOM_CENTER,
+        Color.rgb (255, 255, 255),
+        Color.rgb (224, 224, 224));
+    private static final GuideAppearance[] APPEARANCES = { ORIGIN, MAJOR, MINOR };
+
     /* +------------------+ */
-    /* | STYLE COLLECTION | */
+    /* | GUIDE MANAGEMENT | */
     /* +------------------+ */
-    private static final GuideStyle
-        ORIGIN = new GuideStyle (UIPos.BOTTOM_CENTER),
-        MAJOR  = new GuideStyle (UIPos.BOTTOM_CENTER),
-        MINOR  = new GuideStyle (UIPos.BOTTOM_CENTER);
-    /* @TODO(max): revise guide style collection later */
-    /* indices are arranged with respect to GuideSpacer.StandardStyleHints */
-    private final GuideStyle[] styles = { ORIGIN, MAJOR, MINOR };
 
-    /* SETUP CORE GUIDE STYLES */
-    {
-        ORIGIN.setForeground (Color.rgb (255, 255, 255));
-        ORIGIN.setBackground (Color.rgb (  0,   0,   0));
-        MAJOR .setForeground (Color.rgb (255, 255, 255));
-        MAJOR .setBackground (Color.rgb ( 64,  64,  64));
-        MINOR .setForeground (Color.rgb (255, 255, 255));
-        MINOR .setBackground (Color.rgb (128, 128, 128));
-    }
+    /* automatically computed & managed guides */
+    private final List<Guide> nhorguides = new ArrayList<> ();
+    private final List<Guide> nverguides = new ArrayList<> ();
 
-    /* +----------------+ */
-    /* | INITIALIZATION | */
-    /* +----------------+ */
-    private final Pane linepane = new Pane ();
-    private final Pane textpane = new Pane ();
-
-    { getChildren ().addAll (linepane, textpane); }
-
-    /* automatically generated and managed numeric guides */
-    private final List<Guide> numhorguides = new ArrayList<> ();
-    private final List<Guide> numverguides = new ArrayList<> ();
-
-    private void recomputeHorizontalGuides () {
+    private void recomputeHorizontal () {
         final double
             width = getWidth (),
-            begin = getLeft (),
-            end   = getRight ();
-        linepane.setPrefWidth (width);
-        textpane.setPrefWidth (width);
-        final Collection<GraphSpacer.Point> points = getSpacer ().computePoints (begin, end, width, getMingap ());
-        int i = 0;
-        final Iterator<GraphSpacer.Point> it = points.iterator ();
+            left  = getLeft (),
+            right = getRight ();
+        final double span = Math.abs (right - left);
+        final List<GraphSpacer.Point> points = getSpacer ().computePoints (left, right, width, getMingap ());
+        final ListIterator<GraphSpacer.Point> it = points.listIterator ();
         while (it.hasNext ()) {
+            final int i = it.nextIndex ();
             final GraphSpacer.Point point = it.next ();
+            final GuideAppearance appearance = APPEARANCES[point.appearanceclass % APPEARANCES.length];
             final Guide guide;
-            if (numhorguides.size () <= i)
-                guide = new Guide (
-                    styles[point.stylehint % styles.length],
-                    Orientation.VERTICAL,
-                    linepane,
-                    textpane);
+            if (nverguides.size () == i) {
+                guide = new Guide (appearance, Orientation.VERTICAL);
+                nverguides.add (guide);
+            }
+            else {
+                guide = nverguides.get (i);
+                guide.setAppearance (appearance);
+            }
+            guide.setText (
+                getDecimalRangeStart () <= span && span <= getDecimalRangeEnd () ?
+                    toDecimalFormat (point.position) :
+                    toScientificFormat (point.position));
+            guide.setX (mapx (point.position));
+            guide.setY (mapy (0d));
+            guide.setLineVisible (true);
+            guide.setTextVisible (true);
+        }
+        for (int i = nverguides.size () - 1; i >= points.size (); --i) {
+            final Guide guide = nverguides.get (i);
+            guide.setLineVisible (false);
+            guide.setTextVisible (false);
         }
     }
 
-    private void recomputeVerticalGuides () {
-
+    private void recomputeVertical () {
+        final double
+            height = getHeight (),
+            bottom = getBottom (),
+            top    = getTop ();
+        final double span = Math.abs (top - bottom);
+        final List<GraphSpacer.Point> points = getSpacer ().computePoints (bottom, top, height, getMingap ());
+        final ListIterator<GraphSpacer.Point> it = points.listIterator ();
+        while (it.hasNext ()) {
+            final int i = it.nextIndex ();
+            final GraphSpacer.Point point = it.next ();
+            final GuideAppearance appearance = APPEARANCES[point.appearanceclass % APPEARANCES.length];
+            final Guide guide;
+            if (nhorguides.size () == i) {
+                guide = new Guide (appearance, Orientation.HORIZONTAL);
+                nhorguides.add (guide);
+            }
+            else {
+                guide = nhorguides.get (i);
+                guide.setAppearance (appearance);
+            }
+            guide.setText (
+                getDecimalRangeStart () <= span && span <= getDecimalRangeEnd () ?
+                    toDecimalFormat (point.position) :
+                    toScientificFormat (point.position));
+            guide.setX (mapx (0d));
+            guide.setY (mapy (point.position));
+            guide.setLineVisible (true);
+            guide.setTextVisible (true);
+        }
+        for (int i = nhorguides.size () - 1; i >= points.size (); --i) {
+            final Guide guide = nhorguides.get (i);
+            guide.setLineVisible (false);
+            guide.setTextVisible (false);
+        }
     }
 
     {
-        addHorizontalRemapListener (this::recomputeHorizontalGuides);
-        addVerticalRemapListener (this::recomputeVerticalGuides);
+        addHorizontalRemapListener (this::recomputeHorizontal);
+        addVerticalRemapListener (this::recomputeVertical);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    //                                      GUIDE STYLE                                          //
+    //                                   GRAPH APPEARANCE                                        //
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    public static final class GuideStyle {
+    public static final class GuideAppearance {
+        /* +------------------+ */
+        /* | CONTENT POSITION | */
+        /* +------------------+ */
+        private final SimpleObjectProperty<UIPos> contentpos = new SimpleObjectProperty<> ();
+        public ReadOnlyObjectProperty<UIPos> contentPositionProperty ()
+            { return contentpos; }
+        public UIPos getContentPosition ()
+            { return contentpos.get (); }
+        public void setContentPosition (UIPos ncontentpos)
+            { contentpos.set (Objects.requireNonNull (ncontentpos, "A content position must be specified"));}
+
+        /* +------------------+ */
+        /* | FOREGROUND COLOR | */
+        /* +------------------+ */
+        private final SimpleObjectProperty<Color> foregroundcolor = new SimpleObjectProperty<> ();
+        public ObjectProperty<Color> foregroundColorProperty ()
+            { return foregroundcolor; }
+        public Color getForegroundColor ()
+            { return foregroundcolor.get (); }
+        public void setForegroundColor (Color nfgcolor)
+            { foregroundcolor.set (nfgcolor); }
+
+        /* +------------------+ */
+        /* | FOREGROUND COLOR | */
+        /* +------------------+ */
+        private final SimpleObjectProperty<Color> backgroundcolor = new SimpleObjectProperty<> ();
+        public ObjectProperty<Color> backgroundColorProperty ()
+            { return backgroundcolor; }
+        public Color getBackgroundColor ()
+            { return backgroundcolor.get (); }
+        public void setBackgroundColor (Color nbgcolor)
+            { backgroundcolor.set (nbgcolor); }
+
         /* +----------------+ */
-        /* | TEXT POSITION | */
+        /* | INITIALIZATION | */
         /* +----------------+ */
-        private final SimpleObjectProperty<UIPos> textposition = new SimpleObjectProperty<> ();
-        public ReadOnlyObjectProperty<UIPos> textPositionProperty ()
-            { return textposition; }
-        public UIPos getTextPosition ()
-            { return textposition.get (); }
-        public void setTextPosition (UIPos nlabelposition)
-            { textposition.set (Objects.requireNonNull (nlabelposition, "A label position must be specified for a guide style"));}
+        GuideAppearance (
+            UIPos pcontentpos,
+            Color pforegroundcolor,
+            Color pbackgroundcolor)
+        {
+            setContentPosition (pcontentpos);
+            setForegroundColor (pforegroundcolor);
+            setBackgroundColor (pbackgroundcolor);
+        }
+    }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //                                       TEXT GUIDE                                          //
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    public final class Guide {
         /* +------------+ */
-        /* | FOREGROUND | */
+        /* | APPEARANCE | */
         /* +------------+ */
-        private final SimpleObjectProperty<Color> foreground = new SimpleObjectProperty<> ();
-        public ObjectProperty<Color> foregroundProperty ()
-            { return foreground; }
-        public Color getForeground ()
-            { return foreground.get (); }
-        public Color getForegroundElse (Color def)
-            { return foreground.get () == null ? def : foreground.get (); }
-        public void setForeground (Color nforeground)
-            { foreground.set (nforeground); }
-
-        /* +------------+ */
-        /* | BACKGROUND | */
-        /* +------------+ */
-        private final SimpleObjectProperty<Color> background = new SimpleObjectProperty<> ();
-        public ObjectProperty<Color> backgroundProperty ()
-            { return background; }
-        public Color getBackground ()
-            { return background.get (); }
-        public Color getBackgroundElse (Color def)
-            { return background.get () == null ? def : background.get (); }
-        public void setBackground (Color nbackground)
-            { background.set (nbackground); }
-
-        /* +------+ */
-        /* | FONT | */
-        /* +------+ */
-        private final SimpleObjectProperty<Font> font = new SimpleObjectProperty<> ();
-        public ObjectProperty<Font> fontProperty ()
-            { return font; }
-        public Font getFont ()
-            { return font.get (); }
-        public Font getFontElse (Font def)
-            { return font.get () == null ? def : font.get (); }
-        public void setFont (Font nfont)
-            { font.set (nfont); }
+        private final SimpleObjectProperty<GuideAppearance> appearance = new SimpleObjectProperty<> ();
+        public ReadOnlyObjectProperty<GuideAppearance> appearanceProperty ()
+            { return appearance; }
+        public GuideAppearance getAppearance ()
+            { return appearance.get (); }
+        public void setAppearance (GuideAppearance nappearance)
+            { appearance.set (Objects.requireNonNull (nappearance, "An appearance must be specified")); }
 
         /* +-----------------+ */
         /* | LINE VISIBILITY | */
@@ -257,29 +316,6 @@ public final class GraphGrid extends OrthoRegion {
         public void setTextVisible (boolean nlabelvisible)
             { textvisible.set (nlabelvisible); }
 
-        /* +----------------+ */
-        /* | INITIALIZATION | */
-        /* +----------------+ */
-        public GuideStyle (UIPos textpos) {
-            setTextPosition (textpos);
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    //                                         GUIDE                                             //
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    public static class Guide {
-        /* +-------+ */
-        /* | STYLE | */
-        /* +-------+ */
-        private final SimpleObjectProperty<GuideStyle> style = new SimpleObjectProperty<> ();
-        public ReadOnlyObjectProperty<GuideStyle> styleProperty ()
-            { return style; }
-        public GuideStyle getStyle ()
-            { return style.get (); }
-        public void setStyle (GuideStyle nstyle)
-            { style.set (Objects.requireNonNull (nstyle, "A style must be specified for a guide"));}
-
         /* +-------------+ */
         /* | ORIENTATION | */
         /* +-------------+ */
@@ -288,47 +324,8 @@ public final class GraphGrid extends OrthoRegion {
             { return orientation; }
         public Orientation getOrientation ()
             { return orientation.get (); }
-        public void setOrientation (Orientation norient)
-            { orientation.set (Objects.requireNonNull (norient, "An orientation must be specified for a guide")); }
-
-        /* +--------------------------------+ */
-        /* | LINE VISIBILITY (aux to style) | */
-        /* +--------------------------------+ */
-        private final SimpleBooleanProperty linevisible = new SimpleBooleanProperty (false);
-        public BooleanProperty lineVisibleProperty ()
-        { return linevisible; }
-        public boolean isLineVisible ()
-        { return linevisible.get (); }
-        public void setLineVisible (boolean nlinevisibility)
-        { linevisible.set (nlinevisibility); }
-
-        /* +-----------------------------+ */
-        /* | TEXT VISIBLE (aux to style) | */
-        /* +-----------------------------+ */
-        private final SimpleBooleanProperty textvisible = new SimpleBooleanProperty (false);
-        public BooleanProperty textVisibleProperty ()
-        { return textvisible; }
-        public boolean isTextVisible ()
-        { return textvisible.get (); }
-        public void setTextVisible (boolean nlabelvisible)
-        { textvisible.set (nlabelvisible); }
-
-        /* FUSED VISIBILITY SETTER */
-        public void setVisible (boolean val) {
-            linevisible.set (val);
-            textvisible.set (val);
-        }
-
-        /* +------+ */
-        /* | TEXT | */
-        /* +------+ */
-        private final SimpleStringProperty text = new SimpleStringProperty ();
-        public StringProperty textProperty ()
-            { return text; }
-        public String getText ()
-            { return text.get (); }
-        public void setText (String ncontent)
-            { text.set (ncontent); }
+        public void setOrientation (Orientation norientation)
+            { orientation.set (Objects.requireNonNull (norientation, "An orientation must be specified")); }
 
         /* +------------+ */
         /* | POSITION X | */
@@ -352,128 +349,111 @@ public final class GraphGrid extends OrthoRegion {
         public void setY (double ny)
             { y.set (ny); }
 
-        /* +----------------+ */
-        /* | LINE & CONTENT | */
-        /* +----------------+ */
+        /* +------+ */
+        /* | TEXT | */
+        /* +------+ */
+        private final SimpleStringProperty text = new SimpleStringProperty ();
+        public StringProperty textProperty ()
+            { return text; }
+        public String getText ()
+            { return text.get (); }
+        public void setText (String ntext)
+            { text.set (ntext); }
+
+        /* +------------+ */
+        /* | COMPONENTS | */
+        /* +------------+ */
         private final Line uiline = new Line ();
         private final Text uitext = new Text ();
         private final Rectangle uitextbg = new Rectangle ();
 
-        /* STYLE (GuideStyle) HANDLERS */
-        private final ChangeListener<UIPos> style_labelposchangelistener = (__obs, __old, __now) ->
-            layoutText ();
-        private final ChangeListener<Color> style_fgchangelistener = (__obs, __old, __now) ->
-            uitext.setStroke (getStyle ().getForeground ());
-        private final ChangeListener<Color> style_bgchangelistener = (__obs, __old, __now) -> {
-            uiline.setStroke (getStyle ().getBackground ());
-            uitextbg.setFill (getStyle ().getBackground ());
-        };
-        private final ChangeListener<Font> style_fontchangelistener = (__obs, __old, __now) -> {
-            uitext.setFont (getStyle ().getFont ());
-            layoutText ();
-        };
-        private final ChangeListener<Boolean> style_linevischangelistener = (__obs, __old, __now) ->
-            uiline.setVisible (linevisible.get () && getStyle ().isLineVisible ());
-        private final ChangeListener<Boolean> style_textvischangelistener = (__obs, __old, __now) -> {
-            uitext.setVisible (textvisible.get () && getStyle ().isTextVisible ());
-            uitextbg.setVisible (textvisible.get () && getStyle ().isTextVisible ());
-        };
-        private final ChangeListener<GuideStyle> stylechangelistener = (__obs, old, now) -> {
-            old.textposition .removeListener (style_labelposchangelistener);
-            old.foreground   .removeListener (style_fgchangelistener);
-            old.background   .removeListener (style_bgchangelistener);
-            old.font         .removeListener (style_fontchangelistener);
-            old.linevisible  .removeListener (style_linevischangelistener);
-            old.textvisible  .removeListener (style_textvischangelistener);
-            now.textposition .addListener (style_labelposchangelistener);
-            now.foreground   .addListener (style_fgchangelistener);
-            now.background   .addListener (style_bgchangelistener);
-            now.font         .addListener (style_fontchangelistener);
-            now.linevisible  .addListener (style_linevischangelistener);
-            now.textvisible  .addListener (style_textvischangelistener);
-        };
-
+        /* configure & add components to grid */
         {
-            style.addListener (stylechangelistener);
-            linevisible.addListener (style_linevischangelistener);
-            textvisible.addListener (style_textvischangelistener);
+            uiline.setViewOrder (0d);
+            uitext.setViewOrder (1d);
+            uitextbg.setViewOrder (1d);
+            getChildren ().addAll (uiline, uitext, uitextbg);
         }
 
-        /* LAYOUT LISTENERS */
-        private final ChangeListener<Orientation> orientationchangelistener = (__obs, __old, __now) ->
-            layoutLine ();
-        private final ChangeListener<String> textchangelistener = (__obs, __old, __now) ->
-            layoutText ();
-        private final ChangeListener<Number> poschangelistener = (__obs, __old, __now) ->
+        /* appearance listeners */
+        private final ChangeListener<Object> appearance_update = (__obs, __old, __now) -> {
+            updateAppearance ();
             layout ();
+        };
+        private final ChangeListener<GuideAppearance> appearancelistener = (__obs, old, now) -> {
+            if (old != null) {
+                old.contentpos     .removeListener (appearance_update);
+                old.foregroundcolor.removeListener (appearance_update);
+                old.backgroundcolor.removeListener (appearance_update);
+            }
+            /* now should never be null */
+            now.contentpos     .addListener (appearance_update);
+            now.foregroundcolor.addListener (appearance_update);
+            now.backgroundcolor.addListener (appearance_update);
+            /* invoke to automatically change everything */
+            appearance_update.changed (null, null, null);
+        };
 
+        /* layout listeners */
+        private final ChangeListener<Orientation> orientationlistener = (__obs, __old, __now) ->
+            layoutLine ();
+        private final ChangeListener<Boolean> linevislistener = (__obs, __old, __now) ->
+            uiline.setVisible (isLineVisible ());
+        private final ChangeListener<Boolean> textvislistener = (__obs, __old, __now) -> {
+            uitext.setVisible (isTextVisible ());
+            uitextbg.setVisible (isTextVisible ());
+        };
+        private final ChangeListener<String> textlistener = (__obs, __old, __now) -> {
+            uitext.setText (getText ());
+            layoutText ();
+        };
+        private final ChangeListener<Number> positionlistener = (__obs, __old, __now) ->
+            layout ();
+        private final ChangeListener<Number> widthlistener = (__obs, __old, __now) ->
+            { if (getOrientation () == Orientation.HORIZONTAL) layoutLine (); };
+        private final ChangeListener<Number> heightlistener = (__obs, __old, __now) ->
+            { if (getOrientation () == Orientation.VERTICAL) layoutLine(); };
+
+        /* install listeners */
         {
-            orientation.addListener (orientationchangelistener);
-            text.addListener (textchangelistener);
-            x.addListener (poschangelistener);
-            y.addListener (poschangelistener);
+            appearance.addListener (appearancelistener);
+            orientation.addListener (orientationlistener);
+            linevisible.addListener (linevislistener);
+            textvisible.addListener (textvislistener);
+            text.addListener (textlistener);
+            x.addListener (positionlistener);
+            y.addListener (positionlistener);
+            widthProperty ().addListener (widthlistener);
+            heightProperty ().addListener (heightlistener);
         }
 
-        /* +-------------+ */
-        /* | LINE PANELS | */
-        /* +-------------+ */
-        private final SimpleObjectProperty<Pane> linepane = new SimpleObjectProperty<> ();
-        public ReadOnlyObjectProperty<Pane> linePaneProperty ()
-            { return linepane; }
-        public Pane getLinePane ()
-            { return linepane.get (); }
-        public void setLinePane (Pane nlinepane)
-            { linepane.set (Objects.requireNonNull (nlinepane, "A valid line pane must be specified")); }
+        private void updateLineAppearance () {
+            final GuideAppearance appearance = getAppearance ();
+            uiline.setStroke (appearance.getBackgroundColor ());
+        }
 
-        /* +------------+ */
-        /* | TEXT PANEL | */
-        /* +------------+ */
-        private final SimpleObjectProperty<Pane> textpane = new SimpleObjectProperty<> ();
-        public ObjectProperty<Pane> textPaneProperty ()
-            { return textpane; }
-        public Pane getTextPane ()
-            { return textpane.get (); }
-        public void setTextPane (Pane ntextpane)
-            { textpane.set (Objects.requireNonNull (ntextpane, "A valid text pane must be specified")); }
+        private void updateTextAppearance () {
+            final GuideAppearance appearance = getAppearance ();
+            uitext.setStroke (appearance.getForegroundColor ());
+            uitextbg.setFill (appearance.getBackgroundColor ());
+        }
 
-        /* +----------------+ */
-        /* | PANE LISTENERS | */
-        /* +----------------+ */
-        private final ChangeListener<Number> linepanewidthlistener = (__obs, __old, __now) ->
-            { if (getOrientation () == Orientation.HORIZONTAL) layoutLine (); };
-        private final ChangeListener<Number> linepaneheightlistener = (__obs, __old, __now) ->
-            { if (getOrientation () == Orientation.VERTICAL) layoutLine(); };
-        private final ChangeListener<Pane> linepanechangelistener = (__obs, old, now) -> {
-            old.getChildren ().remove (uiline);
-            old.widthProperty ().removeListener (linepanewidthlistener);
-            old.heightProperty ().removeListener (linepaneheightlistener);
-            now.getChildren ().add (uiline);
-            now.widthProperty ().addListener (linepanewidthlistener);
-            now.heightProperty ().addListener (linepaneheightlistener);
-        };
-        private final ChangeListener<Pane> textpanechangelistener = (__obs, old, now) -> {
-            old.getChildren ().removeAll (uitext, uitextbg);
-            now.getChildren ().addAll (uitext, uitextbg);
-        };
-
-        {
-            linepane.addListener (linepanechangelistener);
-            textpane.addListener (textpanechangelistener);
+        private void updateAppearance () {
+            updateLineAppearance ();
+            updateTextAppearance ();
         }
 
         /* +----------------+ */
         /* | INITIALIZATION | */
         /* +----------------+ */
-        Guide (GuideStyle style, Orientation or, Pane linepane, Pane textpane) {
-            setStyle (style);
-            setOrientation (or);
-            setLinePane (linepane);
-            setTextPane (textpane);
+        Guide (GuideAppearance pappearance, Orientation porientation) {
+            setAppearance (pappearance);
+            setOrientation (porientation);
         }
 
-        /* +-----------------------+ */
-        /* | LAYOUT IMPLEMENTATION | */
-        /* +-----------------------+ */
+        /* +--------+ */
+        /* | LAYOUT | */
+        /* +--------+ */
         public void layout () {
             layoutLine ();
             layoutText ();
@@ -484,7 +464,7 @@ public final class GraphGrid extends OrthoRegion {
             if (getOrientation () == Orientation.VERTICAL) {
                 final double
                     x = getX (),
-                    height = getLinePane ().getHeight ();
+                    height = getHeight ();
                 sx = x;
                 sy = 0d;
                 ex = x;
@@ -493,7 +473,7 @@ public final class GraphGrid extends OrthoRegion {
             else {
                 final double
                     y = getY (),
-                    width = getLinePane ().getWidth ();
+                    width = getWidth ();
                 sx = 0d;
                 sy = y;
                 ex = width;
@@ -506,7 +486,7 @@ public final class GraphGrid extends OrthoRegion {
         }
 
         private void layoutText () {
-            final UIPos textpos = getStyle ().getTextPosition ();
+            final UIPos textpos = getAppearance ().getContentPosition ();
             final double
                 x = getX (),
                 y = getY (),
@@ -515,11 +495,14 @@ public final class GraphGrid extends OrthoRegion {
             final double
                 tx = x + textpos.XMUL * tw,
                 ty = y + textpos.YMUL * th;
-            uitext.setLayoutX (tx);
-            uitext.setLayoutY (ty);
+            final double
+                real_tx = Numbers.clamp (tx, 0d, getWidth () - tw),
+                real_ty = Numbers.clamp (ty, 0d, getHeight () - th);
+            uitext.setLayoutX (real_tx);
+            uitext.setLayoutY (real_ty);
 
-            uitextbg.setLayoutX (tx);
-            uitextbg.setLayoutY (ty);
+            uitextbg.setLayoutX (real_tx);
+            uitextbg.setLayoutY (real_ty);
             uitextbg.setWidth (tw);
             uitextbg.setHeight (th);
         }

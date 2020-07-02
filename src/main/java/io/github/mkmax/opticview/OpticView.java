@@ -1,8 +1,6 @@
 package io.github.mkmax.opticview;
 
-import io.github.mkmax.opticview.ui.sci.GraphData;
 import io.github.mkmax.opticview.ui.sci.GraphGrid;
-import io.github.mkmax.opticview.ui.sci.GraphView;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -17,13 +15,16 @@ public class OpticView extends Application {
 
     @Override
     public void start (Stage stage) {
-        GraphData gd = new GraphData ();
-
+        GraphGrid grid = new GraphGrid ();
+        grid.setLeft (5d);
+        grid.setRight (10d);
+        grid.setBottom (5d);
+        grid.setTop (10d);
 
         StackPane parent = new StackPane ();
         parent.setPrefWidth (512d);
         parent.setPrefHeight (512d);
-        parent.getChildren ().addAll ();
+        parent.getChildren ().addAll (grid);
 
         Scene scene = new Scene (parent);
 

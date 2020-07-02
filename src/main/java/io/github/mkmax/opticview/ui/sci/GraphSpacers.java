@@ -7,6 +7,11 @@ import java.util.Collections;
 
 public class GraphSpacers {
 
+    private static final int
+        STANDARD_ORIGIN_CLASS = 0,
+        STANDARD_MAJOR_CLASS  = 1,
+        STANDARD_MINOR_CLASS  = 2;
+
     /* +----------------+ */
     /* | DECIMAL SPACER | */
     /* +----------------+ */
@@ -55,19 +60,19 @@ public class GraphSpacers {
         final var indices = new ArrayList<GraphSpacer.Point> (total);
         int majpt = 0;
         for (int minpt = 0; minpt < total; ++minpt) {
-            int stylehint = GraphSpacer.StandardStyleHints.MINOR;
+            int styleclass = STANDARD_MINOR_CLASS;
             double minpos = minstart + minpt * minstep;
             double majpos = majstart + majpt * majstep;
 
             if (Numbers.areEqual (minpos, majpos)) {
-                stylehint = GraphSpacer.StandardStyleHints.MAJOR;
+                styleclass = STANDARD_MAJOR_CLASS;
                 ++majpt;
             }
 
             if (Numbers.areEqual (minpos, 0d))
-                stylehint = GraphSpacer.StandardStyleHints.ORIGIN;
+                styleclass = STANDARD_ORIGIN_CLASS;
 
-            indices.add (new GraphSpacer.Point (minpos, stylehint));
+            indices.add (new GraphSpacer.Point (minpos, styleclass));
         }
         return indices;
     };
