@@ -5,11 +5,12 @@ import io.github.mkmax.opticview.util.Disposable;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.css.CssMetaData;
 import javafx.css.Styleable;
-import javafx.scene.layout.Pane;
+import javafx.scene.Node;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import java.util.List;
 
-public class OrthoRegion extends Region implements OrthoComponent, Disposable {
+public class OrthoStackPane extends StackPane implements OrthoComponent, Disposable {
 
     /* +-----------------+ */
     /* | JAVAFX CSS INFO | */
@@ -29,8 +30,12 @@ public class OrthoRegion extends Region implements OrthoComponent, Disposable {
         this::setWidth,
         this::setHeight);
 
-    public OrthoRegion () {
+    public OrthoStackPane () {
         super ();
+    }
+
+    public OrthoStackPane (Node... children) {
+        super (children);
     }
 
     /* +----------------------------+ */

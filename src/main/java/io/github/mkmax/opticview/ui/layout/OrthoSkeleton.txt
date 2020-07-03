@@ -1,23 +1,6 @@
-package io.github.mkmax.opticview.ui.layout;
-
-import io.github.mkmax.opticview.util.Disposable;
-
 import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.css.CssMetaData;
-import javafx.css.Styleable;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import java.util.List;
 
-public class OrthoRegion extends Region implements OrthoComponent, Disposable {
-
-    /* +-----------------+ */
-    /* | JAVAFX CSS INFO | */
-    /* +-----------------+ */
-
-    public static List<CssMetaData<? extends Styleable, ?>> getClassCssMetaData () {
-        return Region.getClassCssMetaData ();
-    }
+public class [ClassName] extends [JavaFXComponent] implements OrthoComponent, Disposable {
 
     /* +--------------------------+ */
     /* | INITIALIZATION & MEMBERS | */
@@ -29,9 +12,7 @@ public class OrthoRegion extends Region implements OrthoComponent, Disposable {
         this::setWidth,
         this::setHeight);
 
-    public OrthoRegion () {
-        super ();
-    }
+    [Constructor(s)]
 
     /* +----------------------------+ */
     /* | PROPERTY QUERIES & SETTERS | */

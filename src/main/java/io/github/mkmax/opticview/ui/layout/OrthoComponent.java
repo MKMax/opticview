@@ -10,17 +10,17 @@ public interface OrthoComponent {
     /* +---------------------+ */
 
     @FunctionalInterface
-    public interface HorizontalRemapListener {
+    interface HorizontalRemapListener {
         void onRemap (OrthoComponent oc);
     }
 
     @FunctionalInterface
-    public interface VerticalRemapListener {
+    interface VerticalRemapListener {
         void onRemap (OrthoComponent oc);
     }
 
     @FunctionalInterface
-    public interface TotalRemapListener {
+    interface TotalRemapListener {
         void onRemap (OrthoComponent oc);
     }
 
@@ -69,15 +69,15 @@ public interface OrthoComponent {
     /* | LISTENER MANAGEMENT | */
     /* +---------------------+ */
 
-    /* HORIZONTAL LISTENERS */
+    /* HORIZONTAL LISTENERS (fired if and only if the horizontal mapping solely changes) */
     void addRemapListener    (HorizontalRemapListener lis);
     void removeRemapListener (HorizontalRemapListener lis);
 
-    /* VERTICAL LISTENERS */
+    /* VERTICAL LISTENERS (fired if an only if the vertical mapping solely changes) */
     void addRemapListener    (VerticalRemapListener lis);
     void removeRemapListener (VerticalRemapListener lis);
 
-    /* TOTAL LISTENERS */
+    /* TOTAL LISTENERS (fired if and only if both the horizontal and vertical mappings both change) */
     void addRemapListener    (TotalRemapListener lis);
     void removeRemapListener (TotalRemapListener lis);
 
