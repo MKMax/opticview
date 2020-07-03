@@ -9,6 +9,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public final class GraphData {
@@ -159,6 +160,13 @@ public final class GraphData {
 
     public Entry createEntry (Function reqfunc) {
         return createEntry (reqfunc, null, null);
+    }
+
+    /* +-----------------+ */
+    /* | ITERATE ENTRIES | */
+    /* +-----------------+ */
+    public void forEachEntry (Consumer<? super Entry> fe) {
+        entries.forEach (fe);
     }
 
     /* +--------------+ */

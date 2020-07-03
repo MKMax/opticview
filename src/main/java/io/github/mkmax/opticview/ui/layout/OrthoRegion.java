@@ -1,4 +1,4 @@
-package io.github.mkmax.opticview.ui;
+package io.github.mkmax.opticview.ui.layout;
 
 import io.github.mkmax.opticview.util.Disposable;
 
@@ -201,6 +201,7 @@ public abstract class OrthoRegion extends Region implements Disposable {
         top   .unbind ();
     }
 
+    /* map to component coordinates */
     public double mapx (double p) {
         return Mx * p + Cx;
     }
@@ -209,6 +210,7 @@ public abstract class OrthoRegion extends Region implements Disposable {
         return My * p + Cy;
     }
 
+    /* map back to virtual coordinates */
     public double unmapx (double q) {
         return (q - Cx) / Mx;
     }

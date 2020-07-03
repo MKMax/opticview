@@ -1,8 +1,10 @@
 package io.github.mkmax.opticview.ui.sci;
 
-import io.github.mkmax.opticview.ui.OrthoRegion;
+import io.github.mkmax.opticview.ui.layout.OrthoRegion;
 import io.github.mkmax.opticview.util.Disposable;
+
 import javafx.scene.control.Label;
+import javafx.scene.layout.StackPane;
 
 public final class GraphFrame extends OrthoRegion implements Disposable {
 
@@ -11,6 +13,7 @@ public final class GraphFrame extends OrthoRegion implements Disposable {
     private final GraphView view = new GraphView (data);
     private final GraphLegend legend = new GraphLegend ();
 
+    private final StackPane graphstack = new StackPane ();
     private final Label ylabel = new Label ();
     private final Label xlabel = new Label ();
 
@@ -18,6 +21,9 @@ public final class GraphFrame extends OrthoRegion implements Disposable {
         /* do initialization here */
     }
 
+    /* +----------------+ */
+    /* | INITIALIZATION | */
+    /* +----------------+ */
     public GraphFrame (
         double left,
         double right,
@@ -35,7 +41,6 @@ public final class GraphFrame extends OrthoRegion implements Disposable {
         /* already initialized */
     }
 
-
-
-
+    /* +-+ */
+    /* | | */
 }
