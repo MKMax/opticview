@@ -18,6 +18,7 @@ public final class OrthoTrait implements OrthoComponent, Disposable {
     /* | PROPERTIES & MEMBERS | */
     /* +----------------------+ */
 
+    /* @NOTE(max): This may be a terrible way to handle multiple setters per event trigger */
     private volatile boolean
         inFusedHorizontalModify = false,
         inFusedVerticalModify   = false,
@@ -44,13 +45,19 @@ public final class OrthoTrait implements OrthoComponent, Disposable {
     @Override public ReadOnlyDoubleProperty widthPropertyOC  ()               { return width;                    }
     @Override public double                 getWidthOC       ()               { return width.get ();             }
     @Override public void                   setWidthOC       (double nWidth)  {
-        if (widthBindingPoint == nodeWidthProperty) nodeWidthSetter.accept (nWidth);
+        /* this method is essentially an alias for width.set(nWidth); */
+        if (widthBindingPoint != nodeWidthProperty)
+            throw new RuntimeException ("Prohibited to set the width of a bound component/property");
+        nodeWidthSetter.accept (nWidth);
     }
 
     @Override public ReadOnlyDoubleProperty heightPropertyOC ()               { return height;                   }
     @Override public double                 getHeightOC      ()               { return height.get ();            }
     @Override public void                   setHeightOC      (double nHeight) {
-        if (heightBindingPoint == nodeHeightProperty) nodeHeightSetter.accept (nHeight);
+        /* this method is essentially an alias for height.set(nHeight); */
+        if (heightBindingPoint != nodeHeightProperty)
+            throw new RuntimeException ("Prohibited to set the height of a bound component/property");
+        nodeHeightSetter.accept (nHeight);
     }
 
     @Override public ReadOnlyDoubleProperty leftProperty     ()               { return left;                     }
@@ -79,7 +86,7 @@ public final class OrthoTrait implements OrthoComponent, Disposable {
         inFusedHorizontalModify = false;
 
         /* manually trigger the horizontal change event after it completes */
-        onHorizontalParamChanged.changed (null, null, null);
+        onHorizontalParamsChanged (false, Double.NaN);
     }
 
     @Override
@@ -91,7 +98,7 @@ public final class OrthoTrait implements OrthoComponent, Disposable {
         inFusedVerticalModify = false;
 
         /* manually trigger the vertical change event after it completes */
-        onVerticalParamChanged.changed (null, null, null);
+        onVerticalParamsChanged (false, Double.NaN);
     }
 
     /* FUSED WINDOW SETTER */
@@ -106,48 +113,48 @@ public final class OrthoTrait implements OrthoComponent, Disposable {
         inFusedWindowModify = false;
 
         /* manually trigger a single change listener to update to changes in one routine */
-        onTotalParamChange ();
+        onWindowParamsChanged (false, false, Double.NaN, Double.NaN);
     }
 
     /* +----------------------+ */
     /* | LISTENER MANAGEMENT  | */
     /* +----------------------+ */
 
-    private final List<HorizontalRemapListener> horremaplisteners = new ArrayList<> ();
-    private final List<VerticalRemapListener>   verremaplisteners = new ArrayList<> ();
-    private final List<TotalRemapListener>      totremaplisteners = new ArrayList<> ();
+    private final List<RemapListener> horremaplisteners = new ArrayList<> ();
+    private final List<RemapListener> verremaplisteners = new ArrayList<> ();
+    private final List<RemapListener> winremaplisteners = new ArrayList<> ();
 
     /* HORIZONTAL REMAP LISTENERS */
     @Override
-    public void addRemapListener (HorizontalRemapListener lis) {
+    public void registerHorizontalRemapListener (RemapListener lis) {
         if (lis != null) horremaplisteners.add (lis);
     }
 
     @Override
-    public void removeRemapListener (HorizontalRemapListener lis) {
+    public void removeHorizontalRemapListener (RemapListener lis) {
         horremaplisteners.remove (lis);
     }
 
     /* VERTICAL REMAP LISTENERS */
     @Override
-    public void addRemapListener (VerticalRemapListener lis) {
+    public void registerVerticalRemapListener (RemapListener lis) {
         if (lis != null) verremaplisteners.add (lis);
     }
 
     @Override
-    public void removeRemapListener (VerticalRemapListener lis) {
+    public void removeVerticalRemapListener (RemapListener lis) {
         verremaplisteners.remove (lis);
     }
 
-    /* TOTAL REMAP LISTENERS */
+    /* WINDOW REMAP LISTENERS */
     @Override
-    public void addRemapListener (TotalRemapListener lis) {
-        if (lis != null) totremaplisteners.add (lis);
+    public void registerWindowRemapListener (RemapListener lis) {
+        if (lis != null) winremaplisteners.add (lis);
     }
 
     @Override
-    public void removeRemapListener (TotalRemapListener lis) {
-        totremaplisteners.remove (lis);
+    public void removeWindowRemapListener (RemapListener lis) {
+        winremaplisteners.remove (lis);
     }
 
     /* +----------+ */
@@ -158,27 +165,51 @@ public final class OrthoTrait implements OrthoComponent, Disposable {
         Mx, iMx, Cx,
         My, iMy, Cy;
 
-    private final ChangeListener<Number> onHorizontalParamChanged = (__obs, __old, __now) -> {
+    private final ChangeListener<Number> onHorizontalParamChangedListener = (obs, __old, now) ->
+        onHorizontalParamsChanged (obs == width, now == null ? Double.NaN : now.doubleValue ());
+    private final ChangeListener<Number> onVerticalParamChangedListener = (obs, __old, now) ->
+        onVerticalParamsChanged (obs == height, now == null ? Double.NaN : now.doubleValue ());
+
+    private void onHorizontalParamsChanged (
+        boolean isWidthProperty,
+        double nWidthValue)
+    {
         if (inFusedWindowModify || inFusedHorizontalModify)
             return;
         recomputeHorizontalMap ();
+        if (isWidthProperty && widthBindingPoint != nodeWidthProperty)
+            nodeWidthSetter.accept (nWidthValue);
         horremaplisteners.forEach (l -> l.onRemap (this));
-    };
+    }
 
-    private final ChangeListener<Number> onVerticalParamChanged = (__obs, __old, __now) -> {
+    private void onVerticalParamsChanged (
+        boolean isHeightProperty,
+        double nHeightValue)
+    {
         if (inFusedWindowModify || inFusedVerticalModify)
             return;
         recomputeVerticalMap ();
+        if (isHeightProperty && heightBindingPoint != nodeHeightProperty)
+            nodeHeightSetter.accept (nHeightValue);
         verremaplisteners.forEach (l -> l.onRemap (this));
-    };
+    }
 
-    /* used by setWindow() to trigger an update event once */
-    private void onTotalParamChange () {
+    /* used to trigger an update event once for changes in both the horizontal and vertical */
+    private void onWindowParamsChanged (
+        boolean widthPropertyChanged,
+        boolean heightPropertyChanged,
+        double nWidthValue,
+        double nHeightValue)
+    {
         if (inFusedWindowModify) /* shouldn't happen, but we have it here just in case */
             return;
         recomputeHorizontalMap ();
         recomputeVerticalMap ();
-        totremaplisteners.forEach (l -> l.onRemap (this));
+        if (widthPropertyChanged && widthBindingPoint != nodeWidthProperty)
+            nodeWidthSetter.accept (nWidthValue);
+        if (heightPropertyChanged && heightBindingPoint != nodeHeightProperty)
+            nodeHeightSetter.accept (nHeightValue);
+        winremaplisteners.forEach (l -> l.onRemap (this));
     }
 
     private void recomputeHorizontalMap () {
@@ -204,30 +235,32 @@ public final class OrthoTrait implements OrthoComponent, Disposable {
     /* +----------------+ */
     /* | INITIALIZATION | */
     /* +----------------+ */
-
-    /* install the listeners before constructor to automatically update based on width/height */
-    {
-        width.addListener (onHorizontalParamChanged);
-        left.addListener (onHorizontalParamChanged);
-        right.addListener (onHorizontalParamChanged);
-        height.addListener (onVerticalParamChanged);
-        bottom.addListener (onVerticalParamChanged);
-        top.addListener (onVerticalParamChanged);
-    }
-
     public OrthoTrait (
         ReadOnlyDoubleProperty pNodeWidthProperty,
         ReadOnlyDoubleProperty pNodeHeightProperty,
         DoubleConsumer pNodeWidthSetter,
         DoubleConsumer pNodeHeightSetter)
     {
+        /* configure node-related settings first */
         nodeWidthProperty  = Objects.requireNonNull (pNodeWidthProperty);
         nodeHeightProperty = Objects.requireNonNull (pNodeHeightProperty);
         nodeWidthSetter    = Objects.requireNonNull (pNodeWidthSetter);
         nodeHeightSetter   = Objects.requireNonNull (pNodeHeightSetter);
 
+        /* install listeners */
+        width .addListener (onHorizontalParamChangedListener);
+        left  .addListener (onHorizontalParamChangedListener);
+        right .addListener (onHorizontalParamChangedListener);
+        height.addListener (onVerticalParamChangedListener);
+        bottom.addListener (onVerticalParamChangedListener);
+        top   .addListener (onVerticalParamChangedListener);
+
+        /* bind width/height immediately to the node's width/height */
+        inFusedWindowModify = true; /* disable automatic event triggering */
         width.bind (widthBindingPoint = nodeWidthProperty);
         height.bind (heightBindingPoint = nodeHeightProperty);
+        inFusedWindowModify = false; /* allow automatic event triggering */
+        onWindowParamsChanged (true, true, getWidthOC (), getHeightOC ());
     }
 
     /* +-----------------+ */
@@ -255,12 +288,43 @@ public final class OrthoTrait implements OrthoComponent, Disposable {
     }
 
     @Override
+    public void bindOrtho (OrthoComponent to) {
+        /* just as with the fused setters, we will only fire a remap event once */
+        inFusedWindowModify = true;
+        width .bind (widthBindingPoint = to.widthPropertyOC ());
+        height.bind (heightBindingPoint = to.heightPropertyOC ());
+        left  .bind (to.leftProperty ());
+        right .bind (to.rightProperty ());
+        bottom.bind (to.bottomProperty ());
+        top   .bind (to.topProperty ());
+        inFusedWindowModify = false;
+
+        /* manually trigger the total remap event after binding is complete */
+        onWindowParamsChanged (true, true, getWidthOC (), getHeightOC ());
+    }
+
+    @Override
+    public void unbindOrtho () {
+        inFusedWindowModify = true;
+        width .bind (widthBindingPoint = nodeWidthProperty);
+        height.bind (heightBindingPoint = nodeHeightProperty);
+        left  .unbind ();
+        right .unbind ();
+        bottom.unbind ();
+        top   .unbind ();
+        inFusedWindowModify = false;
+        /* we don't need to update the mapping since it's already up to date */
+    }
+
+    @Override
     public void dispose () {
-        width.removeListener (onHorizontalParamChanged);
-        left.removeListener (onHorizontalParamChanged);
-        right.removeListener (onHorizontalParamChanged);
-        height.removeListener (onVerticalParamChanged);
-        bottom.removeListener (onVerticalParamChanged);
-        top.removeListener (onVerticalParamChanged);
+        width .removeListener (onHorizontalParamChangedListener);
+        left  .removeListener (onHorizontalParamChangedListener);
+        right .removeListener (onHorizontalParamChangedListener);
+        height.removeListener (onVerticalParamChangedListener);
+        bottom.removeListener (onVerticalParamChangedListener);
+        top   .removeListener (onVerticalParamChangedListener);
+        width .unbind ();
+        height.unbind ();
     }
 }

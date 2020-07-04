@@ -1,5 +1,6 @@
 package io.github.mkmax.opticview.ui.sci;
 
+import io.github.mkmax.opticview.ui.layout.OrthoComponent;
 import io.github.mkmax.opticview.ui.layout.OrthoRegion;
 
 import javafx.geometry.VPos;
@@ -67,12 +68,13 @@ public final class GraphGrid extends OrthoRegion {
     private final List<Guide> verGuides = new ArrayList<> ();
 
     {
-        addHorizontalRemapListener (this::update);
-        addVerticalRemapListener (this::update);
+        addRemapListener ((HorizontalRemapListener) this::update);
+        addRemapListener ((VerticalRemapListener) this::update);
+        addRemapListener ((RemapListener) this::update);
         getChildren ().addAll (linePane, textPane); /* order matters */
     }
 
-    private void update () {
+    private void update (OrthoComponent __comp) {
         final double
             width  = getWidth (),
             height = getHeight (),

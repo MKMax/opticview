@@ -30,15 +30,19 @@ public final class GraphFrame extends OrthoRegion implements Disposable {
         double bottom,
         double top)
     {
-        super (left, right, bottom, top);
+        setWindow (left, right, bottom, top);
     }
 
     public GraphFrame (double uniform) {
-        super (uniform);
+        this (
+            -uniform,
+             uniform,
+            -uniform,
+             uniform);
     }
 
     public GraphFrame () {
-        /* already initialized */
+        this (1d);
     }
 
     /* +-+ */

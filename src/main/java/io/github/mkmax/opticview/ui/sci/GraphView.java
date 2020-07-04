@@ -1,5 +1,6 @@
 package io.github.mkmax.opticview.ui.sci;
 
+import io.github.mkmax.opticview.ui.layout.OrthoComponent;
 import io.github.mkmax.opticview.ui.sci.GraphData.*;
 import io.github.mkmax.opticview.ui.layout.OrthoRegion;
 import io.github.mkmax.opticview.util.Disposable;
@@ -24,7 +25,9 @@ public final class GraphView extends OrthoRegion implements Disposable {
         dataref.registerEntryFunctionPropertyChangeListener (entryfunclistener);
         dataref.registerEntryPrefColorPropertyChangeListener (entrycolorlistener);
         /* install any other listeners */
-        addRemapListener (maplistener);
+        registerHorizontalRemapListener (onRemap);
+        registerVerticalRemapListener (onRemap);
+        registerWindowRemapListener (onRemap);
         /* add the currently registered entries in dataref */
         dataref.forEachEntry (this::recognizeEntry);
     }
@@ -33,8 +36,8 @@ public final class GraphView extends OrthoRegion implements Disposable {
     /* | LISTENERS | */
     /* +-----------+ */
 
-    /* DIMENSIONS LISTENER */
-    private final OrthoRegion.RemapListener maplistener = () ->
+    /* REMAP LISTENER */
+    private final OrthoComponent.RemapListener onRemap = (__comp) ->
         entrymap.forEach ((entry, canvas) -> {
             clearCanvas (canvas);
             fitCanvas (canvas);
@@ -151,6 +154,6 @@ public final class GraphView extends OrthoRegion implements Disposable {
         dataref.removeEntryRemovalListener (entryremovelistener);
         dataref.removeEntryFunctionPropertyChangeListener (entryfunclistener);
         dataref.removeEntryPrefColorPropertyChangeListener (entrycolorlistener);
-        removeRemapListener (maplistener);
+        removeRemapListener (totmaplistener);
     }
 }

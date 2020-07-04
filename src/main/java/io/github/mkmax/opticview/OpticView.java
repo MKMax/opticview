@@ -29,7 +29,7 @@ public class OpticView extends Application {
         view.setWindow (-5d, +5d, -5d, +5d);
 
         GraphGrid grid = new GraphGrid ();
-        grid.bindFrustum (view);
+        grid.bindOrtho (view);
 
         StackPane parent = new StackPane ();
         parent.setPrefWidth (512d);

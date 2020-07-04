@@ -5,7 +5,6 @@ import io.github.mkmax.opticview.util.Disposable;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.css.CssMetaData;
 import javafx.css.Styleable;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import java.util.List;
 
@@ -154,37 +153,37 @@ public class OrthoRegion extends Region implements OrthoComponent, Disposable {
     /* | LISTENER MANAGEMENT | */
     /* +---------------------+ */
 
-    /* HORIZONTAL REMAP LISTENER */
+    /* HORIZONTAL REMAP LISTENERS */
     @Override
-    public void addRemapListener (HorizontalRemapListener lis) {
-        orthoImpl.addRemapListener (lis);
+    public void registerHorizontalRemapListener (RemapListener lis) {
+        orthoImpl.registerHorizontalRemapListener (lis);
     }
 
     @Override
-    public void removeRemapListener (HorizontalRemapListener lis) {
-        orthoImpl.removeRemapListener (lis);
+    public void removeHorizontalRemapListener (RemapListener lis) {
+        orthoImpl.removeHorizontalRemapListener (lis);
     }
 
-    /* VERTICAL REMAP LISTENER */
+    /* VERTICAL REMAP LISTENERS */
     @Override
-    public void addRemapListener (VerticalRemapListener lis) {
-        orthoImpl.addRemapListener (lis);
-    }
-
-    @Override
-    public void removeRemapListener (VerticalRemapListener lis) {
-        orthoImpl.removeRemapListener (lis);
-    }
-
-    /* TOTAL REMAP LISTENER */
-    @Override
-    public void addRemapListener (TotalRemapListener lis) {
-        orthoImpl.addRemapListener (lis);
+    public void registerVerticalRemapListener (RemapListener lis) {
+        orthoImpl.registerVerticalRemapListener (lis);
     }
 
     @Override
-    public void removeRemapListener (TotalRemapListener lis) {
-        orthoImpl.removeRemapListener (lis);
+    public void removeVerticalRemapListener (RemapListener lis) {
+        orthoImpl.removeVerticalRemapListener (lis);
+    }
+
+    /* WINDOW REMAP LISTENERS */
+    @Override
+    public void registerWindowRemapListener (RemapListener lis) {
+        orthoImpl.registerWindowRemapListener (lis);
+    }
+
+    @Override
+    public void removeWindowRemapListener (RemapListener lis) {
+        orthoImpl.removeWindowRemapListener (lis);
     }
 
     /* +--------------------+ */
@@ -209,6 +208,16 @@ public class OrthoRegion extends Region implements OrthoComponent, Disposable {
     @Override
     public double mapToVirtualY (double y) {
         return orthoImpl.mapToVirtualY (y);
+    }
+
+    @Override
+    public void bindOrtho (OrthoComponent to) {
+        orthoImpl.bindOrtho (to);
+    }
+
+    @Override
+    public void unbindOrtho () {
+        orthoImpl.unbindOrtho ();
     }
 
     @Override

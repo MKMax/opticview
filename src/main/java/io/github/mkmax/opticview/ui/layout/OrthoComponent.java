@@ -10,17 +10,7 @@ public interface OrthoComponent {
     /* +---------------------+ */
 
     @FunctionalInterface
-    interface HorizontalRemapListener {
-        void onRemap (OrthoComponent oc);
-    }
-
-    @FunctionalInterface
-    interface VerticalRemapListener {
-        void onRemap (OrthoComponent oc);
-    }
-
-    @FunctionalInterface
-    interface TotalRemapListener {
+    interface RemapListener {
         void onRemap (OrthoComponent oc);
     }
 
@@ -70,26 +60,29 @@ public interface OrthoComponent {
     /* +---------------------+ */
 
     /* HORIZONTAL LISTENERS (fired if and only if the horizontal mapping solely changes) */
-    void addRemapListener    (HorizontalRemapListener lis);
-    void removeRemapListener (HorizontalRemapListener lis);
+    void registerHorizontalRemapListener (RemapListener lis);
+    void removeHorizontalRemapListener   (RemapListener lis);
 
     /* VERTICAL LISTENERS (fired if an only if the vertical mapping solely changes) */
-    void addRemapListener    (VerticalRemapListener lis);
-    void removeRemapListener (VerticalRemapListener lis);
+    void registerVerticalRemapListener   (RemapListener lis);
+    void removeVerticalRemapListener     (RemapListener lis);
 
-    /* TOTAL LISTENERS (fired if and only if both the horizontal and vertical mappings both change) */
-    void addRemapListener    (TotalRemapListener lis);
-    void removeRemapListener (TotalRemapListener lis);
+    /* WINDOW LISTENERS (fired if and only if both the horizontal and vertical mappings both change) */
+    void registerWindowRemapListener     (RemapListener lis);
+    void removeWindowRemapListener       (RemapListener lis);
 
-    /* +--------------------+ */
-    /* | MAPPING OPERATIONS | */
-    /* +--------------------+ */
+    /* +------------------------------+ */
+    /* | MAPPING OPERATIONS & BINDING | */
+    /* +------------------------------+ */
 
     double mapToComponentX (double x);
     double mapToComponentY (double y);
 
     double mapToVirtualX (double x);
     double mapToVirtualY (double y);
+
+    void bindOrtho (OrthoComponent to);
+    void unbindOrtho ();
 
     /* +-----------------------+ */
     /* | DEPRECATED & DEFAULTS | */
