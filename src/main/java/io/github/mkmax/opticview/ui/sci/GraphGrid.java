@@ -67,14 +67,7 @@ public final class GraphGrid extends OrthoRegion {
     private final List<Guide> horGuides = new ArrayList<> ();
     private final List<Guide> verGuides = new ArrayList<> ();
 
-    {
-        addRemapListener ((HorizontalRemapListener) this::update);
-        addRemapListener ((VerticalRemapListener) this::update);
-        addRemapListener ((RemapListener) this::update);
-        getChildren ().addAll (linePane, textPane); /* order matters */
-    }
-
-    private void update (OrthoComponent __comp) {
+    private final OrthoComponent.RemapListener update = (__comp) -> {
         final double
             width  = getWidth (),
             height = getHeight (),
@@ -204,8 +197,14 @@ public final class GraphGrid extends OrthoRegion {
             guide.text.setVisible (false);
             guide.textbg.setVisible (false);
         }
-    }
+    };
 
+    {
+        registerHorizontalRemapListener (update);
+        registerVerticalRemapListener (update);
+        registerWindowRemapListener (update);
+        getChildren ().addAll (linePane, textPane); /* order matters */
+    }
 
 
 

@@ -119,6 +119,7 @@ public final class GraphData {
 
         @Override
         public void changed (ObservableValue<? extends T> obs, T old, T now) {
+            /* @NOTE(max): improve lookup time with HashMap? */
             final Entry entrybyobs = gd.findFirstEntry (e -> e.function == obs);
             if (entrybyobs == null)
                 throw new RuntimeException ("Failed to find function entry by event source observable");

@@ -10,26 +10,50 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public final class GraphView extends OrthoRegion implements Disposable {
 
-    private final GraphData dataref;
+    /* +------------+ */
+    /* | GRAPH DATA | */
+    /* +------------+ */
+    private GraphData dataref;
+
+    public GraphData getData () {
+        return dataref;
+    }
+
+    public void setData (GraphData ndata) {
+        Objects.requireNonNull (ndata, "A data object reference must be specified");
+        if (dataref != null) { /* if setData() is called after construction, unlink from previous data */
+            dataref.removeEntryAdditionListener (entryaddlistener);
+            dataref.removeEntryRemovalListener (entryremovelistener);
+            dataref.removeEntryFunctionPropertyChangeListener (entryfunclistener);
+            dataref.removeEntryPrefColorPropertyChangeListener (entrycolorlistener);
+            /* remove references to the previous data's entries */
+            purgeEntries ();
+        }
+        /* register handlers for the new data set */
+        ndata.registerEntryAdditionListener (entryaddlistener);
+        ndata.registerEntryRemovalListener (entryremovelistener);
+        ndata.registerEntryFunctionPropertyChangeListener (entryfunclistener);
+        ndata.registerEntryPrefColorPropertyChangeListener (entrycolorlistener);
+        /* update the view to reflect the new data */
+        ndata.forEachEntry (recognizeEntryDelegate);
+    }
+
+    /* +--------------------------------+ */
+    /* | INITIALIZATION & OTHER MEMBERS | */
+    /* +--------------------------------+ */
     private final Stack<Canvas> reusestack = new Stack<> ();
     private final Map<Entry, Canvas> entrymap = new HashMap<> ();
 
     public GraphView (GraphData ref) {
-        dataref = Objects.requireNonNull (ref, "A data object reference must be specified");
-        /* install data listeners */
-        dataref.registerEntryAdditionListener (entryaddlistener);
-        dataref.registerEntryRemovalListener (entryremovelistener);
-        dataref.registerEntryFunctionPropertyChangeListener (entryfunclistener);
-        dataref.registerEntryPrefColorPropertyChangeListener (entrycolorlistener);
+        setData (ref);
         /* install any other listeners */
         registerHorizontalRemapListener (onRemap);
         registerVerticalRemapListener (onRemap);
         registerWindowRemapListener (onRemap);
-        /* add the currently registered entries in dataref */
-        dataref.forEachEntry (this::recognizeEntry);
     }
 
     /* +-----------+ */
@@ -61,6 +85,8 @@ public final class GraphView extends OrthoRegion implements Disposable {
     /* +-----------------------+ */
 
     /* ENTRY TRANSACTION IMPLEMENTATION */
+    private final Consumer<Entry> recognizeEntryDelegate = this::recognizeEntry;
+
     private void recognizeEntry (Entry entry) {
         final Canvas canvas = allocateCanvas ();
         getChildren ().add (canvas);
@@ -73,6 +99,14 @@ public final class GraphView extends OrthoRegion implements Disposable {
         getChildren ().remove (canvas);
         entrymap.remove (entry);
         storeCanvas (canvas);
+    }
+
+    private void purgeEntries () {
+        for (Canvas c : entrymap.values ()) {
+            getChildren ().remove (c);
+            storeCanvas (c);
+        }
+        entrymap.clear ();
     }
 
     /* CANVAS HANDLING */
@@ -107,6 +141,8 @@ public final class GraphView extends OrthoRegion implements Disposable {
     /* RENDERING */
     private void render (Entry entry, boolean clear, boolean fit) {
         final Canvas canvas = entrymap.get (entry);
+        if (canvas == null) /* should never happen */
+            throw new RuntimeException ("Should not be able to render an unregistered entry");
         if (clear) clearCanvas (canvas);
         if (fit) fitCanvas (canvas);
         render (entry, canvas);
@@ -150,10 +186,13 @@ public final class GraphView extends OrthoRegion implements Disposable {
 
     @Override
     public void dispose () {
+        super.dispose ();
         dataref.removeEntryAdditionListener (entryaddlistener);
         dataref.removeEntryRemovalListener (entryremovelistener);
         dataref.removeEntryFunctionPropertyChangeListener (entryfunclistener);
         dataref.removeEntryPrefColorPropertyChangeListener (entrycolorlistener);
-        removeRemapListener (totmaplistener);
+        removeHorizontalRemapListener (onRemap);
+        removeVerticalRemapListener (onRemap);
+        removeWindowRemapListener (onRemap);
     }
 }
