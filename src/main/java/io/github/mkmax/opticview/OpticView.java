@@ -1,11 +1,8 @@
 package io.github.mkmax.opticview;
 
-import io.github.mkmax.opticview.ui.sci.GraphData;
-import io.github.mkmax.opticview.ui.sci.GraphGrid;
-import io.github.mkmax.opticview.ui.sci.GraphView;
+import io.github.mkmax.opticview.ui.graph.GraphStack;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -19,22 +16,17 @@ public class OpticView extends Application {
 
     @Override
     public void start (Stage stage) {
-        GraphData data = new GraphData ();
-        data.createEntry (x -> x * x, Color.FIREBRICK);
-        data.createEntry (Math::sin, Color.WHEAT);
-        data.createEntry (Math::cos, Color.STEELBLUE);
-        data.createEntry (Math::log, Color.SEAGREEN);
-
-        GraphView view = new GraphView (data);
-        view.setWindow (-5d, +5d, -5d, +5d);
-
-        GraphGrid grid = new GraphGrid ();
-        grid.bindOrtho (view);
+        GraphStack gs = new GraphStack ();
+        gs.getData ().createEntry (x -> x * x, Color.FIREBRICK, "Quadratic");
+        gs.getData ().createEntry (Math::sin, Color.STEELBLUE, "Sine");
+        gs.getData ().createEntry (Math::cos, Color.WHEAT, "Cosine");
+        gs.getData ().createEntry (Math::log, Color.SEAGREEN, "Natural Logarithm");
+        gs.setWindow (-5d, +5d, -5d, +5d);
 
         StackPane parent = new StackPane ();
         parent.setPrefWidth (512d);
         parent.setPrefHeight (512d);
-        parent.getChildren ().addAll (grid, view);
+        parent.getChildren ().addAll (gs);
 
         Scene scene = new Scene (parent);
 

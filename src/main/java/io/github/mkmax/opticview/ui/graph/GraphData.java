@@ -1,4 +1,4 @@
-package io.github.mkmax.opticview.ui.sci;
+package io.github.mkmax.opticview.ui.graph;
 
 import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;

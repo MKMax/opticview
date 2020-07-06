@@ -1,4 +1,4 @@
-package io.github.mkmax.opticview.ui.sci;
+package io.github.mkmax.opticview.ui.graph;
 
 import io.github.mkmax.opticview.ui.layout.OrthoComponent;
 import io.github.mkmax.opticview.ui.layout.OrthoRegion;

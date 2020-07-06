@@ -1,9 +1,7 @@
-package io.github.mkmax.opticview.ui.sci;
+package io.github.mkmax.opticview.ui.graph;
 
 import io.github.mkmax.opticview.ui.layout.OrthoComponent;
-import io.github.mkmax.opticview.ui.sci.GraphData.*;
-import io.github.mkmax.opticview.ui.layout.OrthoRegion;
-import io.github.mkmax.opticview.util.Disposable;
+import io.github.mkmax.opticview.ui.graph.GraphData.*;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -12,35 +10,7 @@ import javafx.scene.paint.Color;
 import java.util.*;
 import java.util.function.Consumer;
 
-public final class GraphView extends OrthoRegion implements Disposable {
-
-    /* +------------+ */
-    /* | GRAPH DATA | */
-    /* +------------+ */
-    private GraphData dataref;
-
-    public GraphData getData () {
-        return dataref;
-    }
-
-    public void setData (GraphData ndata) {
-        Objects.requireNonNull (ndata, "A data object reference must be specified");
-        if (dataref != null) { /* if setData() is called after construction, unlink from previous data */
-            dataref.removeEntryAdditionListener (entryaddlistener);
-            dataref.removeEntryRemovalListener (entryremovelistener);
-            dataref.removeEntryFunctionPropertyChangeListener (entryfunclistener);
-            dataref.removeEntryPrefColorPropertyChangeListener (entrycolorlistener);
-            /* remove references to the previous data's entries */
-            purgeEntries ();
-        }
-        /* register handlers for the new data set */
-        ndata.registerEntryAdditionListener (entryaddlistener);
-        ndata.registerEntryRemovalListener (entryremovelistener);
-        ndata.registerEntryFunctionPropertyChangeListener (entryfunclistener);
-        ndata.registerEntryPrefColorPropertyChangeListener (entrycolorlistener);
-        /* update the view to reflect the new data */
-        ndata.forEachEntry (recognizeEntryDelegate);
-    }
+public final class GraphView extends GraphStackDevice {
 
     /* +--------------------------------+ */
     /* | INITIALIZATION & OTHER MEMBERS | */
@@ -49,8 +19,8 @@ public final class GraphView extends OrthoRegion implements Disposable {
     private final Map<Entry, Canvas> entrymap = new HashMap<> ();
 
     public GraphView (GraphData ref) {
-        setData (ref);
-        /* install any other listeners */
+        setGraphData (ref);
+        /* install ortho listeners */
         registerHorizontalRemapListener (onRemap);
         registerVerticalRemapListener (onRemap);
         registerWindowRemapListener (onRemap);
@@ -185,12 +155,29 @@ public final class GraphView extends OrthoRegion implements Disposable {
     }
 
     @Override
+    public void onGraphDataChanged (GraphData old, GraphData now) {
+        if (old != null) {
+            old.removeEntryAdditionListener (entryaddlistener);
+            old.removeEntryRemovalListener (entryremovelistener);
+            old.removeEntryFunctionPropertyChangeListener (entryfunclistener);
+            old.removeEntryPrefColorPropertyChangeListener (entrycolorlistener);
+            purgeEntries ();
+        }
+        now.registerEntryAdditionListener (entryaddlistener);
+        now.registerEntryRemovalListener (entryremovelistener);
+        now.registerEntryFunctionPropertyChangeListener (entryfunclistener);
+        now.registerEntryPrefColorPropertyChangeListener (entrycolorlistener);
+        now.forEachEntry (recognizeEntryDelegate);
+    }
+
+    @Override
     public void dispose () {
         super.dispose ();
-        dataref.removeEntryAdditionListener (entryaddlistener);
-        dataref.removeEntryRemovalListener (entryremovelistener);
-        dataref.removeEntryFunctionPropertyChangeListener (entryfunclistener);
-        dataref.removeEntryPrefColorPropertyChangeListener (entrycolorlistener);
+        graphData.removeEntryAdditionListener (entryaddlistener);
+        graphData.removeEntryRemovalListener (entryremovelistener);
+        graphData.removeEntryFunctionPropertyChangeListener (entryfunclistener);
+        graphData.removeEntryPrefColorPropertyChangeListener (entrycolorlistener);
+        purgeEntries ();
         removeHorizontalRemapListener (onRemap);
         removeVerticalRemapListener (onRemap);
         removeWindowRemapListener (onRemap);
