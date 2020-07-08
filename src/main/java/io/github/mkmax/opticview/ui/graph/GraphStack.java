@@ -42,11 +42,11 @@ public class GraphStack extends OrthoStackPane implements Disposable {
     /* +------------+ */
     private GraphData dataref;
 
-    public GraphData getData () {
+    public GraphData getGraphData () {
         return dataref;
     }
 
-    public void setData (GraphData ndata) {
+    public void setGraphData (GraphData ndata) {
         Objects.requireNonNull (ndata, "A data object reference must be specified");
         view.setGraphData (ndata);
         legend.setGraphData (ndata);
@@ -85,5 +85,8 @@ public class GraphStack extends OrthoStackPane implements Disposable {
     @Override
     public void dispose () {
         super.dispose ();
+        grid.dispose ();
+        view.dispose ();
+        legend.dispose ();
     }
 }

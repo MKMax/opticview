@@ -206,6 +206,14 @@ public final class GraphGrid extends OrthoRegion {
         getChildren ().addAll (linePane, textPane); /* order matters */
     }
 
+    @Override
+    public void dispose () {
+        super.dispose ();
+        removeHorizontalRemapListener (update);
+        removeVerticalRemapListener (update);
+        removeWindowRemapListener (update);
+    }
+
 
 
 

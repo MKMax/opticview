@@ -1,5 +1,6 @@
 package io.github.mkmax.opticview;
 
+import io.github.mkmax.opticview.ui.graph.GraphFrame;
 import io.github.mkmax.opticview.ui.graph.GraphStack;
 
 import javafx.application.Application;
@@ -17,16 +18,20 @@ public class OpticView extends Application {
     @Override
     public void start (Stage stage) {
         GraphStack gs = new GraphStack ();
-        gs.getData ().createEntry (x -> 1d / x, Color.FIREBRICK, "Inverse");
-        gs.getData ().createEntry (Math::sin, Color.STEELBLUE, "Sine");
-        gs.getData ().createEntry (Math::cos, Color.WHEAT, "Cosine");
-        gs.getData ().createEntry (Math::log, Color.SEAGREEN, "Natural Logarithm");
+        gs.getGraphData ().createEntry (x -> 1d / x, Color.FIREBRICK, "Inverse");
+        gs.getGraphData ().createEntry (Math::sin, Color.STEELBLUE, "Sine");
+        gs.getGraphData ().createEntry (Math::cos, Color.WHEAT, "Cosine");
+        gs.getGraphData ().createEntry (Math::log, Color.SEAGREEN, "Natural Logarithm");
         gs.setWindow (-5d, +5d, -5d, +5d);
+
+        GraphFrame gf = new GraphFrame (gs);
+        gf.setVerticalLabel ("Output (ms)");
+        gf.setHorizontalLabel ("Input (ms)");
 
         StackPane parent = new StackPane ();
         parent.setPrefWidth (512d);
         parent.setPrefHeight (512d);
-        parent.getChildren ().addAll (gs);
+        parent.getChildren ().addAll (gf);
 
         Scene scene = new Scene (parent);
 
