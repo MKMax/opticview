@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public class GraphLegend extends GraphStackDevice {
+public class GraphLegend extends GraphStack.Device {
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     //                                        LISTING                                            //
@@ -146,8 +146,10 @@ public class GraphLegend extends GraphStackDevice {
     @Override
     public void dispose () {
         super.dispose ();
-        graphData.removeEntryAdditionListener (entryAdditionListener);
-        graphData.removeEntryRemovalListener (entryRemovalListener);
+        final GraphData gd = getGraphData ();
+        gd.removeEntryAdditionListener (entryAdditionListener);
+        gd.removeEntryRemovalListener (entryRemovalListener);
+        purgeEntries ();
         purgeEntries ();
     }
 }

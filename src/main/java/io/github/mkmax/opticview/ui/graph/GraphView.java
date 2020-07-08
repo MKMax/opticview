@@ -10,7 +10,7 @@ import javafx.scene.paint.Color;
 import java.util.*;
 import java.util.function.Consumer;
 
-public final class GraphView extends GraphStackDevice {
+public final class GraphView extends GraphStack.Device {
 
     /* +--------------------------------+ */
     /* | INITIALIZATION & OTHER MEMBERS | */
@@ -142,7 +142,7 @@ public final class GraphView extends GraphStackDevice {
             final double virtual_y = func.map (virtual_x);
             final double screen_x = mapx (virtual_x);
             final double screen_y = mapy (virtual_y);
-            if (i > 0) /* wait until we have two samples to draw the line segments */
+            if (i > 0) /* wait until we have at least two samples */
                 gc.strokeLine (
                     prev_screen_x,
                     prev_screen_y,
@@ -173,10 +173,11 @@ public final class GraphView extends GraphStackDevice {
     @Override
     public void dispose () {
         super.dispose ();
-        graphData.removeEntryAdditionListener (entryaddlistener);
-        graphData.removeEntryRemovalListener (entryremovelistener);
-        graphData.removeEntryFunctionPropertyChangeListener (entryfunclistener);
-        graphData.removeEntryPrefColorPropertyChangeListener (entrycolorlistener);
+        final GraphData gd = getGraphData ();
+        gd.removeEntryAdditionListener (entryaddlistener);
+        gd.removeEntryRemovalListener (entryremovelistener);
+        gd.removeEntryFunctionPropertyChangeListener (entryfunclistener);
+        gd.removeEntryPrefColorPropertyChangeListener (entrycolorlistener);
         purgeEntries ();
         removeHorizontalRemapListener (onRemap);
         removeVerticalRemapListener (onRemap);

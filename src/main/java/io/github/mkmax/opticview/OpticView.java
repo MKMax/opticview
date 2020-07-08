@@ -17,7 +17,7 @@ public class OpticView extends Application {
     @Override
     public void start (Stage stage) {
         GraphStack gs = new GraphStack ();
-        gs.getData ().createEntry (x -> x * x, Color.FIREBRICK, "Quadratic");
+        gs.getData ().createEntry (x -> 1d / x, Color.FIREBRICK, "Inverse");
         gs.getData ().createEntry (Math::sin, Color.STEELBLUE, "Sine");
         gs.getData ().createEntry (Math::cos, Color.WHEAT, "Cosine");
         gs.getData ().createEntry (Math::log, Color.SEAGREEN, "Natural Logarithm");
