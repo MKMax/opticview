@@ -1,6 +1,6 @@
 package io.github.mkmax.opticview.ui.layout;
 
-import io.github.mkmax.opticview.util.Disposable;
+import io.github.mkmax.opticview.util.IDisposable;
 
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -12,7 +12,7 @@ import java.util.function.DoubleConsumer;
 import java.util.Objects;
 
 /* utility implementation of an OrthoComponent */
-public final class OrthoTrait implements OrthoComponent, Disposable {
+public final class OrthoTrait implements IOrthoComponent, IDisposable {
 
     /* +----------------------+ */
     /* | PROPERTIES & MEMBERS | */
@@ -60,29 +60,58 @@ public final class OrthoTrait implements OrthoComponent, Disposable {
         nodeHeightSetter.accept (nHeight);
     }
 
+    /* Fix for double loss of accuracy for too large or too small of values */
+    /* @TODO(max): Use BigDecimal */
+    private static final double MIN_RANGE = 1e-14d;
+    private static final double MAX_RANGE = 1e14d;
+
     @Override public ReadOnlyDoubleProperty leftProperty     ()               { return left;                     }
     @Override public double                 getLeft          ()               { return left.get ();              }
-    @Override public void                   setLeft          (double nLeft)   { left.set (nLeft);                }
+    @Override public void                   setLeft          (double nLeft)   {
+        /* prevent double values losing enough accuracy to go into zeroes */
+        final double spandiff = Math.abs (getRight () - nLeft);
+        if (MIN_RANGE <= spandiff && spandiff <= MAX_RANGE)
+            left.set (nLeft);
+    }
 
     @Override public ReadOnlyDoubleProperty rightProperty    ()               { return right;                    }
     @Override public double                 getRight         ()               { return right.get ();             }
-    @Override public void                   setRight         (double nRight)  { right.set (nRight);              }
+    @Override public void                   setRight         (double nRight)  {
+        /* prevent double values losing enough accuracy to go into zeroes */
+        final double spandiff = Math.abs (nRight - getLeft ());
+        if (MIN_RANGE <= spandiff && spandiff <= MAX_RANGE)
+            right.set (nRight);
+    }
 
     @Override public ReadOnlyDoubleProperty bottomProperty   ()               { return bottom;                   }
     @Override public double                 getBottom        ()               { return bottom.get ();            }
-    @Override public void                   setBottom        (double nBottom) { bottom.set (nBottom);            }
+    @Override public void                   setBottom        (double nBottom) {
+        /* prevent double values losing enough accuracy to go into zeroes */
+        final double spandiff = Math.abs (getTop () - nBottom);
+        if (MIN_RANGE <= spandiff && spandiff <= MAX_RANGE)
+            bottom.set (nBottom);
+    }
 
     @Override public ReadOnlyDoubleProperty topProperty      ()               { return top;                      }
     @Override public double                 getTop           ()               { return top.get ();               }
-    @Override public void                   setTop           (double nTop)    { top.set (nTop);                  }
+    @Override public void                   setTop           (double nTop)    {
+        /* prevent double values losing enough accuracy to go into zeroes */
+        final double spandiff = Math.abs (nTop - getBottom ());
+        if (MIN_RANGE <= spandiff && spandiff <= MAX_RANGE)
+            top.set (nTop);
+    }
 
     /* FUSED VERTICAL & HORIZONTAL SETTERS */
     @Override
     public void setHorizontal (double nLeft, double nRight) {
         /* use atomics to control event triggers which may be expensive */
         inFusedHorizontalModify = true;
-        setLeft (nLeft);
-        setRight (nRight);
+        /* prevent double values losing enough accuracy to go into zeroes */
+        final double spandiff = Math.abs (nRight - nLeft);
+        if (MIN_RANGE <= spandiff && spandiff <= MAX_RANGE) {
+            left.set (nLeft);
+            right.set (nRight);
+        }
         inFusedHorizontalModify = false;
 
         /* manually trigger the horizontal change event after it completes */
@@ -93,8 +122,12 @@ public final class OrthoTrait implements OrthoComponent, Disposable {
     public void setVertical (double nBottom, double nTop) {
         /* use atomics to control event triggers which may be expensive */
         inFusedVerticalModify = true;
-        setBottom (nBottom);
-        setTop (nTop);
+        /* prevent double values losing enough accuracy to go into zeroes */
+        final double spandiff = Math.abs (nTop - nBottom);
+        if (MIN_RANGE <= spandiff && spandiff <= MAX_RANGE) {
+            bottom.set (nBottom);
+            top.set (nTop);
+        }
         inFusedVerticalModify = false;
 
         /* manually trigger the vertical change event after it completes */
@@ -106,10 +139,19 @@ public final class OrthoTrait implements OrthoComponent, Disposable {
     public void setWindow (double nLeft, double nRight, double nBottom, double nTop) {
         /* as with setHorizontal() and setVertical(), we use atomics to control event triggers */
         inFusedWindowModify = true;
-        setLeft (nLeft);
-        setRight (nRight);
-        setBottom (nBottom);
-        setTop (nTop);
+        /* prevent double values losing enough accuracy to go into zeroes */
+        /* --- HORIZONTAL --- */
+        final double hspandiff = Math.abs (nRight - nLeft);
+        if (MIN_RANGE <= hspandiff && hspandiff <= MAX_RANGE) {
+            left.set (nLeft);
+            right.set (nRight);
+        }
+        /* --- VERTICAL --- */
+        final double vspandiff = Math.abs (nTop - nBottom);
+        if (MIN_RANGE <= vspandiff && vspandiff <= MAX_RANGE) {
+            bottom.set (nBottom);
+            top.set (nTop);
+        }
         inFusedWindowModify = false;
 
         /* manually trigger a single change listener to update to changes in one routine */
@@ -288,7 +330,7 @@ public final class OrthoTrait implements OrthoComponent, Disposable {
     }
 
     @Override
-    public void bindOrtho (OrthoComponent to) {
+    public void bindOrtho (IOrthoComponent to) {
         /* just as with the fused setters, we will only fire a remap event once */
         inFusedWindowModify = true;
         width .bind (widthBindingPoint = to.widthPropertyOC ());

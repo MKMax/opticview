@@ -1,6 +1,6 @@
 package io.github.mkmax.opticview.ui.layout;
 
-import io.github.mkmax.opticview.util.Disposable;
+import io.github.mkmax.opticview.util.IDisposable;
 
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.css.CssMetaData;
@@ -10,7 +10,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import java.util.List;
 
-public class OrthoStackPane extends StackPane implements OrthoComponent, Disposable {
+public class OrthoStackPane extends StackPane implements IOrthoComponent, IDisposable {
 
     /* +-----------------+ */
     /* | JAVAFX CSS INFO | */
@@ -217,7 +217,7 @@ public class OrthoStackPane extends StackPane implements OrthoComponent, Disposa
     }
 
     @Override
-    public void bindOrtho (OrthoComponent to) {
+    public void bindOrtho (IOrthoComponent to) {
         orthoImpl.bindOrtho (to);
     }
 

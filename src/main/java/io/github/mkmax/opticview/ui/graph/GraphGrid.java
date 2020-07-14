@@ -1,7 +1,6 @@
 package io.github.mkmax.opticview.ui.graph;
 
-import io.github.mkmax.opticview.ui.layout.OrthoComponent;
-import io.github.mkmax.opticview.ui.layout.OrthoRegion;
+import io.github.mkmax.opticview.ui.layout.IOrthoComponent;
 
 import javafx.geometry.VPos;
 import javafx.scene.layout.Pane;
@@ -15,7 +14,7 @@ import javafx.scene.text.TextAlignment;
 import java.text.DecimalFormat;
 import java.util.*;
 
-public final class GraphGrid extends OrthoRegion {
+public final class GraphGrid extends GraphStack.Device {
 
     private static class GuideStyle {
 
@@ -43,9 +42,9 @@ public final class GraphGrid extends OrthoRegion {
     /* grid settings */
     private static final DecimalFormat sciform = new DecimalFormat ("0.000E0");
     private static final DecimalFormat preform = new DecimalFormat ("0.000");
-    private static final double SCI_THRESHOLD_MIN = 1e-3d;
-    private static final double SCI_THRESHOLD_MAX = 1e3d;
-    private static final double MIN_GUIDE_GAP = 256d;
+    private static final double SCI_THRESHOLD_MIN = 1e-2d;
+    private static final double SCI_THRESHOLD_MAX = 1e2d;
+    private static final double MIN_GUIDE_GAP = 512d;
     private static final double LINE_WIDTH = 1.0d;
     private static final GuideStyle ORIGIN_STYLE = new GuideStyle (
         Font.getDefault (),
@@ -67,7 +66,7 @@ public final class GraphGrid extends OrthoRegion {
     private final List<Guide> horGuides = new ArrayList<> ();
     private final List<Guide> verGuides = new ArrayList<> ();
 
-    private final OrthoComponent.RemapListener update = (__comp) -> {
+    private final IOrthoComponent.RemapListener update = (__comp) -> {
         final double
             width  = getWidth (),
             height = getHeight (),
@@ -199,11 +198,16 @@ public final class GraphGrid extends OrthoRegion {
         }
     };
 
-    {
+    public GraphGrid () {
         registerHorizontalRemapListener (update);
         registerVerticalRemapListener (update);
         registerWindowRemapListener (update);
         getChildren ().addAll (linePane, textPane); /* order matters */
+    }
+
+    @Override
+    protected void onGraphDataChanged (GraphData old, GraphData now) {
+        /* @TODO(max): maybe put this to good use in the grid rework? */
     }
 
     @Override

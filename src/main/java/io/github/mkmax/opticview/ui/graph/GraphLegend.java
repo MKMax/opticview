@@ -1,7 +1,7 @@
 package io.github.mkmax.opticview.ui.graph;
 
 import io.github.mkmax.opticview.ui.graph.GraphData.*;
-import io.github.mkmax.opticview.util.Disposable;
+import io.github.mkmax.opticview.util.IDisposable;
 
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Insets;
@@ -21,7 +21,7 @@ public class GraphLegend extends GraphStack.Device {
     ///////////////////////////////////////////////////////////////////////////////////////////////
     //                                        LISTING                                            //
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    private static final class Listing extends HBox implements Disposable {
+    private static final class Listing extends HBox implements IDisposable {
         private static final double SPACING = 5d;
         private static final Insets PADDING = new Insets (5d);
         private static final Pos ALIGNMENT = Pos.CENTER_LEFT;

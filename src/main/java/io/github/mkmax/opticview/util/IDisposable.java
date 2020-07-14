@@ -1,5 +1,5 @@
 package io.github.mkmax.opticview.util;
 
-public interface Disposable {
+public interface IDisposable {
     void dispose ();
 }

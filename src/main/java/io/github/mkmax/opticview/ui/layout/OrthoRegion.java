@@ -1,6 +1,6 @@
 package io.github.mkmax.opticview.ui.layout;
 
-import io.github.mkmax.opticview.util.Disposable;
+import io.github.mkmax.opticview.util.IDisposable;
 
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.css.CssMetaData;
@@ -8,7 +8,7 @@ import javafx.css.Styleable;
 import javafx.scene.layout.Region;
 import java.util.List;
 
-public class OrthoRegion extends Region implements OrthoComponent, Disposable {
+public class OrthoRegion extends Region implements IOrthoComponent, IDisposable {
 
     /* +-----------------+ */
     /* | JAVAFX CSS INFO | */
@@ -211,7 +211,7 @@ public class OrthoRegion extends Region implements OrthoComponent, Disposable {
     }
 
     @Override
-    public void bindOrtho (OrthoComponent to) {
+    public void bindOrtho (IOrthoComponent to) {
         orthoImpl.bindOrtho (to);
     }
 
