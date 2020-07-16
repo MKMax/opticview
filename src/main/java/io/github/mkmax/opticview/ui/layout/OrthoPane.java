@@ -1,34 +1,30 @@
 package io.github.mkmax.opticview.ui.layout;
 
-import io.github.mkmax.opticview.util.IDisposable;
-
-import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.css.CssMetaData;
 import javafx.css.Styleable;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
+import javafx.beans.property.ReadOnlyObjectProperty;
+
 import java.util.List;
 
-public class OrthoPane extends Pane implements IOrthoComponent, IDisposable {
+public class OrthoPane extends Pane implements IOrthoDevice {
 
     /* +-----------------+ */
     /* | JAVAFX CSS INFO | */
     /* +-----------------+ */
-
     public static List<CssMetaData<? extends Styleable, ?>> getClassCssMetaData () {
-        return Region.getClassCssMetaData ();
+        return Pane.getClassCssMetaData ();
     }
 
     /* +--------------------------+ */
     /* | INITIALIZATION & MEMBERS | */
     /* +--------------------------+ */
-
-    private final OrthoTrait orthoImpl = new OrthoTrait (
+    private final OrthoMixin orthoImpl = new OrthoMixin (
         widthProperty (),
         heightProperty (),
-        this::setWidth,
-        this::setHeight);
+        (w) -> setWidth (w.doubleValue ()),
+        (h) -> setHeight (h.doubleValue ()));
 
     public OrthoPane () {
         super ();
@@ -38,187 +34,212 @@ public class OrthoPane extends Pane implements IOrthoComponent, IDisposable {
         super (children);
     }
 
-    /* +----------------------------+ */
-    /* | PROPERTY QUERIES & SETTERS | */
-    /* +----------------------------+ */
-
-    /* WIDTH PROPERTY */
+    /* +------------+ */
+    /* | DIMENSIONS | */
+    /* +------------+ */
     @Override
-    public ReadOnlyDoubleProperty widthPropertyOC () {
-        return orthoImpl.widthPropertyOC ();
+    public ReadOnlyObjectProperty<? extends Number> deviceWidthProperty () {
+        return orthoImpl.deviceWidthProperty ();
     }
 
     @Override
-    public double getWidthOC () {
-        return orthoImpl.getWidthOC ();
+    public ReadOnlyObjectProperty<? extends Number> deviceHeightProperty () {
+        return orthoImpl.deviceHeightProperty ();
     }
 
     @Override
-    public void setWidthOC (double nWidth) {
-        orthoImpl.setWidthOC (nWidth);
-    }
-
-    /* HEIGHT PROPERTY */
-    @Override
-    public ReadOnlyDoubleProperty heightPropertyOC () {
-        return orthoImpl.heightPropertyOC ();
+    public Number getDeviceWidth () {
+        return orthoImpl.getDeviceWidth ();
     }
 
     @Override
-    public double getHeightOC () {
-        return orthoImpl.getHeightOC ();
+    public void setDeviceWidth (Number nWidth) {
+        orthoImpl.setDeviceWidth (nWidth);
     }
 
     @Override
-    public void setHeightOC (double nHeight) {
-        orthoImpl.setHeightOC (nHeight);
+    public Number getDeviceHeight () {
+        return orthoImpl.getDeviceHeight ();
     }
 
-    /* LEFT PROPERTY */
     @Override
-    public ReadOnlyDoubleProperty leftProperty () {
+    public void setDeviceHeight (Number nHeight) {
+        orthoImpl.setDeviceHeight (nHeight);
+    }
+
+    /* +--------+ */
+    /* | WINDOW | */
+    /* +--------+ */
+    @Override
+    public ReadOnlyObjectProperty<? extends Number> leftProperty () {
         return orthoImpl.leftProperty ();
     }
 
     @Override
-    public double getLeft () {
+    public Number getLeft () {
         return orthoImpl.getLeft ();
     }
 
     @Override
-    public void setLeft (double nLeft) {
+    public void setLeft (Number nLeft) {
         orthoImpl.setLeft (nLeft);
     }
 
-    /* RIGHT PROPERTY */
     @Override
-    public ReadOnlyDoubleProperty rightProperty () {
+    public ReadOnlyObjectProperty<? extends Number> rightProperty () {
         return orthoImpl.rightProperty ();
     }
 
     @Override
-    public double getRight () {
+    public Number getRight () {
         return orthoImpl.getRight ();
     }
 
     @Override
-    public void setRight (double nRight) {
+    public void setRight (Number nRight) {
         orthoImpl.setRight (nRight);
     }
 
-    /* BOTTOM PROPERTY */
     @Override
-    public ReadOnlyDoubleProperty bottomProperty () {
+    public ReadOnlyObjectProperty<? extends Number> bottomProperty () {
         return orthoImpl.bottomProperty ();
     }
 
     @Override
-    public double getBottom () {
+    public Number getBottom () {
         return orthoImpl.getBottom ();
     }
 
     @Override
-    public void setBottom (double nBottom) {
+    public void setBottom (Number nBottom) {
         orthoImpl.setBottom (nBottom);
     }
 
-    /* TOP PROPERTY */
     @Override
-    public ReadOnlyDoubleProperty topProperty () {
+    public ReadOnlyObjectProperty<? extends Number> topProperty () {
         return orthoImpl.topProperty ();
     }
 
     @Override
-    public double getTop () {
+    public Number getTop () {
         return orthoImpl.getTop ();
     }
 
     @Override
-    public void setTop (double nTop) {
+    public void setTop (Number nTop) {
         orthoImpl.setTop (nTop);
     }
 
-    /* FUSED HORIZONTAL & VERTICAL SETTERS */
+    /* +----------------------+ */
+    /* | WINDOW FUSED SETTERS | */
+    /* +----------------------+ */
     @Override
-    public void setHorizontal (double nLeft, double nRight) {
+    public void setHorizontal (Number nLeft, Number nRight) {
         orthoImpl.setHorizontal (nLeft, nRight);
     }
 
     @Override
-    public void setVertical (double nBottom, double nTop) {
+    public void setVertical (Number nBottom, Number nTop) {
         orthoImpl.setVertical (nBottom, nTop);
     }
 
-    /* FUSED WINDOW SETTER */
     @Override
-    public void setWindow (double nLeft, double nRight, double nBottom, double nTop) {
+    public void setWindow (Number nLeft, Number nRight, Number nBottom, Number nTop) {
         orthoImpl.setWindow (nLeft, nRight, nBottom, nTop);
     }
 
-    /* +---------------------+ */
-    /* | LISTENER MANAGEMENT | */
-    /* +---------------------+ */
+    /* +-----------------------+ */
+    /* | OTHER MAPPING QUERIES | */
+    /* +-----------------------+ */
 
-    /* HORIZONTAL REMAP LISTENERS */
+    /* Math.abs(right - left) and Math.abs(top - bottom) */
     @Override
-    public void registerHorizontalRemapListener (RemapListener lis) {
+    public Number getHorizontalSpan () {
+        return orthoImpl.getHorizontalSpan ();
+    }
+
+    @Override
+    public Number getVerticalSpan () {
+        return orthoImpl.getVerticalSpan ();
+    }
+
+    /* getHorizontalSpan() / 2 and getVerticalSpan() / 2 */
+    @Override
+    public Number getHorizontalZoom () {
+        return orthoImpl.getHorizontalZoom ();
+    }
+
+    @Override
+    public Number getVerticalZoom () {
+        return orthoImpl.getVerticalZoom ();
+    }
+
+    /* +----------+ */
+    /* | LISTENER | */
+    /* +----------+ */
+
+    /* HORIZONTAL */
+    @Override
+    public void registerHorizontalRemapListener (IRemapListener lis) {
         orthoImpl.registerHorizontalRemapListener (lis);
     }
 
     @Override
-    public void removeHorizontalRemapListener (RemapListener lis) {
+    public void removeHorizontalRemapListener (IRemapListener lis) {
         orthoImpl.removeHorizontalRemapListener (lis);
     }
 
-    /* VERTICAL REMAP LISTENERS */
+    /* VERTICAL */
     @Override
-    public void registerVerticalRemapListener (RemapListener lis) {
+    public void registerVerticalRemapListener (IRemapListener lis) {
         orthoImpl.registerVerticalRemapListener (lis);
     }
 
     @Override
-    public void removeVerticalRemapListener (RemapListener lis) {
+    public void removeVerticalRemapListener (IRemapListener lis) {
         orthoImpl.removeVerticalRemapListener (lis);
     }
 
-    /* WINDOW REMAP LISTENERS */
+    /* WINDOW */
     @Override
-    public void registerWindowRemapListener (RemapListener lis) {
+    public void registerWindowRemapListener (IRemapListener lis) {
         orthoImpl.registerWindowRemapListener (lis);
     }
 
     @Override
-    public void removeWindowRemapListener (RemapListener lis) {
+    public void removeWindowRemapListener (IRemapListener lis) {
         orthoImpl.removeWindowRemapListener (lis);
     }
 
-    /* +--------------------+ */
-    /* | MAPPING OPERATIONS | */
-    /* +--------------------+ */
-
+    /* +---------+ */
+    /* | MAPPING | */
+    /* +---------+ */
     @Override
-    public double mapToComponentX (double x) {
-        return orthoImpl.mapToComponentX (x);
+    public Number mapToDeviceX (Number virtualX) {
+        return orthoImpl.mapToDeviceX (virtualX);
     }
 
     @Override
-    public double mapToComponentY (double y) {
-        return orthoImpl.mapToComponentY (y);
+    public Number mapToDeviceY (Number virtualY) {
+        return orthoImpl.mapToDeviceY (virtualY);
     }
 
     @Override
-    public double mapToVirtualX (double x) {
-        return orthoImpl.mapToVirtualX (x);
+    public Number mapToVirtualX (Number devX) {
+        return orthoImpl.mapToVirtualX (devX);
     }
 
     @Override
-    public double mapToVirtualY (double y) {
-        return orthoImpl.mapToVirtualY (y);
+    public Number mapToVirtualY (Number devY) {
+        return orthoImpl.mapToVirtualY (devY);
     }
 
+    /* +---------+ */
+    /* | BINDING | */
+    /* +---------+ */
     @Override
-    public void bindOrtho (IOrthoComponent to) {
-        orthoImpl.bindOrtho (to);
+    public void bindOrtho (IOrthoDevice dev) {
+        orthoImpl.bindOrtho (dev);
     }
 
     @Override
@@ -226,6 +247,9 @@ public class OrthoPane extends Pane implements IOrthoComponent, IDisposable {
         orthoImpl.unbindOrtho ();
     }
 
+    /* +------------+ */
+    /* | DISPOSABLE | */
+    /* +------------+ */
     @Override
     public void dispose () {
         orthoImpl.dispose ();

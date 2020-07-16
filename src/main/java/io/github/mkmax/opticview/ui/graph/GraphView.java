@@ -1,6 +1,6 @@
 package io.github.mkmax.opticview.ui.graph;
 
-import io.github.mkmax.opticview.ui.layout.IOrthoComponent;
+import io.github.mkmax.opticview.ui.layout.IOrthoDevice;
 import io.github.mkmax.opticview.ui.graph.GraphData.*;
 
 import javafx.scene.canvas.Canvas;
@@ -31,7 +31,7 @@ public final class GraphView extends GraphStack.Device {
     /* +-----------+ */
 
     /* REMAP LISTENER */
-    private final IOrthoComponent.RemapListener onRemap = (__comp) ->
+    private final IOrthoDevice.RemapListener onRemap = (__comp) ->
         entrymap.forEach ((entry, canvas) -> {
             clearCanvas (canvas);
             fitCanvas (canvas);
