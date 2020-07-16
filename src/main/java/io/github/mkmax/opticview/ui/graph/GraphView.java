@@ -10,6 +10,7 @@ import javafx.scene.paint.Color;
 import java.util.*;
 import java.util.function.Consumer;
 
+/* @TODO(max): make view compatible and use BigDecimal */
 public final class GraphView extends GraphStack.Device {
 
     /* +--------------------------------+ */
@@ -31,7 +32,7 @@ public final class GraphView extends GraphStack.Device {
     /* +-----------+ */
 
     /* REMAP LISTENER */
-    private final IOrthoDevice.RemapListener onRemap = (__comp) ->
+    private final IOrthoDevice.IRemapListener onRemap = (__src) ->
         entrymap.forEach ((entry, canvas) -> {
             clearCanvas (canvas);
             fitCanvas (canvas);
@@ -127,9 +128,9 @@ public final class GraphView extends GraphStack.Device {
 
         /* render graph onto canvas (canvas is assumed to be cleared) */
         final double
-            width = getWidth (),
-            left  = getLeft (),
-            right = getRight ();
+            width = getDeviceWidth ().doubleValue (),
+            left  = getDeviceHeight ().doubleValue (),
+            right = getRight ().doubleValue ();
         final double
             begin = Math.min (left, right),
             end   = Math.max (left, right);
@@ -140,8 +141,8 @@ public final class GraphView extends GraphStack.Device {
         for (int i = 0; i < width; ++i) {
             final double virtual_x = begin + step * i;
             final double virtual_y = func.map (virtual_x);
-            final double screen_x = mapx (virtual_x);
-            final double screen_y = mapy (virtual_y);
+            final double screen_x = mapToDeviceX (virtual_x).doubleValue ();
+            final double screen_y = mapToDeviceY (virtual_y).doubleValue ();
             if (i > 0) /* wait until we have at least two samples */
                 gc.strokeLine (
                     prev_screen_x,

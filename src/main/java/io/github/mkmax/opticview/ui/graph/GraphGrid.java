@@ -14,6 +14,7 @@ import javafx.scene.text.TextAlignment;
 import java.text.DecimalFormat;
 import java.util.*;
 
+/* @TODO(max): convert grid into BigDecimal capable device */
 public final class GraphGrid extends GraphStack.Device {
 
     private static class GuideStyle {
@@ -66,14 +67,14 @@ public final class GraphGrid extends GraphStack.Device {
     private final List<Guide> horGuides = new ArrayList<> ();
     private final List<Guide> verGuides = new ArrayList<> ();
 
-    private final IOrthoDevice.RemapListener update = (__comp) -> {
+    private final IOrthoDevice.IRemapListener update = (__src) -> {
         final double
-            width  = getWidth (),
-            height = getHeight (),
-            left   = getLeft (),
-            right  = getRight (),
-            bottom = getBottom (),
-            top    = getTop ();
+            width  = getDeviceWidth  ().doubleValue (),
+            height = getDeviceHeight ().doubleValue (),
+            left   = getLeft         ().doubleValue (),
+            right  = getRight        ().doubleValue (),
+            bottom = getBottom       ().doubleValue (),
+            top    = getTop          ().doubleValue ();
         final double
             hinterval = Math.abs (right - left),
             vinterval = Math.abs (top - bottom);
@@ -107,8 +108,8 @@ public final class GraphGrid extends GraphStack.Device {
             Index idx = hindices.get (i);
             Guide guide = verGuides.get (i);
 
-            final double x = mapx (idx.pos);
-            final double y = mapy (0d);
+            final double x = mapToDeviceX (idx.pos).doubleValue ();
+            final double y = mapToDeviceY (0d).doubleValue ();
 
             guide.line.setStrokeWidth (LINE_WIDTH);
             guide.line.setStartX (x);
@@ -155,8 +156,8 @@ public final class GraphGrid extends GraphStack.Device {
             Index idx = vindices.get (i);
             Guide guide = horGuides.get (i);
 
-            final double x = mapx (0d);
-            final double y = mapy (idx.pos);
+            final double x = mapToDeviceX (0d).doubleValue ();
+            final double y = mapToDeviceY (idx.pos).doubleValue ();
 
             guide.line.setStrokeWidth (LINE_WIDTH);
             guide.line.setStartX (0d);

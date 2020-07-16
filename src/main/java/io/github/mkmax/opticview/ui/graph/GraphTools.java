@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.util.Objects;
 
 /* a static collection of default tool implementations */
+/* @TODO(max): convert tools to be compatible with BigDecimal (and use it for that matter) */
 public final class GraphTools {
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -104,16 +105,16 @@ public final class GraphTools {
                     deltaX = (mouseNowX - mouseX),
                     deltaY = (mouseNowY - mouseY);
                 final double
-                    scaleX = (gs.getRight () - gs.getLeft ()) / gs.getWidth (),
-                    scaleY = (gs.getBottom () - gs.getTop ()) / gs.getHeight ();
+                    scaleX = (gs.getRight ().doubleValue () - gs.getLeft ().doubleValue ()) / gs.getWidth (),
+                    scaleY = (gs.getBottom ().doubleValue () - gs.getTop ().doubleValue ()) / gs.getHeight ();
                 final double
                     deltaVirtualX = deltaX * scaleX,
                     deltaVirtualY = deltaY * scaleY;
                 final double
-                    nLeft   = gs.getLeft ()   - deltaVirtualX,
-                    nRight  = gs.getRight ()  - deltaVirtualX,
-                    nBottom = gs.getBottom () - deltaVirtualY,
-                    nTop    = gs.getTop ()    - deltaVirtualY;
+                    nLeft   = gs.getLeft ().doubleValue ()   - deltaVirtualX,
+                    nRight  = gs.getRight () .doubleValue () - deltaVirtualX,
+                    nBottom = gs.getBottom ().doubleValue () - deltaVirtualY,
+                    nTop    = gs.getTop ().doubleValue ()    - deltaVirtualY;
                 gs.setWindow (nLeft, nRight, nBottom, nTop);
                 mouseX = mouseNowX;
                 mouseY = mouseNowY;
@@ -130,13 +131,13 @@ public final class GraphTools {
             final GraphStack gs = getGraphStack ();
             final GraphStack.ToolRegion tr = gs.getToolRegion ();
             final double
-                virtualX = tr.mapToVirtualX (mouseX),
-                virtualY = tr.mapToVirtualY (mouseY);
+                virtualX = tr.mapToVirtualX (mouseX).doubleValue (),
+                virtualY = tr.mapToVirtualY (mouseY).doubleValue ();
             final double
-                deltaLeft   = tr.getLeft ()   - virtualX,
-                deltaRight  = tr.getRight ()  - virtualX,
-                deltaBottom = tr.getBottom () - virtualY,
-                deltaTop    = tr.getTop ()    - virtualY;
+                deltaLeft   = tr.getLeft ().doubleValue ()   - virtualX,
+                deltaRight  = tr.getRight ().doubleValue ()  - virtualX,
+                deltaBottom = tr.getBottom ().doubleValue () - virtualY,
+                deltaTop    = tr.getTop ().doubleValue ()    - virtualY;
             final double multiplier = deltaY < 0d ? ZOOM_OUT_MULT : ZOOM_IN_MULT;
             final double
                 nDeltaLeft   = deltaLeft   * multiplier,
