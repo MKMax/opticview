@@ -1,6 +1,7 @@
 package io.github.mkmax.opticview.ui.layout;
 
 import io.github.mkmax.opticview.util.BigMath;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -166,7 +167,7 @@ public final class OrthoMixin implements IOrthoDevice {
             nmWidth = getPropertyValueElse (width, BigDecimal.ZERO),
             nmLeft  = getPropertyValueElse (left,  BigDecimal.ZERO),
             nmRight = getPropertyValueElse (right, BigDecimal.ZERO);
-        if (nmRight.equals (nmLeft)) {
+        if (nmWidth.compareTo (BigDecimal.ZERO) == 0 || nmRight.compareTo (nmLeft) == 0) {
             /* default to the identity map */
             Mx  = BigDecimal.ONE;
             iMx = BigDecimal.ONE;
@@ -174,9 +175,9 @@ public final class OrthoMixin implements IOrthoDevice {
         }
         else {
             // Mx = width / (right - left)
-            Mx = nmWidth.divide (nmRight.subtract (nmLeft), RoundingMode.UNNECESSARY);
+            Mx = nmWidth.divide (nmRight.subtract (nmLeft), RoundingMode.HALF_UP);
             // iMx = 1 / Mx
-            iMx = BigDecimal.ONE.divide (Mx, RoundingMode.UNNECESSARY);
+            iMx = BigDecimal.ONE.divide (Mx, RoundingMode.HALF_UP);
             // Cx = -Mx * left
             Cx = Mx.negate ().multiply (nmLeft);
         }
@@ -187,7 +188,7 @@ public final class OrthoMixin implements IOrthoDevice {
             nmHeight = getPropertyValueElse (height, BigDecimal.ZERO),
             nmBottom = getPropertyValueElse (bottom, BigDecimal.ZERO),
             nmTop    = getPropertyValueElse (top,    BigDecimal.ZERO);
-        if (nmBottom.equals (nmTop)) {
+        if (nmHeight.compareTo (BigDecimal.ZERO) == 0 || nmBottom.compareTo (nmTop) == 0) {
             /* default to the identity map */
             My  = BigDecimal.ONE;
             iMy = BigDecimal.ONE;
@@ -196,9 +197,9 @@ public final class OrthoMixin implements IOrthoDevice {
         else {
             /* invert the Y axis for graphing applications */
             // My = height / (bottom - top)
-            My = nmHeight.divide (nmBottom.subtract (nmTop), RoundingMode.UNNECESSARY);
+            My = nmHeight.divide (nmBottom.subtract (nmTop), RoundingMode.HALF_UP);
             // iMy = 1 / My
-            iMy = BigDecimal.ONE.divide (My, RoundingMode.UNNECESSARY);
+            iMy = BigDecimal.ONE.divide (My, RoundingMode.HALF_UP);
             // Cy = -My * top
             Cy = Mx.negate ().multiply (nmTop);
         }

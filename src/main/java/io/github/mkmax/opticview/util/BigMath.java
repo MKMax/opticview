@@ -4,7 +4,14 @@ import java.math.BigDecimal;
 
 public class BigMath {
 
-    /* @TODO(max): extend BigDecimal to provide support for NaN and Infinity (they are needed) */
+    public static <T extends Number> BigDecimal toBigDecimal (T num) {
+        return toBigDecimal (num, null);
+    }
+
+    public static <T extends Number> BigDecimal toBigDecimal (T num, BigDecimal defaultOnError) {
+        return toBigDecimal (num, defaultOnError, defaultOnError, defaultOnError);
+    }
+
     public static <T extends Number> BigDecimal toBigDecimal (
         T          num,
         BigDecimal defaultOnNull,
@@ -29,5 +36,4 @@ public class BigMath {
         }
         return num == null ? defaultOnNull : new BigDecimal (num.toString ());
     }
-
 }

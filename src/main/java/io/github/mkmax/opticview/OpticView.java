@@ -9,6 +9,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import java.math.BigDecimal;
+
 public class OpticView extends Application {
 
     public static void main (String... args) {
@@ -22,7 +24,7 @@ public class OpticView extends Application {
         gs.getGraphData ().createEntry (Math::sin, Color.STEELBLUE, "Sine");
         gs.getGraphData ().createEntry (Math::cos, Color.WHEAT, "Cosine");
         gs.getGraphData ().createEntry (Math::log, Color.SEAGREEN, "Natural Logarithm");
-        gs.setWindow (-5d, +5d, -5d, +5d);
+        gs.setWindow (-5, +5, -5, +5);
 
         GraphFrame gf = new GraphFrame (gs);
         gf.setVerticalLabel ("Output (ms)");
