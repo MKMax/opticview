@@ -12,7 +12,7 @@ import java.util.function.DoubleConsumer;
 import java.util.Objects;
 
 /* utility implementation of an OrthoComponent */
-public final class OrthoTrait implements IOrthoComponent, IDisposable {
+public final class OrthoMixin implements IOrthoDevice, IDisposable {
 
     /* +----------------------+ */
     /* | PROPERTIES & MEMBERS | */
@@ -277,7 +277,7 @@ public final class OrthoTrait implements IOrthoComponent, IDisposable {
     /* +----------------+ */
     /* | INITIALIZATION | */
     /* +----------------+ */
-    public OrthoTrait (
+    public OrthoMixin (
         ReadOnlyDoubleProperty pNodeWidthProperty,
         ReadOnlyDoubleProperty pNodeHeightProperty,
         DoubleConsumer pNodeWidthSetter,
@@ -330,7 +330,7 @@ public final class OrthoTrait implements IOrthoComponent, IDisposable {
     }
 
     @Override
-    public void bindOrtho (IOrthoComponent to) {
+    public void bindOrtho (IOrthoDevice to) {
         /* just as with the fused setters, we will only fire a remap event once */
         inFusedWindowModify = true;
         width .bind (widthBindingPoint = to.widthPropertyOC ());

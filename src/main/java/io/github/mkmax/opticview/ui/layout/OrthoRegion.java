@@ -8,7 +8,7 @@ import javafx.css.Styleable;
 import javafx.scene.layout.Region;
 import java.util.List;
 
-public class OrthoRegion extends Region implements IOrthoComponent, IDisposable {
+public class OrthoRegion extends Region implements IOrthoDevice, IDisposable {
 
     /* +-----------------+ */
     /* | JAVAFX CSS INFO | */
@@ -22,7 +22,7 @@ public class OrthoRegion extends Region implements IOrthoComponent, IDisposable 
     /* | INITIALIZATION & MEMBERS | */
     /* +--------------------------+ */
 
-    private final OrthoTrait orthoImpl = new OrthoTrait (
+    private final OrthoMixin orthoImpl = new OrthoMixin (
         widthProperty (),
         heightProperty (),
         this::setWidth,
@@ -211,7 +211,7 @@ public class OrthoRegion extends Region implements IOrthoComponent, IDisposable 
     }
 
     @Override
-    public void bindOrtho (IOrthoComponent to) {
+    public void bindOrtho (IOrthoDevice to) {
         orthoImpl.bindOrtho (to);
     }
 

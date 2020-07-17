@@ -3,7 +3,7 @@ package io.github.mkmax.opticview.ui.layout;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 
 /* component is an interface to allow extension of abstract/concrete classes */
-public interface IOrthoComponent {
+public interface IOrthoDevice {
 
     /* +---------------------+ */
     /* | LISTENER INTERFACES | */
@@ -11,7 +11,7 @@ public interface IOrthoComponent {
 
     @FunctionalInterface
     interface RemapListener {
-        void onRemap (IOrthoComponent oc);
+        void onRemap (IOrthoDevice oc);
     }
 
     /* +----------------------------+ */
@@ -81,7 +81,7 @@ public interface IOrthoComponent {
     double mapToVirtualX (double x);
     double mapToVirtualY (double y);
 
-    void bindOrtho (IOrthoComponent to);
+    void bindOrtho (IOrthoDevice to);
     void unbindOrtho ();
 
     /* +-----------------------+ */

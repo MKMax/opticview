@@ -10,7 +10,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import java.util.List;
 
-public class OrthoPane extends Pane implements IOrthoComponent, IDisposable {
+public class OrthoPane extends Pane implements IOrthoDevice, IDisposable {
 
     /* +-----------------+ */
     /* | JAVAFX CSS INFO | */
@@ -24,7 +24,7 @@ public class OrthoPane extends Pane implements IOrthoComponent, IDisposable {
     /* | INITIALIZATION & MEMBERS | */
     /* +--------------------------+ */
 
-    private final OrthoTrait orthoImpl = new OrthoTrait (
+    private final OrthoMixin orthoImpl = new OrthoMixin (
         widthProperty (),
         heightProperty (),
         this::setWidth,
@@ -217,7 +217,7 @@ public class OrthoPane extends Pane implements IOrthoComponent, IDisposable {
     }
 
     @Override
-    public void bindOrtho (IOrthoComponent to) {
+    public void bindOrtho (IOrthoDevice to) {
         orthoImpl.bindOrtho (to);
     }
 

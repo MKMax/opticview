@@ -1,6 +1,6 @@
 package io.github.mkmax.opticview.ui.graph;
 
-import io.github.mkmax.opticview.ui.layout.IOrthoComponent;
+import io.github.mkmax.opticview.ui.layout.IOrthoDevice;
 
 import javafx.geometry.VPos;
 import javafx.scene.layout.Pane;
@@ -66,7 +66,7 @@ public final class GraphGrid extends GraphStack.Device {
     private final List<Guide> horGuides = new ArrayList<> ();
     private final List<Guide> verGuides = new ArrayList<> ();
 
-    private final IOrthoComponent.RemapListener update = (__comp) -> {
+    private final IOrthoDevice.RemapListener update = (__comp) -> {
         final double
             width  = getWidth (),
             height = getHeight (),
