@@ -1,17 +1,25 @@
 package io.github.mkmax.opticview.ui.layout;
 
+import io.github.mkmax.opticview.util.IDisposable;
+
 import javafx.beans.property.ReadOnlyDoubleProperty;
 
 /* component is an interface to allow extension of abstract/concrete classes */
-public interface IOrthoDevice {
+public interface IOrthoDevice extends IDisposable {
 
     /* +---------------------+ */
     /* | LISTENER INTERFACES | */
     /* +---------------------+ */
-
     @FunctionalInterface
     interface RemapListener {
-        void onRemap (IOrthoDevice oc);
+        void onRemap (
+            IOrthoDevice oc,
+            boolean isWidth,  double nWidth,
+            boolean isHeight, double nHeight,
+            boolean isLeft,   double nLeft,
+            boolean isRight,  double nRight,
+            boolean isBottom, double nBottom,
+            boolean isTop,    double nTop);
     }
 
     /* +----------------------------+ */
@@ -19,41 +27,41 @@ public interface IOrthoDevice {
     /* +----------------------------+ */
 
     /* WIDTH ("OC" suffix to avoid collision with JavaFX widthProperty()... */
-    ReadOnlyDoubleProperty widthPropertyOC  ();
-    double                 getWidthOC       ();
-    void                   setWidthOC       (double nWidth);
+    ReadOnlyDoubleProperty deviceWidthProperty ();
+    double                 getDeviceWidth      ();
+    void                   setDeviceWidth      (double nWidth);
 
     /* HEIGHT ("OC" suffix to avoid collision with JavaFX heightProperty()... */
-    ReadOnlyDoubleProperty heightPropertyOC ();
-    double                 getHeightOC      ();
-    void                   setHeightOC      (double nHeight);
+    ReadOnlyDoubleProperty deviceHeightProperty ();
+    double                 getDeviceHeight      ();
+    void                   setDeviceHeight      (double nHeight);
 
     /* LEFT (minimum X/Horizontal coordinate) */
-    ReadOnlyDoubleProperty leftProperty     ();
-    double                 getLeft          ();
-    void                   setLeft          (double nLeft);
+    ReadOnlyDoubleProperty leftProperty         ();
+    double                 getLeft              ();
+    void                   setLeft              (double nLeft);
 
     /* RIGHT (maximum X/Horizontal coordinate) */
-    ReadOnlyDoubleProperty rightProperty    ();
-    double                 getRight         ();
-    void                   setRight         (double nRight);
+    ReadOnlyDoubleProperty rightProperty        ();
+    double                 getRight             ();
+    void                   setRight             (double nRight);
 
     /* BOTTOM (minimum Y/Vertical coordinate) */
-    ReadOnlyDoubleProperty bottomProperty   ();
-    double                 getBottom        ();
-    void                   setBottom        (double nBottom);
+    ReadOnlyDoubleProperty bottomProperty       ();
+    double                 getBottom            ();
+    void                   setBottom            (double nBottom);
 
     /* TOP (maximum Y/Vertical coordinate) */
-    ReadOnlyDoubleProperty topProperty      ();
-    double                 getTop           ();
-    void                   setTop           (double nTop);
+    ReadOnlyDoubleProperty topProperty          ();
+    double                 getTop               ();
+    void                   setTop               (double nTop);
 
     /* FUSED VERTICAL & HORIZONTAL SETTER */
-    void                   setHorizontal    (double nLeft, double nRight);
-    void                   setVertical      (double nBottom, double nTop);
+    void                   setHorizontal        (double nLeft, double nRight);
+    void                   setVertical          (double nBottom, double nTop);
 
     /* FUSED WINDOW SETTER */
-    void                   setWindow        (double nLeft, double nRight, double nBottom, double nTop);
+    void                   setWindow            (double nLeft, double nRight, double nBottom, double nTop);
 
     /* +---------------------+ */
     /* | LISTENER MANAGEMENT | */
@@ -71,16 +79,22 @@ public interface IOrthoDevice {
     void registerWindowRemapListener     (RemapListener lis);
     void removeWindowRemapListener       (RemapListener lis);
 
-    /* +------------------------------+ */
-    /* | MAPPING OPERATIONS & BINDING | */
-    /* +------------------------------+ */
-
+    /* +----------------------+ */
+    /* | TRANSFORM OPERATIONS | */
+    /* +----------------------+ */
     double mapToComponentX (double x);
     double mapToComponentY (double y);
 
     double mapToVirtualX (double x);
     double mapToVirtualY (double y);
 
+    void zoomHorizontal (double vx, double mult);
+    void zoomVertical   (double vy, double mult);
+    void zoomWindow     (double vx, double vy, double mult);
+
+    /* +---------+ */
+    /* | BINDING | */
+    /* +---------+ */
     void bindOrtho (IOrthoDevice to);
     void unbindOrtho ();
 

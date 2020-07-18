@@ -1,19 +1,17 @@
 package io.github.mkmax.opticview.ui.layout;
 
-import io.github.mkmax.opticview.util.IDisposable;
-
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.css.CssMetaData;
 import javafx.css.Styleable;
 import javafx.scene.layout.Region;
+
 import java.util.List;
 
-public class OrthoRegion extends Region implements IOrthoDevice, IDisposable {
+public class OrthoRegion extends Region implements IOrthoDevice {
 
     /* +-----------------+ */
     /* | JAVAFX CSS INFO | */
     /* +-----------------+ */
-
     public static List<CssMetaData<? extends Styleable, ?>> getClassCssMetaData () {
         return Region.getClassCssMetaData ();
     }
@@ -21,7 +19,6 @@ public class OrthoRegion extends Region implements IOrthoDevice, IDisposable {
     /* +--------------------------+ */
     /* | INITIALIZATION & MEMBERS | */
     /* +--------------------------+ */
-
     private final OrthoMixin orthoImpl = new OrthoMixin (
         widthProperty (),
         heightProperty (),
@@ -38,34 +35,34 @@ public class OrthoRegion extends Region implements IOrthoDevice, IDisposable {
 
     /* WIDTH PROPERTY */
     @Override
-    public ReadOnlyDoubleProperty widthPropertyOC () {
-        return orthoImpl.widthPropertyOC ();
+    public ReadOnlyDoubleProperty deviceWidthProperty () {
+        return orthoImpl.deviceWidthProperty ();
     }
 
     @Override
-    public double getWidthOC () {
-        return orthoImpl.getWidthOC ();
+    public double getDeviceWidth () {
+        return orthoImpl.getDeviceWidth ();
     }
 
     @Override
-    public void setWidthOC (double nWidth) {
-        orthoImpl.setWidthOC (nWidth);
+    public void setDeviceWidth (double nWidth) {
+        orthoImpl.setDeviceWidth (nWidth);
     }
 
     /* HEIGHT PROPERTY */
     @Override
-    public ReadOnlyDoubleProperty heightPropertyOC () {
-        return orthoImpl.heightPropertyOC ();
+    public ReadOnlyDoubleProperty deviceHeightProperty () {
+        return orthoImpl.deviceHeightProperty ();
     }
 
     @Override
-    public double getHeightOC () {
-        return orthoImpl.getHeightOC ();
+    public double getDeviceHeight () {
+        return orthoImpl.getDeviceHeight ();
     }
 
     @Override
-    public void setHeightOC (double nHeight) {
-        orthoImpl.setHeightOC (nHeight);
+    public void setDeviceHeight (double nHeight) {
+        orthoImpl.setDeviceHeight (nHeight);
     }
 
     /* LEFT PROPERTY */
@@ -149,9 +146,9 @@ public class OrthoRegion extends Region implements IOrthoDevice, IDisposable {
         orthoImpl.setWindow (nLeft, nRight, nBottom, nTop);
     }
 
-    /* +---------------------+ */
-    /* | LISTENER MANAGEMENT | */
-    /* +---------------------+ */
+    /* +-----------+ */
+    /* | LISTENERS | */
+    /* +-----------+ */
 
     /* HORIZONTAL REMAP LISTENERS */
     @Override
@@ -186,10 +183,9 @@ public class OrthoRegion extends Region implements IOrthoDevice, IDisposable {
         orthoImpl.removeWindowRemapListener (lis);
     }
 
-    /* +--------------------+ */
-    /* | MAPPING OPERATIONS | */
-    /* +--------------------+ */
-
+    /* +----------------------+ */
+    /* | TRANSFORM OPERATIONS | */
+    /* +----------------------+ */
     @Override
     public double mapToComponentX (double x) {
         return orthoImpl.mapToComponentX (x);
@@ -211,6 +207,24 @@ public class OrthoRegion extends Region implements IOrthoDevice, IDisposable {
     }
 
     @Override
+    public void zoomHorizontal (double vx, double mult) {
+        orthoImpl.zoomHorizontal (vx, mult);
+    }
+
+    @Override
+    public void zoomVertical (double vy, double mult) {
+        orthoImpl.zoomVertical (vy, mult);
+    }
+
+    @Override
+    public void zoomWindow (double vx, double vy, double mult) {
+        orthoImpl.zoomWindow (vx, vy, mult);
+    }
+
+    /* +---------+ */
+    /* | BINDING | */
+    /* +---------+ */
+    @Override
     public void bindOrtho (IOrthoDevice to) {
         orthoImpl.bindOrtho (to);
     }
@@ -220,6 +234,9 @@ public class OrthoRegion extends Region implements IOrthoDevice, IDisposable {
         orthoImpl.unbindOrtho ();
     }
 
+    /* +-------------+ */
+    /* | IDisposable | */
+    /* +-------------+ */
     @Override
     public void dispose () {
         orthoImpl.dispose ();
