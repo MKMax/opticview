@@ -4,9 +4,12 @@ import io.github.mkmax.opticview.ui.graph.GraphFrame;
 import io.github.mkmax.opticview.ui.graph.GraphStack;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
 import javafx.scene.Scene;
+import javafx.scene.chart.*;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 import java.text.DecimalFormat;
@@ -37,21 +40,31 @@ public class OpticView extends Application {
 
     @Override
     public void start (Stage stage) {
-        GraphStack gs = new GraphStack ();
-        gs.getGraphData ().createEntry (x -> 1d / x, Color.FIREBRICK, "Inverse");
-        gs.getGraphData ().createEntry (Math::sin, Color.STEELBLUE, "Sine");
-        gs.getGraphData ().createEntry (Math::cos, Color.WHEAT, "Cosine");
-        gs.getGraphData ().createEntry (Math::log, Color.SEAGREEN, "Natural Logarithm");
-        gs.setWindow (-5d, 5d, -5d, 5d);
+//        GraphStack gs = new GraphStack ();
+//        gs.getGraphData ().createEntry (x -> 1d / x, Color.FIREBRICK, "Inverse");
+//        gs.getGraphData ().createEntry (Math::sin, Color.STEELBLUE, "Sine");
+//        gs.getGraphData ().createEntry (Math::cos, Color.WHEAT, "Cosine");
+//        gs.getGraphData ().createEntry (Math::log, Color.SEAGREEN, "Natural Logarithm");
+//        gs.setWindow (-5d, 5d, -5d, 5d);
+//
+//        GraphFrame gf = new GraphFrame (gs);
+//        gf.setVerticalLabel ("Output (ms)");
+//        gf.setHorizontalLabel ("Input (ms)");
 
-        GraphFrame gf = new GraphFrame (gs);
-        gf.setVerticalLabel ("Output (ms)");
-        gf.setHorizontalLabel ("Input (ms)");
+        XYChart.Series<Number, Number> series = new XYChart.Series<> ();
+        for (double i = 1e-45d; i < 1e15d; i += 1e12d)
+            series.getData ().add (new XYChart.Data<> (i, i * i));
+
+        NumberAxis x = new NumberAxis ();
+        NumberAxis y = new NumberAxis ();
+
+        XYChart<Number, Number> chart = new LineChart<> (x, y);
+        chart.setData (FXCollections.observableArrayList (series));
 
         StackPane parent = new StackPane ();
         parent.setPrefWidth (512d);
         parent.setPrefHeight (512d);
-        parent.getChildren ().addAll (gf);
+        parent.getChildren ().addAll (chart);
 
         Scene scene = new Scene (parent);
 
