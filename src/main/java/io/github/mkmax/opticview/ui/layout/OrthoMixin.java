@@ -1,6 +1,6 @@
 package io.github.mkmax.opticview.ui.layout;
 
-import io.github.mkmax.opticview.util.Numbers;
+import io.github.mkmax.opticview.util.FloatUtils;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
@@ -64,8 +64,8 @@ public final class OrthoMixin implements IOrthoDevice {
 
     /* Fix for double loss of accuracy for too large or too small of values */
     /* @TODO(max): Use BigDecimal */
-    private static final double MIN_RANGE = 1e-15d;
-    private static final double MAX_RANGE = 1e15d;
+    private static final double MIN_RANGE = 1e-14d;
+    private static final double MAX_RANGE = 1e14d;
 
     @Override public ReadOnlyDoubleProperty leftProperty     ()               { return left;                     }
     @Override public double                 getLeft          ()               { return left.get ();              }
@@ -110,8 +110,15 @@ public final class OrthoMixin implements IOrthoDevice {
         inFusedHorizontalModify = true;
         /* prevent double values losing enough accuracy to go into zeroes */
         final double spandiff = Math.abs (nRight - nLeft);
+        final boolean
+            eqmin = FloatUtils.equal (spandiff, MIN_RANGE, HOR_DELTA_LENIENCY),
+            eqmax = FloatUtils.equal (spandiff, MAX_RANGE, HOR_DELTA_LENIENCY);
         boolean set = false;
         if (MIN_RANGE <= spandiff && spandiff <= MAX_RANGE) {
+            if (eqmin)
+                nRight = nRight < nLeft ? nLeft - MIN_RANGE : nLeft + MIN_RANGE;
+            else if (eqmax)
+                nRight = nRight < nLeft ? nLeft - MAX_RANGE : nLeft + MAX_RANGE;
             left.set (nLeft);
             right.set (nRight);
             set = true;
@@ -134,8 +141,15 @@ public final class OrthoMixin implements IOrthoDevice {
         inFusedVerticalModify = true;
         /* prevent double values losing enough accuracy to go into zeroes */
         final double spandiff = Math.abs (nTop - nBottom);
+        final boolean
+            eqmin = FloatUtils.equal (spandiff, MIN_RANGE, VER_DELTA_LENIENCY),
+            eqmax = FloatUtils.equal (spandiff, MAX_RANGE, VER_DELTA_LENIENCY);
         boolean set = false;
-        if (MIN_RANGE <= spandiff && spandiff <= MAX_RANGE) {
+        if (MIN_RANGE <= spandiff && spandiff <= MAX_RANGE || eqmin || eqmax) {
+            if (eqmin)
+                nTop = nTop < nBottom ? nBottom - MIN_RANGE : nBottom + MIN_RANGE;
+            else if (eqmax)
+                nTop = nTop < nBottom ? nBottom - MAX_RANGE : nBottom + MAX_RANGE;
             bottom.set (nBottom);
             top.set (nTop);
             set = true;
@@ -153,6 +167,10 @@ public final class OrthoMixin implements IOrthoDevice {
     }
 
     /* FUSED WINDOW SETTER */
+    private static final double
+        HOR_DELTA_LENIENCY = 1e-14d,
+        VER_DELTA_LENIENCY = 1e-14d;
+
     @Override
     public void setWindow (double nLeft, double nRight, double nBottom, double nTop) {
         /* as with setHorizontal() and setVertical(), we use atomics to control event triggers */
@@ -160,16 +178,30 @@ public final class OrthoMixin implements IOrthoDevice {
         /* prevent double values losing enough accuracy to go into zeroes */
         /* --- HORIZONTAL --- */
         final double hspandiff = Math.abs (nRight - nLeft);
+        final boolean
+            heqmin = FloatUtils.equal (hspandiff, MIN_RANGE, HOR_DELTA_LENIENCY),
+            heqmax = FloatUtils.equal (hspandiff, MAX_RANGE, HOR_DELTA_LENIENCY);
         boolean hset = false;
-        if (MIN_RANGE <= hspandiff && hspandiff <= MAX_RANGE) {
+        if ((MIN_RANGE <= hspandiff && hspandiff <= MAX_RANGE) || heqmin || heqmax) {
+            if (heqmin)
+                nRight = nRight < nLeft ? nLeft - MIN_RANGE : nLeft + MIN_RANGE;
+            else if (heqmax)
+                nRight = nRight < nLeft ? nLeft - MAX_RANGE : nLeft + MAX_RANGE;
             left.set (nLeft);
             right.set (nRight);
             hset = true;
         }
         /* --- VERTICAL --- */
         final double vspandiff = Math.abs (nTop - nBottom);
+        final boolean
+            veqmin = FloatUtils.equal (vspandiff, MIN_RANGE, VER_DELTA_LENIENCY),
+            veqmax = FloatUtils.equal (vspandiff, MAX_RANGE, VER_DELTA_LENIENCY);
         boolean vset = false;
-        if (MIN_RANGE <= vspandiff && vspandiff <= MAX_RANGE) {
+        if (MIN_RANGE <= vspandiff && vspandiff <= MAX_RANGE || veqmin || veqmax) {
+            if (heqmin)
+                nTop = nTop < nBottom ? nBottom - MIN_RANGE : nBottom + MIN_RANGE;
+            else if (heqmax)
+                nTop = nTop < nBottom ? nBottom - MAX_RANGE : nBottom + MAX_RANGE;
             bottom.set (nBottom);
             top.set (nTop);
             vset = true;
@@ -475,7 +507,7 @@ public final class OrthoMixin implements IOrthoDevice {
         final double
             minmult = MIN_RANGE / (max - min),
             maxmult = MAX_RANGE / (max - min);
-        final double realmult = Numbers.clamp (mult < 0d ? -1d / mult : mult, minmult, maxmult);
+        final double realmult = FloatUtils.clamp (mult < 0d ? -1d / mult : mult, minmult, maxmult);
         final double
             newLeft = nmLeft * realmult + vx,
             newRight = nmRight * realmult + vx;
@@ -494,6 +526,65 @@ public final class OrthoMixin implements IOrthoDevice {
     }
 
     @Override
+    public void translateHorizontal (double vx) {
+        inFusedHorizontalModify = true;
+        left.set (getLeft () + vx);
+        right.set (getRight () + vx);
+        inFusedHorizontalModify = false;
+
+        onHorizontalParamsChanged (
+            false,
+            true,
+            true,
+            Double.NaN,
+            getLeft (),
+            getRight ()
+        );
+    }
+
+    @Override
+    public void translateVertical (double vy) {
+        inFusedVerticalModify = true;
+        bottom.set (getBottom () + vy);
+        top.set (getTop () + vy);
+        inFusedVerticalModify = false;
+
+        onVerticalParamsChanged (
+            false,
+            true,
+            true,
+            Double.NaN,
+            getBottom (),
+            getTop ()
+        );
+    }
+
+    @Override
+    public void translateWindow (double vx, double vy) {
+        inFusedWindowModify = true;
+        left.set (getLeft () + vx);
+        right.set (getRight () + vx);
+        bottom.set (getBottom () + vy);
+        top.set (getTop () + vy);
+        inFusedWindowModify = false;
+
+        onWindowParamsChanged (
+            false,
+            false,
+            true,
+            true,
+            true,
+            true,
+            Double.NaN,
+            Double.NaN,
+            getLeft (),
+            getRight (),
+            getBottom (),
+            getTop ()
+        );
+    }
+
+    @Override
     public void zoomVertical (double vy, double mult) {
         final double
             nmBottom = getBottom () - vy,
@@ -504,7 +595,7 @@ public final class OrthoMixin implements IOrthoDevice {
         final double
             minmult = MIN_RANGE / (max - min),
             maxmult = MAX_RANGE / (max - min);
-        final double realmult = Numbers.clamp (mult < 0d ? -1d / mult : mult, minmult, maxmult);
+        final double realmult = FloatUtils.clamp (mult < 0d ? -1d / mult : mult, minmult, maxmult);
         final double
             newBottom = nmBottom * realmult + vy,
             newTop = nmTop * realmult + vy;
@@ -543,8 +634,8 @@ public final class OrthoMixin implements IOrthoDevice {
             vmaxmult = MAX_RANGE / (vmax - vmin);
         final double formedmult = mult < 0d ? -1d / mult : mult;
         final double
-            hrealmult = Numbers.clamp (formedmult, hminmult, hmaxmult),
-            vrealmult = Numbers.clamp (formedmult, vminmult, vmaxmult);
+            hrealmult = FloatUtils.clamp (formedmult, hminmult, hmaxmult),
+            vrealmult = FloatUtils.clamp (formedmult, vminmult, vmaxmult);
         final double
             newLeft   = nmLeft   * hrealmult + vx,
             newRight  = nmRight  * hrealmult + vx,

@@ -1,6 +1,6 @@
 package io.github.mkmax.opticview.ui.graph;
 
-import io.github.mkmax.opticview.util.Numbers;
+import io.github.mkmax.opticview.util.FloatUtils;
 import javafx.event.EventHandler;
 import javafx.scene.Cursor;
 import javafx.scene.ImageCursor;
@@ -98,57 +98,33 @@ public final class GraphTools {
             synchronized (PRESS_LOCK) {
                 final GraphStack gs = getGraphStack ();
                 final double
-                    mouseNowX = e.getX (),
-                    mouseNowY = e.getY ();
-                final double
-                    deltaX = (mouseNowX - mouseX),
-                    deltaY = (mouseNowY - mouseY);
+                    iDeltaX = (mouseX - e.getX ()),
+                    iDeltaY = (mouseY - e.getY ());
                 final double
                     scaleX = (gs.getRight () - gs.getLeft ()) / gs.getWidth (),
                     scaleY = (gs.getBottom () - gs.getTop ()) / gs.getHeight ();
                 final double
-                    deltaVirtualX = deltaX * scaleX,
-                    deltaVirtualY = deltaY * scaleY;
-                final double
-                    nLeft   = gs.getLeft ()   - deltaVirtualX,
-                    nRight  = gs.getRight ()  - deltaVirtualX,
-                    nBottom = gs.getBottom () - deltaVirtualY,
-                    nTop    = gs.getTop ()    - deltaVirtualY;
-                gs.setWindow (nLeft, nRight, nBottom, nTop);
-                mouseX = mouseNowX;
-                mouseY = mouseNowY;
+                    deltaVirtualX = iDeltaX * scaleX,
+                    deltaVirtualY = iDeltaY * scaleY;
+                System.out.println(deltaVirtualX + ", " + deltaVirtualY);
+                gs.translateWindow (deltaVirtualX, deltaVirtualY);
+                mouseX = e.getX ();
+                mouseY = e.getY ();
             }
         };
 
-        private static final double ZOOM_IN_MULT = 0.80d;
-        private static final double ZOOM_OUT_MULT = 1.25d;
+        private static final double ZOOM_MULT = -1.25d;
 
         private final EventHandler<ScrollEvent> onScroll = (e) -> {
             final double deltaY = e.getDeltaY ();
-            if (Numbers.areEqual (deltaY, 0d))
+            if (FloatUtils.equal (deltaY, 0d))
                 return;
             final GraphStack gs = getGraphStack ();
             final GraphStack.ToolRegion tr = gs.getToolRegion ();
             final double
                 virtualX = tr.mapToVirtualX (mouseX),
                 virtualY = tr.mapToVirtualY (mouseY);
-            final double
-                deltaLeft   = tr.getLeft ()   - virtualX,
-                deltaRight  = tr.getRight ()  - virtualX,
-                deltaBottom = tr.getBottom () - virtualY,
-                deltaTop    = tr.getTop ()    - virtualY;
-            final double multiplier = deltaY < 0d ? ZOOM_OUT_MULT : ZOOM_IN_MULT;
-            final double
-                nDeltaLeft   = deltaLeft   * multiplier,
-                nDeltaRight  = deltaRight  * multiplier,
-                nDeltaBottom = deltaBottom * multiplier,
-                nDeltaTop    = deltaTop    * multiplier;
-            gs.setWindow (
-                nDeltaLeft   + virtualX,
-                nDeltaRight  + virtualX,
-                nDeltaBottom + virtualY,
-                nDeltaTop    + virtualY
-            );
+            gs.zoomWindow (virtualX, virtualY, ZOOM_MULT * deltaY / e.getMultiplierY ());
         };
 
         /* CHANGE HANDLERS */

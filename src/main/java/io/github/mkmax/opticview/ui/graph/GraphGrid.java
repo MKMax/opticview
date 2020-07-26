@@ -2,6 +2,7 @@ package io.github.mkmax.opticview.ui.graph;
 
 import io.github.mkmax.opticview.ui.layout.IOrthoDevice;
 
+import io.github.mkmax.opticview.util.FloatUtils;
 import javafx.geometry.VPos;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -42,8 +43,7 @@ public final class GraphGrid extends GraphStack.Device {
     /* grid settings */
     private static final DecimalFormat sciform = new DecimalFormat ("0.000E0");
     private static final DecimalFormat preform = new DecimalFormat ("0.000");
-    private static final double SCI_THRESHOLD_MIN = 1e-2d;
-    private static final double SCI_THRESHOLD_MAX = 1e2d;
+    private static final double SCI_THRESHOLD = 1e2d;
     private static final double MIN_GUIDE_GAP = 512d;
     private static final double LINE_WIDTH = 1.0d;
     private static final GuideStyle ORIGIN_STYLE = new GuideStyle (
@@ -66,7 +66,13 @@ public final class GraphGrid extends GraphStack.Device {
     private final List<Guide> horGuides = new ArrayList<> ();
     private final List<Guide> verGuides = new ArrayList<> ();
 
-    private final IOrthoDevice.RemapListener update = (__comp) -> {
+    private final IOrthoDevice.RemapListener update = (__src,
+                                                       __isWidth, __nWidth,
+                                                       __isHeight, __nHeight,
+                                                       __isLeft, __nLeft,
+                                                       __isRight, __nRight,
+                                                       __isBottom, __nBottom,
+                                                       __isTop, __nTop) -> {
         final double
             width  = getWidth (),
             height = getHeight (),
@@ -74,9 +80,9 @@ public final class GraphGrid extends GraphStack.Device {
             right  = getRight (),
             bottom = getBottom (),
             top    = getTop ();
-        final double
-            hinterval = Math.abs (right - left),
-            vinterval = Math.abs (top - bottom);
+        final boolean
+            horsci = Math.abs (getLeft ()) >= 1000 || Math.abs (getRight ()) >= 1000,
+            versci = Math.abs (getBottom ()) >= 1000 || Math.abs (getTop ()) >= 1000;
         final var hindices = computeGuideIndicesSp (width, left, right, MIN_GUIDE_GAP);
         final var vindices = computeGuideIndicesSp (height, bottom, top, MIN_GUIDE_GAP);
 
@@ -107,6 +113,7 @@ public final class GraphGrid extends GraphStack.Device {
             Index idx = hindices.get (i);
             Guide guide = verGuides.get (i);
 
+            final double idxPosLog = Math.floor(Math.log10(idx.pos));
             final double x = mapx (idx.pos);
             final double y = mapy (0d);
 
@@ -120,28 +127,31 @@ public final class GraphGrid extends GraphStack.Device {
 
             guide.text.setFont (idx.style.font);
             guide.text.setText (
-                hinterval <= SCI_THRESHOLD_MIN || SCI_THRESHOLD_MAX <= hinterval ?
-                    sciform.format (idx.pos) :
-                    preform.format (idx.pos));
+                horsci ?
+                    FloatUtils.toScientificString (idx.pos, 3) :
+                    FloatUtils.toPrecisionString (idx.pos, 3));
             final double text_w = guide.text.getLayoutBounds ().getWidth ();
             final double text_h = guide.text.getLayoutBounds ().getHeight ();
             final double text_x = x - 0.5d * text_w;
             final double text_y = y;
             final double text_rx = Math.max (Math.min (text_x, width - text_w), 0d);
             final double text_ry = Math.max (Math.min (text_y, height - text_h), 0d);
+            final boolean istextvis =
+                FloatUtils.isFractZero (idx.pos * 1000) &&
+                FloatUtils.isFractZero (Math.pow (idx.pos, -idxPosLog + 3));
             guide.text.setTextOrigin (VPos.TOP);
             guide.text.setTextAlignment (TextAlignment.LEFT);
             guide.text.setX (text_rx);
             guide.text.setY (text_ry);
             guide.text.setFill (idx.style.fg);
-            guide.text.setVisible (true);
+            guide.text.setVisible (istextvis);
 
             guide.textbg.setX (text_rx);
             guide.textbg.setY (text_ry);
             guide.textbg.setWidth (text_w);
             guide.textbg.setHeight (text_h);
             guide.textbg.setFill (idx.style.bg);
-            guide.textbg.setVisible (true);
+            guide.textbg.setVisible (istextvis);
         }
         for (int i = verGuides.size () - 1; i >= hindices.size (); --i) {
             Guide guide = verGuides.get (i);
@@ -155,6 +165,7 @@ public final class GraphGrid extends GraphStack.Device {
             Index idx = vindices.get (i);
             Guide guide = horGuides.get (i);
 
+            final double idxPosLog = Math.floor(Math.log10 (idx.pos));
             final double x = mapx (0d);
             final double y = mapy (idx.pos);
 
@@ -167,28 +178,31 @@ public final class GraphGrid extends GraphStack.Device {
             guide.line.setVisible (true);
 
             guide.text.setText (
-                vinterval <= SCI_THRESHOLD_MIN || SCI_THRESHOLD_MAX <= vinterval ?
-                    sciform.format (idx.pos) :
-                    preform.format (idx.pos));
+                versci ?
+                    FloatUtils.toScientificString (idx.pos, 3) :
+                    FloatUtils.toPrecisionString (idx.pos, 3));
             final double text_w = guide.text.getLayoutBounds ().getWidth ();
             final double text_h = guide.text.getLayoutBounds ().getHeight ();
             final double text_x = x - 0.5d * text_w;
             final double text_y = y;
             final double text_rx = Math.max (Math.min (text_x, width - text_w), 0d);
             final double text_ry = Math.max (Math.min (text_y, height - text_h), 0d);
+            final boolean istextvis =
+                FloatUtils.isFractZero (idx.pos * 1000) &&
+                FloatUtils.isFractZero (Math.pow (idx.pos, -idxPosLog + 3));
             guide.text.setTextOrigin (VPos.TOP);
             guide.text.setTextAlignment (TextAlignment.LEFT);
             guide.text.setX (text_rx);
             guide.text.setY (text_ry);
             guide.text.setFill (idx.style.fg);
-            guide.text.setVisible (true);
+            guide.text.setVisible (istextvis);
 
             guide.textbg.setX (text_rx);
             guide.textbg.setY (text_ry);
             guide.textbg.setWidth (text_w);
             guide.textbg.setHeight (text_h);
             guide.textbg.setFill (idx.style.bg);
-            guide.textbg.setVisible (true);
+            guide.textbg.setVisible (istextvis);
         }
         for (int i = horGuides.size () - 1; i >= vindices.size (); --i) {
             Guide guide = horGuides.get (i);

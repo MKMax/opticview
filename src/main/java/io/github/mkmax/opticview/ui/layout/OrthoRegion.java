@@ -207,6 +207,21 @@ public class OrthoRegion extends Region implements IOrthoDevice {
     }
 
     @Override
+    public void translateHorizontal (double vx) {
+        orthoImpl.translateHorizontal (vx);
+    }
+
+    @Override
+    public void translateVertical (double vy) {
+        orthoImpl.translateVertical (vy);
+    }
+
+    @Override
+    public void translateWindow (double vx, double vy) {
+        orthoImpl.translateWindow (vx, vy);
+    }
+
+    @Override
     public void zoomHorizontal (double vx, double mult) {
         orthoImpl.zoomHorizontal (vx, mult);
     }

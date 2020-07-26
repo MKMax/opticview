@@ -88,6 +88,10 @@ public interface IOrthoDevice extends IDisposable {
     double mapToVirtualX (double x);
     double mapToVirtualY (double y);
 
+    void translateHorizontal (double vx);
+    void translateVertical (double vy);
+    void translateWindow (double vx, double vy);
+
     void zoomHorizontal (double vx, double mult);
     void zoomVertical   (double vy, double mult);
     void zoomWindow     (double vx, double vy, double mult);

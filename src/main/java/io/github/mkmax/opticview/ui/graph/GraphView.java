@@ -31,7 +31,13 @@ public final class GraphView extends GraphStack.Device {
     /* +-----------+ */
 
     /* REMAP LISTENER */
-    private final IOrthoDevice.RemapListener onRemap = (__comp) ->
+    private final IOrthoDevice.RemapListener onRemap = (__comp,
+                                                        __isWidth, __nWidth,
+                                                        __isHeight, __nHeight,
+                                                        __isLeft, __nLeft,
+                                                        __isRight, __nRight,
+                                                        __isBottom, __nBottom,
+                                                        __isTop, __nTop) ->
         entrymap.forEach ((entry, canvas) -> {
             clearCanvas (canvas);
             fitCanvas (canvas);
