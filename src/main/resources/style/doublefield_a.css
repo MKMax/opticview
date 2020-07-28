@@ -1,0 +1,54 @@
+@font-face {
+    font-family: "FreeSans"
+    src: url("fonts/FreeSans.ttf");
+}
+
+/* --- UNIVERSAL ---- */
+DoubleField .container {
+    -fx-font-family: "FreeSans";
+    -fx-font-size: 12pt;
+    -fx-border-width: 0.25mm;
+    -fx-padding: 1mm;
+    -fx-spacing: 1mm;
+}
+
+DoubleField .field {
+    -fx-border-width: 0.25mm;
+    -fx-padding: 0.5mm;
+}
+
+DoubleField .label {
+    -fx-font-size: 10pt;
+}
+
+/* --- NORMAL --- */
+DoubleField .container.normal {
+    -fx-background-color: rgb(224, 224, 224);
+    -fx-border-color: rgb(128, 128, 128);
+}
+
+DoubleField .field.normal {
+    -fx-background-color: rgb(255, 255, 255);
+    -fx-border-color: rgb(128, 128, 128);
+    -fx-text-fill: rgb(128, 128, 128);
+}
+
+DoubleField .label.normal {
+    -fx-text-fill: rgb(128, 128, 128);
+}
+
+/* --- ERROR --- */
+DoubleField .container.error {
+    -fx-background-color: rgb(255, 192, 192);
+    -fx-border-color: rgb(192, 92, 92);
+}
+
+DoubleField .field.error {
+    -fx-background-color: rgb(255, 224, 224);
+    -fx-border-color: rgb(192, 92, 92);
+    -fx-text-fill: rgb(192, 92, 92);
+}
+
+DoubleField .label.error {
+    -fx-text-fill: rgb(192, 92, 92);
+}

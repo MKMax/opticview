@@ -19,11 +19,18 @@ test {
 dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.4.2"
     testImplementation "org.junit.jupiter:junit-jupiter-engine:5.4.2"
+
+    implementation "commons-io:commons-io:2.7"
+}
+
+run {
+    mainModule = "io.github.mkmax.opticview"
+    mainClass = "io.github.mkmax.opticview.App"
 }
 
 application {
     mainModule = "io.github.mkmax.opticview"
-    mainClass = "io.github.mkmax.opticview.OpticView"
+    mainClass = "io.github.mkmax.opticview.App"
 }
 
 javafx {
