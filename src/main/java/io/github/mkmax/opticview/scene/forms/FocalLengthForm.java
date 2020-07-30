@@ -10,4 +10,5 @@ public class FocalLengthForm extends Region {
     /* | COMPONENTS | */
     /* +------------+ */
     private final GridPane container = new GridPane ();
+
 }

@@ -1,0 +1,44 @@
+/* --- This CSS Color Scheme ---
+ *
+ * General:
+ * - foreground: rgb(128, 128, 128)
+ * - background: rgb(255, 255, 255)
+ * - primary accent: ?
+ * - secondary accent: ?
+ * - tertiary accent: ?
+ *
+ */
+
+@font-face {
+    font-family: "FreeMono";
+    font-weight: normal;
+    src: url("../fonts/FreeMono.ttf");
+}
+
+@font-face {
+    font-family: "FreeMono";
+    font-weight: bold;
+    src: url("../fonts/FreeMonoBold.ttf");
+}
+
+@font-face {
+    font-family: "FreeMono";
+    font-weight: oblique;
+    src: url("../fonts/FreeMonoOblique.ttf");
+}
+
+@font-face {
+    font-family: "FreeMono";
+    font-weight: bold-oblique;
+    src: url("../fonts/FreeMonoBoldOblique.ttf");
+}
+
+@import url("discrete-interval-form.css");
+
+/* +--- UNIVERSAL ---+ */
+.combo-box {
+    -fx-border-width: 0.25mm;
+    -fx-border-color: rgb(128, 128, 128);
+    -fx-background-color: rgb(255, 255, 255);
+    -fx-highlight-fill: red;
+}

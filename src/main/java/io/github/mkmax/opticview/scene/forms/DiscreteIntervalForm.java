@@ -4,28 +4,34 @@ import io.github.mkmax.opticview.scene.controls.DoubleField;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.HPos;
+import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
+import javafx.scene.layout.*;
 
 /* A utility form to specify the start, the step, and the end of an interval */
 public class DiscreteIntervalForm extends Region {
 
-    /* +------------+ */
-    /* | COMPONENTS | */
-    /* +------------+ */
-    private final GridPane container = new GridPane ();
-    private final Label title = new Label ();
-    private final Label
-        startLabel = new Label (),
-        stepLabel  = new Label (),
-        endLabel   = new Label ();
-    private final DoubleField
-        startField = new DoubleField (),
-        stepField  = new DoubleField (),
-        endField   = new DoubleField ();
+    /* +---------------+ */
+    /* | STYLE CLASSES | */
+    /* +---------------+ */
+    public static final class ComponentClass {
+        public static final String
+            DISCRETE_INTERVAL_FORM = "discrete-interval-form",
+            CONTAINER              = "container",
+            TITLE_CONTAINER        = "title-container",
+
+            LABEL                  = "label",
+            TITLE                  = "title",
+            START_LABEL            = "start-label",
+            STEP_LABEL             = "step-label",
+            END_LABEL              = "end-label",
+
+            FIELD                  = "field",
+            START_FIELD            = "start-field",
+            STEP_FIELD             = "step-field",
+            END_FIELD              = "end-field";
+    }
 
     /* +------------+ */
     /* | PROPERTIES | */
@@ -68,6 +74,84 @@ public class DiscreteIntervalForm extends Region {
     public void setEndPrompt (String nEndPrompt)
         { endPromptProperty.set (nEndPrompt); }
 
+    /* +------------+ */
+    /* | COMPONENTS | */
+    /* +------------+ */
+    private final GridPane container = new GridPane ();
+    private final VBox titleContainer = new VBox ();
+    private final Label title = new Label ();
+    private final Label
+        startLabel = new Label (),
+        stepLabel  = new Label (),
+        endLabel   = new Label ();
+    private final DoubleField
+        startField = new DoubleField (),
+        stepField  = new DoubleField (),
+        endField   = new DoubleField ();
+
+    /* component initialization */
+    {
+        /* assign style class to discrete interval form as convention */
+        getStyleClass ().add (ComponentClass.DISCRETE_INTERVAL_FORM);
+
+        /* assign style classes to each component */
+        container     .getStyleClass ().add (ComponentClass.CONTAINER);
+        titleContainer.getStyleClass ().add (ComponentClass.TITLE_CONTAINER);
+
+        title         .getStyleClass ().addAll (
+            ComponentClass.LABEL,
+            ComponentClass.TITLE);
+        startLabel    .getStyleClass ().addAll (
+            ComponentClass.LABEL,
+            ComponentClass.START_LABEL);
+        stepLabel     .getStyleClass ().addAll (
+            ComponentClass.LABEL,
+            ComponentClass.STEP_LABEL);
+        endLabel      .getStyleClass ().addAll (
+            ComponentClass.LABEL,
+            ComponentClass.END_LABEL);
+
+        startField    .getStyleClass ().addAll (
+            ComponentClass.FIELD,
+            ComponentClass.START_FIELD);
+        stepField     .getStyleClass ().addAll (
+            ComponentClass.FIELD,
+            ComponentClass.STEP_FIELD);
+        endField      .getStyleClass ().addAll (
+            ComponentClass.FIELD,
+            ComponentClass.END_FIELD);
+
+        /* setup the constraints of each component */
+        titleContainer.setAlignment (Pos.CENTER);
+        GridPane.setConstraints (titleContainer, 0, 0, 2, 1, HPos.LEFT, VPos.CENTER, Priority.SOMETIMES, Priority.NEVER);
+
+        GridPane.setConstraints (startLabel, 0, 1, 1, 1, HPos.RIGHT, VPos.CENTER, Priority.NEVER, Priority.SOMETIMES);
+        GridPane.setConstraints (stepLabel, 0, 2, 1, 1, HPos.RIGHT, VPos.CENTER, Priority.NEVER, Priority.SOMETIMES);
+        GridPane.setConstraints (endLabel, 0, 3, 1, 1, HPos.RIGHT, VPos.CENTER, Priority.NEVER, Priority.SOMETIMES);
+
+        GridPane.setConstraints (startField, 1, 1, 1, 1, HPos.LEFT, VPos.CENTER, Priority.ALWAYS, Priority.SOMETIMES);
+        GridPane.setConstraints (stepField, 1, 2, 1, 1, HPos.LEFT, VPos.CENTER, Priority.ALWAYS, Priority.SOMETIMES);
+        GridPane.setConstraints (endField, 1, 3, 1, 1, HPos.LEFT, VPos.CENTER, Priority.ALWAYS, Priority.SOMETIMES);
+
+        /* register components with the container(s) */
+        titleContainer.getChildren ().add (title);
+        container.getChildren ().addAll (
+            titleContainer,
+            startLabel, startField,
+            stepLabel, stepField,
+            endLabel, endField
+        );
+
+        /* register container with the actual component */
+        getChildren ().add (container);
+
+        /* bind the string properties to their respective labels */
+        title     .textProperty ().bind (titleProperty);
+        startLabel.textProperty ().bind (startPromptProperty);
+        stepLabel .textProperty ().bind (stepPromptProperty);
+        endLabel  .textProperty ().bind (endPromptProperty);
+    }
+
     /* +----------------+ */
     /* | INITIALIZATION | */
     /* +----------------+ */
@@ -77,39 +161,10 @@ public class DiscreteIntervalForm extends Region {
         String pStepPrompt,
         String pEndPrompt)
     {
-        /* setup the components for the container grid */
-        GridPane.setConstraints (title, 0, 0, 2, 1, HPos.LEFT, VPos.CENTER, Priority.SOMETIMES, Priority.NEVER);
-
-        GridPane.setConstraints (startLabel, 0, 1, 1, 1, HPos.RIGHT, VPos.TOP, Priority.NEVER, Priority.SOMETIMES);
-        GridPane.setConstraints (stepLabel, 0, 2, 1, 1, HPos.RIGHT, VPos.TOP, Priority.NEVER, Priority.SOMETIMES);
-        GridPane.setConstraints (endLabel, 0, 3, 1, 1, HPos.RIGHT, VPos.TOP, Priority.NEVER, Priority.SOMETIMES);
-
-        GridPane.setConstraints (startField, 1, 1, 1, 1, HPos.LEFT, VPos.TOP, Priority.ALWAYS, Priority.SOMETIMES);
-        GridPane.setConstraints (stepField, 1, 2, 1, 1, HPos.LEFT, VPos.TOP, Priority.ALWAYS, Priority.SOMETIMES);
-        GridPane.setConstraints (endField, 1, 3, 1, 1, HPos.LEFT, VPos.TOP, Priority.ALWAYS, Priority.SOMETIMES);
-
-        /* register components with the container */
-        container.getChildren ().addAll (
-            title,
-            startLabel, startField,
-            stepLabel, stepField,
-            endLabel, endField
-        );
-
-        /* register container with the actual component */
-        getChildren ().add (container);
-
-        /* set the given prompts */
         setTitle (pTitle);
         setStartPrompt (pStartPrompt);
         setStepPrompt (pStepPrompt);
         setEndPrompt (pEndPrompt);
-
-        /* bind the string properties to their respective labels */
-        title     .textProperty ().bind (titleProperty);
-        startLabel.textProperty ().bind (startPromptProperty);
-        stepLabel .textProperty ().bind (stepPromptProperty);
-        endLabel  .textProperty ().bind (endPromptProperty);
     }
 
     public DiscreteIntervalForm (String pTitle) {

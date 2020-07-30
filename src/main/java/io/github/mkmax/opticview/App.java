@@ -1,11 +1,11 @@
 package io.github.mkmax.opticview;
 
-import io.github.mkmax.opticview.scene.controls.DoubleField;
+import io.github.mkmax.opticview.material.Glass;
+import io.github.mkmax.opticview.scene.controls.GlassListCell;
 import io.github.mkmax.opticview.scene.forms.DiscreteIntervalForm;
-import io.github.mkmax.opticview.scene.graph.Graph;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
+import javafx.scene.control.ComboBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
@@ -46,21 +46,27 @@ public class App extends Application {
 //
 //        chart.setLegendVisible (false);
 //        chart.setData (data);
+
+        ComboBox<Glass> cb = new ComboBox<> ();
+        cb.getItems ().addAll (Glass.values ());
+        cb.setButtonCell (new GlassListCell ());
+        cb.setCellFactory (view -> new GlassListCell ());
+
         DiscreteIntervalForm dif = new DiscreteIntervalForm (
-            "Lambda",
-            "Lmin",
-            "Lstep",
-            "Lmax");
+            "λ",
+            "min:",
+            "step:",
+            "max:");
+        dif.setMaxWidth (256);
+        dif.setMaxHeight (256);
 
         StackPane parent = new StackPane ();
         parent.setPrefWidth (512d);
         parent.setPrefHeight (512d);
-        parent.getChildren ().addAll (dif);
+        parent.getChildren ().addAll (dif, cb);
 
         Scene scene = new Scene (parent);
-        scene.getStylesheets ().addAll (
-            "style/doublefield.css"
-        );
+        scene.getStylesheets ().add ("style/light/main.css");
 
         stage.setScene (scene);
         stage.sizeToScene ();

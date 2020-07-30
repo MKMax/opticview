@@ -5,9 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.layout.Region;
 import javafx.scene.chart.LineChart;
-import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
-import javafx.scene.chart.XYChart.Data;
 
 public class Graph extends Region {
 
