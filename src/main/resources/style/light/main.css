@@ -1,7 +1,7 @@
 /* --- This CSS Color Scheme ---
  *
  * General:
- * - foreground: rgb(128, 128, 128)
+ * - foreground: rgb(64, 64, 64)
  * - background: rgb(255, 255, 255)
  * - primary accent: ?
  * - secondary accent: ?
@@ -33,12 +33,100 @@
     src: url("../fonts/FreeMonoBoldOblique.ttf");
 }
 
-@import url("discrete-interval-form.css");
+/* +---------------------------------+ */
+/* |             LAYOUTS             | */
+/* +---------------------------------+ */
 
-/* +--- UNIVERSAL ---+ */
+/* --- VBox --- */
+VBox {
+    -fx-spacing: 1mm;
+}
+
+/* --- HBox --- */
+HBox {
+    -fx-spacing: 1mm;
+}
+
+/* --- GridPane --- */
+GridPane {
+    -fx-hgap: 1mm;
+    -fx-vgap: 1mm;
+}
+
+/* --- MainPane --- */
+MainPane .container {
+    -fx-padding: 1mm;
+    -fx-hgap: 1mm;
+    -fx-vgap: 1mm;
+}
+
+/* --- list view --- */
+.list-view .cell:hover {
+    -fx-background-color: rgb(224, 224, 224);
+    -fx-cursor: hand;
+}
+
+.list-view .cell:selected {
+    -fx-background-color: rgb(64, 64, 64);
+    -fx-text-fill: rgb(255, 255, 255);
+}
+
+/* +----------------------------------+ */
+/* |             CONTROLS             | */
+/* +----------------------------------+ */
+
+/* --- button --- */
+.button {
+    -fx-padding: 1mm;
+    -fx-border-width: 0.25mm;
+    -fx-border-color: rgb(64, 64, 64);
+    -fx-background-color: rgb(255, 255, 255);
+    -fx-text-fill: rgb(64, 64, 64);
+}
+
+.button:hover {
+    -fx-background-color: rgb(224, 224, 224);
+    -fx-cursor: hand;
+}
+
+.button:armed {
+    -fx-background-color: rgb(64, 64, 64);
+    -fx-text-fill: rgb(255, 255, 255);
+}
+
+/* --- text field --- */
+.text-field {
+    -fx-padding: 1mm;
+    -fx-border-width: 0.25mm;
+    -fx-border-color: rgb(64, 64, 64);
+    -fx-background-color: rgb(255, 255, 255);
+    -fx-text-fill: rgb(64, 64, 64);
+    -fx-highlight-fill: rgb(64, 64, 64);
+    -fx-highlight-text-fill: rgb(255, 255, 255);
+}
+
+/* --- double field --- */
+.double-field.error {
+    -fx-border-color: rgb(192, 0, 0);
+    -fx-background-color: rgb(255, 224, 224);
+    -fx-text-fill: rgb(192, 0, 0);
+    -fx-highlight-fill: rgb(192, 0, 0);
+    -fx-highlight-text-fill: rgb(255, 224, 224);
+}
+
+/* --- combo box --- */
 .combo-box {
     -fx-border-width: 0.25mm;
-    -fx-border-color: rgb(128, 128, 128);
+    -fx-border-color: rgb(64, 64, 64);
     -fx-background-color: rgb(255, 255, 255);
-    -fx-highlight-fill: red;
+}
+
+.combo-box:hover {
+    -fx-background-color: rgb(224, 224, 224);
+    -fx-cursor: hand;
+}
+
+/* --- cell --- */
+.cell {
+    -fx-text-fill: rgb(64, 64, 64);
 }
