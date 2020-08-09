@@ -9,28 +9,31 @@
  *
  */
 
+/* +-------+ */
+/* | FONTS | */
+/* +-------+ */
+
+/* +--- OPEN SANS ---+ */
 @font-face {
-    font-family: "FreeMono";
+    font-family: "OpenSans";
     font-weight: normal;
-    src: url("../fonts/FreeMono.ttf");
+    src: url("../fonts/opensans/OpenSans-Regular.ttf");
 }
 
-@font-face {
-    font-family: "FreeMono";
-    font-weight: bold;
-    src: url("../fonts/FreeMonoBold.ttf");
-}
+/* +---------+ */
+/* | IMPORTS | */
+/* +---------+ */
 
-@font-face {
-    font-family: "FreeMono";
-    font-weight: oblique;
-    src: url("../fonts/FreeMonoOblique.ttf");
-}
+@import url("sampled-range-graph.css");
 
-@font-face {
-    font-family: "FreeMono";
-    font-weight: bold-oblique;
-    src: url("../fonts/FreeMonoBoldOblique.ttf");
+/* +----------+ */
+/* | WILDCARD | */
+/* +----------+ */
+
+* {
+    -fx-font-family: "OpenSans";
+    -fx-font-weight: normal;
+    -fx-font-size: 10pt;
 }
 
 /* +---------------------------------+ */
@@ -53,6 +56,11 @@ GridPane {
     -fx-vgap: 1mm;
 }
 
+GridPane .fill-cell {
+    -fx-max-width: infinity;
+    -fx-max-height: infinity;
+}
+
 /* --- MainPane --- */
 MainPane .container {
     -fx-padding: 1mm;
@@ -67,6 +75,18 @@ MainPane .container {
 }
 
 .list-view .cell:selected {
+    -fx-background-color: rgb(64, 64, 64);
+    -fx-text-fill: rgb(255, 255, 255);
+}
+
+/* --- context menu --- */
+.context-menu .menu-item:hover {
+    -fx-background-color: rgb(224, 224, 224);
+    -fx-text-fill: rgb(64, 64, 64);
+    -fx-cursor: hand;
+}
+
+.context-menu .menu-item:focused {
     -fx-background-color: rgb(64, 64, 64);
     -fx-text-fill: rgb(255, 255, 255);
 }

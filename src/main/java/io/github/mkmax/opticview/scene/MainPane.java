@@ -4,6 +4,7 @@ import io.github.mkmax.opticview.material.Glass;
 import io.github.mkmax.opticview.scene.forms.FocalLengthForm;
 import io.github.mkmax.opticview.scene.graph.SampledRangeGraph;
 
+import io.github.mkmax.opticview.units.MetricDistance;
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
@@ -13,6 +14,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.stage.Modality;
+
+import java.util.List;
 
 /* The main panel housing the input forms and the graph */
 public class MainPane extends Region {
@@ -32,7 +35,12 @@ public class MainPane extends Region {
     /* +------------+ */
     private final GridPane container = new GridPane ();
     private final FocalLengthForm form = new FocalLengthForm ();
-    private final SampledRangeGraph graph = new SampledRangeGraph ();
+    private final SampledRangeGraph graph = new SampledRangeGraph (
+        List.of (MetricDistance.values ()),
+        List.of (MetricDistance.values ()),
+        MetricDistance.NANOMETERS,
+        MetricDistance.MILLIMETERS
+    );
 
     /* +--------------------+ */
     /* | DIMENSION HANDLERS | */
@@ -64,8 +72,8 @@ public class MainPane extends Region {
         GridPane.setConstraints (form, 0, 0, 1, 1, HPos.LEFT, VPos.TOP, Priority.NEVER, Priority.ALWAYS);
         GridPane.setConstraints (graph, 1, 0, 1, 1, HPos.CENTER, VPos.CENTER, Priority.ALWAYS, Priority.ALWAYS);
 
-        graph.setXLabel ("Lambda (λ) in μm");
-        graph.setYLabel ("Focal Length (mm)");
+        graph.setXLabel ("Lambda (λ)");
+        graph.setYLabel ("Focal Length");
 
         /* configure container */
         container.getChildren ().addAll (form, graph);
@@ -84,14 +92,28 @@ public class MainPane extends Region {
     private static final double STEP_EPSILON = 1e-6d;
 
     private final Runnable onFormGraphSubmitted = () -> {
-        final Glass material = form.getSelectedGlass ();
-        if (material == null) {
+        if (form.isGlassMaterialEmpty ()) {
             quickErrorAlert ("Incomplete Input", "Glass material is not specified.");
             return;
         }
 
-        double l_min, l_step, l_max;
-        double lens_radius;
+        if (form.areLambdaUnitsEmpty ()) {
+            quickErrorAlert ("Incomplete Input", "Lambda units are not specified");
+            return;
+        }
+
+        if (form.areLensRadiusUnitsEmpty ()) {
+            quickErrorAlert ("Incomplete Input", "Lens radius units are not specified");
+            return;
+        }
+
+        final Glass material = form.getGlassMaterial ();
+        final MetricDistance
+            lambda_units = form.getLambdaUnits (),
+            lens_radius_units = form.getLensRadiusUnits ();
+
+        final double l_min, l_step, l_max;
+        final double lens_radius;
 
         /* validate lambda MIN */
         try {
@@ -148,18 +170,35 @@ public class MainPane extends Region {
         }
 
         /* actually graph the focal length now */
-        graph.getData ().createEntry (
-            l -> lens_radius / (material.calcRefractiveIndex (l) - 1d),
-            String.format ("%s [%.2f, %.2f, %.2f]", material.NAME, l_min, l_step, l_max),
-            l_min,
-            l_step,
-            l_max
+        final double
+            real_l_min    = MetricDistance.MICROMETERS.convertFrom (lambda_units, l_min),
+            real_l_step   = MetricDistance.MICROMETERS.convertFrom (lambda_units, l_step),
+            real_l_max    = MetricDistance.MICROMETERS.convertFrom (lambda_units, l_max),
+            real_l_radius = MetricDistance.MILLIMETERS.convertFrom (lens_radius_units, lens_radius);
+
+        graph.getFunctionData ().createEntry (
+            l -> real_l_radius / (material.calcRefractiveIndex (l) - 1d),
+            String.format ("%s [%.2f %s, %.2f %s, %.2f %s]",
+                material.NAME,
+                real_l_min, "μm",
+                real_l_step, "μm",
+                real_l_max, "μm"),
+            MetricDistance.MICROMETERS,
+            MetricDistance.MILLIMETERS,
+            real_l_min,
+            real_l_step,
+            real_l_max
         );
-        /* @TODO(max): graph */
+
+        /* per client request, if inputs are in nanos and real_l_min > 2 microns, set it to microns */
+        if (real_l_min > 2d && graph.getInputUnits () == MetricDistance.NANOMETERS)
+            graph.setInputUnits (MetricDistance.MICROMETERS);
+
     };
 
     private final Runnable onFormClearRequested = () -> {
-        graph.getData ().clearEntries ();
+        graph.getFunctionData ().clearEntries ();
+        /* @NOTE(max): do we need a clear input button? */
         form.getGlassBox ().setValue (null);
         form.getLambdaMinField ().clear ();
         form.getLambdaStepField ().clear ();
@@ -169,8 +208,8 @@ public class MainPane extends Region {
 
     /* install form handlers */
     {
-        form.addGraphSubmitionListener (onFormGraphSubmitted);
-        form.addGraphClearanceListener (onFormClearRequested);
+        form.addPlotSubmitionListener (onFormGraphSubmitted);
+        form.addPlotClearanceListener (onFormClearRequested);
     }
 
     /* +-------------+ */

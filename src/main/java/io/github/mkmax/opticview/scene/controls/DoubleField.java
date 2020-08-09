@@ -4,6 +4,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.scene.control.TextField;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class DoubleField extends TextField {
 
@@ -59,6 +60,15 @@ public class DoubleField extends TextField {
 
     public double getValue () {
         return Double.parseDouble (getText ());
+    }
+
+    public Optional<Double> getValueSafely () {
+        try {
+            return Optional.of (getValue ());
+        }
+        catch (NumberFormatException e) {
+            return Optional.empty ();
+        }
     }
 
     /* +----------+ */

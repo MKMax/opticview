@@ -1,8 +1,10 @@
 package io.github.mkmax.opticview.scene.graph;
 
+import io.github.mkmax.opticview.scene.controls.UnitListCell;
+import io.github.mkmax.opticview.units.IUnit;
+import io.github.mkmax.opticview.util.ListUtils;
 import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -10,230 +12,232 @@ import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart.Series;
-import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
 import java.util.*;
-import java.util.function.Predicate;
 
 public class SampledRangeGraph extends Region {
 
     /* +--------------------------------------------------------------------+ */
-    /* |                                DATA                                | */
+    /* |                            DATA WRAPPER                            | */
     /* +--------------------------------------------------------------------+ */
-    public static final class Data {
+    private static final class DataWrapper {
+
+        /* +------------+ */
+        /* | PROPERTIES | */
+        /* +------------+ */
+        private final StringProperty parentSeriesName = new SimpleStringProperty ();
+        public StringProperty parentSeriesNameProperty ()
+            { return parentSeriesName; }
+        public String getParentSeriesName ()
+            { return parentSeriesName.get(); }
+        public void setParentSeriesName (String nSeriesName)
+            { parentSeriesName.set (nSeriesName); }
+
+        /* +------------+ */
+        /* | COMPONENTS | */
+        /* +------------+ */
+        private final Tooltip tooltip = new Tooltip ();
+        private final GridPane container = new GridPane ();
+        private final Label seriesLabel = new Label ();
+        private final Label
+            xLabel = new Label ("X:"),
+            yLabel = new Label ("Y:");
+        private final Label
+            xValueLabel = new Label (),
+            yValueLabel = new Label ();
+
+        /* setup the components to be added to the tooltip "graphic" */
+        {
+            /* series label */
+            GridPane.setConstraints (seriesLabel, 0, 0, 2, 1, HPos.LEFT, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);
+
+            /* X/Y labels and value labels */
+            GridPane.setConstraints (xLabel, 0, 1, 1, 1, HPos.RIGHT, VPos.CENTER, Priority.NEVER, Priority.NEVER);
+            GridPane.setConstraints (yLabel, 0, 2, 1, 1, HPos.RIGHT, VPos.CENTER, Priority.NEVER, Priority.NEVER);
+            GridPane.setConstraints (xValueLabel, 1, 1, 1, 1, HPos.LEFT, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);
+            GridPane.setConstraints (yValueLabel, 1, 2, 1, 1, HPos.LEFT, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);
+
+            /* add all of the components to the container */
+            container.getChildren ().addAll (
+                seriesLabel,
+                xLabel, xValueLabel,
+                yLabel, yValueLabel
+            );
+
+            /* setup the tooltip itself */
+            tooltip.setHideDelay (Duration.seconds (0d));
+            tooltip.setShowDelay (Duration.seconds (0d));
+            tooltip.setGraphic (container);
+        }
+
+        /* +--------------------------+ */
+        /* | INITIALIZATION & MEMBERS | */
+        /* +--------------------------+ */
+        private final Series<Number, Number> owner;
+        private final XYChart.Data<Number, Number> data;
+
+        public DataWrapper (Series<Number, Number> pOwner, XYChart.Data<Number, Number> pData) {
+            owner = Objects.requireNonNull (pOwner);
+            data = Objects.requireNonNull (pData);
+            data.XValueProperty ().addListener (onXValueChanged);
+            data.YValueProperty ().addListener (onYValueChanged);
+            data.nodeProperty ().addListener (onDataNodeChanged);
+
+            /* setup the tooltip data now */
+            seriesLabel.textProperty ().bind (pOwner.nameProperty ());
+            xValueLabel.setText (data.getXValue () == null ? "NaN" : data.getXValue ().toString ());
+            yValueLabel.setText (data.getYValue () == null ? "NaN" : data.getYValue ().toString ());
+            if (data.getNode () != null)
+                Tooltip.install (data.getNode (), tooltip);
+        }
 
         /* +----------+ */
-        /* | FUNCTION | */
+        /* | HANDLERS | */
         /* +----------+ */
-        @FunctionalInterface
-        public interface IFunction {
-            double compute (double x);
-        }
 
-        /* +-----------+ */
-        /* | LISTENERS | */
-        /* +-----------+ */
-        @FunctionalInterface
-        public interface IEntryAddedListener {
-            void onEntryAdded (Data data, Entry added);
-        }
+        /* +--- PROPERTY CHANGE HANDLERS ---+ */
+        private final ChangeListener<String> onParentSeriesNameChanged = (__obs, __old, now) ->
+            seriesLabel.setText (now);
 
-        @FunctionalInterface
-        public interface IEntryRemovedListener {
-            void onEntryRemoved (Data data, Entry removed);
-        }
+        /* +--- DATA HANDLERS ---+ */
+        private final ChangeListener<Number> onXValueChanged = (__obs, old, now) ->
+            xValueLabel.setText (now == null ? "NaN" : now.toString ());
 
-        /* +-------+ */
-        /* | ENTRY | */
-        /* +-------+ */
-        public static final class Entry {
-            /* +--- FUNCTION ---+ */
-            private final SimpleObjectProperty<IFunction> function = new SimpleObjectProperty<> ();
-            public ReadOnlyObjectProperty<IFunction> functionProperty ()
-                { return function; };
-            public IFunction getFunction ()
-                { return function.get (); }
-            public void setFunction (IFunction nFunc)
-                { function.set (Objects.requireNonNull (nFunc, "A non-null function must be specified ")); }
+        private final ChangeListener<Number> onYValueChanged = (__obs, old, now) ->
+            yValueLabel.setText (now == null ? "NaN" : now.toString ());
 
-            /* +--- NAME ---+ */
-            private final SimpleStringProperty name = new SimpleStringProperty ();
-            public StringProperty nameProperty ()
-                { return name; }
-            public String getName ()
-                { return name.get (); }
-            public void setName (String nName)
-                { name.set (nName); }
-
-            private final SimpleDoubleProperty
-                start = new SimpleDoubleProperty (-1d),
-                step = new SimpleDoubleProperty (0.25d),
-                end = new SimpleDoubleProperty (1d);
-
-            /* +--- START ---+ */
-            public ReadOnlyDoubleProperty startProperty ()
-            { return start; }
-            public double getStart ()
-            { return start.get (); }
-            public void setStart (double nStartValue) {
-                verifyRange (nStartValue, getStep (), getEnd ());
-                start.set (nStartValue);
-            }
-
-            /* +--- STEP ---+ */
-            public ReadOnlyDoubleProperty stepProperty ()
-            { return step; }
-            public double getStep ()
-            { return step.get (); }
-            public void setStep (double nStepValue) {
-                verifyRange (getStart (), nStepValue, getEnd ());
-                step.set (nStepValue);
-            }
-
-            /* +--- END ---+ */
-            public ReadOnlyDoubleProperty endProperty ()
-            { return end; }
-            public double getEnd ()
-            { return end.get (); }
-            public void setEnd (double nEndValue) {
-                verifyRange (getStart (), getStep (), nEndValue);
-                end.set (nEndValue);
-            }
-
-            /* +--- RANGE ---+ */
-            public void setRange (double pStart, double pStep, double pEnd) {
-                verifyRange (pStart, pStep, pEnd);
-                start.set (pStart);
-                step.set (pStep);
-                end.set (pEnd);
-            }
-
-            /* +--- INTERVAL VERIFICATION ---+ */
-            private static final double STEP_EPSILON = 1e-8d;
-
-            private static void verifyRange (double start, double step, double end) {
-                if (Math.abs (step) < STEP_EPSILON)
-                    throw new RuntimeException ("step cannot be zero");
-                if (Math.signum (end - start) != Math.signum (step))
-                    throw new RuntimeException ("step direction outbound of interval");
-            }
-
-            /* +--- INITIALIZATION  ---+ */
-            Entry (IFunction func, String name, double start, double step, double end) {
-                setFunction (func);
-                setName (name);
-                setRange (start, step, end);
-            }
-        }
-
-        /* +-----------+ */
-        /* | LISTENERS | */
-        /* +-----------+ */
-
-        /* +--- ENTRY ADDED LISTENERS ---+ */
-        private final List<IEntryAddedListener> entryAddedListeners = new ArrayList<> ();
-
-        public void addEntryAddedListener (IEntryAddedListener lis)
-            { if (lis != null) entryAddedListeners.add (lis); }
-        public void removeEntryAddedListener (IEntryAddedListener lis)
-            { entryAddedListeners.remove (lis); }
-
-        /* +--- ENTRY REMOVED LISTENERS ---+  */
-        private final List<IEntryRemovedListener> entryRemovedListeners = new ArrayList<> ();
-
-        public void addEntryRemovedListener (IEntryRemovedListener lis)
-            { if (lis != null) entryRemovedListeners.add (lis); }
-        public void removeEntryRemovedListener (IEntryRemovedListener lis)
-            { entryRemovedListeners.remove (lis); }
-
-        /* +----------------+ */
-        /* | IMPLEMENTATION | */
-        /* +----------------+ */
-        private final ObservableList<Entry> entries = FXCollections.observableArrayList ();
-        private final List<Entry> unmodifiableEntries = Collections.unmodifiableList (entries);
-
-        public List<Entry> getUnmodifiableEntries () {
-            return unmodifiableEntries;
-        }
-
-        private final ListChangeListener<Entry> onEntryListUpdated = (change) -> {
-            while (change.next ()) {
-                if (change.wasAdded ())
-                    change.getAddedSubList ().forEach (i ->
-                        entryAddedListeners.forEach (j -> j.onEntryAdded (this, i)));
-                else if (change.wasRemoved ())
-                    change.getRemoved ().forEach (i ->
-                        entryRemovedListeners.forEach (j -> j.onEntryRemoved (this, i)));
-            }
+        private final ChangeListener<Node> onDataNodeChanged = (__obs, old, now) -> {
+            if (old != null)
+                Tooltip.uninstall (old, tooltip);
+            if (now != null)
+                Tooltip.install (now, tooltip);
         };
 
-        { entries.addListener (onEntryListUpdated); }
-
-        /* +----------------+ */
-        /* | DELETE ENTRIES | */
-        /* +----------------+ */
-        public void clearEntries () {
-            entries.clear ();
-        }
-
-        /* +----------------+ */
-        /* | CREATE ENTRIES | */
-        /* +----------------+ */
-        public Entry createEntry (IFunction func, String name, double start, double step, double end) {
-            Objects.requireNonNull (func, "cannot create an entry with a null function");
-            final Entry created = new Entry (func, name, start, step, end);
-            entries.add (created);
-            return created;
-        }
-
-        /* +--------------+ */
-        /* | FIND ENTRIES | */
-        /* +--------------+ */
-
-        /* +--- by observable ---+ */
-        public Entry findEntryByObservable (ObservableValue<?> obs) {
-            return findEntry (e ->
-                e.function == obs ||
-                e.name == obs ||
-                e.start == obs ||
-                e.step == obs ||
-                e.end == obs);
-        }
-
-        /* +--- general finds ---+ */
-        public Entry findEntry (Predicate<? super Entry> pred) {
-            Objects.requireNonNull (pred, "predicate");
-            for (Entry e : entries)
-                if (pred.test (e))
-                    return e;
-            return null;
-        }
-
-        public Collection<Entry> findEntries (Predicate<? super Entry> pred) {
-            Objects.requireNonNull (pred, "predicate");
-            final Collection<Entry> out = new ArrayList<> ();
-            for (Entry e : entries)
-                if (pred.test (e)) out.add (e);
-            return out;
+        /* +-----------+ */
+        /* | INTERFACE | */
+        /* +-----------+ */
+        public void dispose () {
+            seriesLabel.textProperty ().unbind ();
+            data.XValueProperty ().removeListener (onXValueChanged);
+            data.YValueProperty ().removeListener (onYValueChanged);
+            data.nodeProperty ().removeListener (onDataNodeChanged);
         }
     }
 
+
     /* +--------------------------------------------------------------------+ */
-    /* |                           SAMPLE TOOLTIP                           | */
+    /* |                           SERIES WRAPPER                           | */
     /* +--------------------------------------------------------------------+ */
-    private static final class SampleTooltip extends Tooltip {
+    private static final class SeriesWrapper {
+
+        /* +--------------------------+ */
+        /* | INITIALIZATION & MEMBERS | */
+        /* +--------------------------+ */
+        private final ObservableList<DataWrapper> data = FXCollections.observableArrayList ();
+        private final ObservableList<DataWrapper> immutableData =
+            FXCollections.observableList (Collections.unmodifiableList (data));
+        private final Series<Number, Number> series = new Series<> ();
+
+        public SeriesWrapper () {
+            /* already initialized */
+        }
+
+        /* +----------+ */
+        /* | HANDLERS | */
+        /* +----------+ */
+        private final ListChangeListener<XYChart.Data<Number, Number>> onSeriesDataChanged = (change) -> {
+            while (change.next ()) {
+                if (change.wasAdded ()) {
+                    final List<? extends XYChart.Data<Number, Number>> addedList = change.getAddedSubList ();
+                    final List<DataWrapper> transferBuffer = new ArrayList<> (addedList.size ());
+                    addedList.forEach (i ->
+                        transferBuffer.add (new DataWrapper (series, i)));
+                    data.addAll (transferBuffer);
+                }
+                else if (change.wasRemoved ())
+                    data.removeIf (w -> {
+                        if (change.getRemoved ().contains (w.data)) {
+                            w.dispose ();
+                            return true;
+                        }
+                        return false;
+                    });
+            }
+        };
+
+        /* attach handlers to their targets */
+        {
+            series.getData ().addListener (onSeriesDataChanged);
+        }
+
+        /* +-----------+ */
+        /* | INTERFACE | */
+        /* +-----------+ */
+        public ObservableList<DataWrapper> getImmutableWrappedData () {
+            return immutableData;
+        }
+
+        public Series<Number, Number> getSeries () {
+            return series;
+        }
+
+        public void dispose () {
+            data.forEach (DataWrapper::dispose);
+            data.clear ();
+            series.getData ().removeListener (onSeriesDataChanged);
+            series.getData ().clear ();
+        }
+    }
+
+
+    /* +--------------------------------------------------------------------+ */
+    /* |                           FUNCTION ENTRY                           | */
+    /* +--------------------------------------------------------------------+ */
+    public static final class FunctionEntry {
+        private static final double STEP_EPSILON = 1e-3d;
+
+        /* +------------+ */
+        /* | INTERFACES | */
+        /* +------------+ */
+
+        /* +--- FUNCTION ---+ */
+        @FunctionalInterface
+        public interface IRealFunction {
+            double eval (double x);
+        }
+
+        /* +--- RANGE LISTENER ---+ */
+        @FunctionalInterface
+        public interface IRangeChangeListener {
+            void onRangeChanged (FunctionEntry source);
+        }
+
+        /* +--- FUNCTION LISTENER ---+ */
+        @FunctionalInterface
+        public interface IFunctionChangeListener {
+            void onFunctionChanged (FunctionEntry source);
+        }
+
+        /* +------------+ */
+        /* | PROPERTIES | */
+        /* +------------+ */
 
         /* +--- NAME ---+ */
         private final StringProperty name = new SimpleStringProperty ();
+
         public StringProperty nameProperty ()
             { return name; }
         public String getName ()
@@ -241,156 +245,499 @@ public class SampledRangeGraph extends Region {
         public void setName (String nName)
             { name.set (nName); }
 
-        /* +--- VALUE ---+ */
-        private final DoubleProperty value = new SimpleDoubleProperty ();
-        public DoubleProperty valueProperty ()
-            { return value; }
-        public double getValue ()
-            { return value.get (); }
-        public void setValue (double nValue)
-            { value.set (nValue); }
+        /* +--- FUNCTION ---+ */
+        private final ObjectProperty<IRealFunction> function = new SimpleObjectProperty<> ();
 
-        /* +------------+ */
-        /* | COMPONENTS | */
-        /* +------------+ */
-        private final VBox graphic = new VBox ();
-        private final Label
-            nameLabel = new Label (),
-            valueLabel = new Label ();
+        public ReadOnlyObjectProperty<IRealFunction> functionProperty ()
+            { return function; }
+        public IRealFunction getFunction ()
+            { return function.get (); }
+        public void setFunction (IRealFunction nFunction)
+            { function.set (Objects.requireNonNull (nFunction, "a function must be specified")); }
 
-        private final ChangeListener<Number> onValueChanged = (__obs, __old, now) ->
-            valueLabel.setText (now == null ? "" : Double.toString (now.doubleValue ()));
+        /* +--- RANGE ---+ */
+        private final DoubleProperty
+            start = new SimpleDoubleProperty (),
+            step  = new SimpleDoubleProperty (),
+            end   = new SimpleDoubleProperty ();
 
+        public DoubleProperty startProperty ()
+            { return start; }
+        public DoubleProperty stepProperty ()
+            { return step; }
+        public DoubleProperty endProperty ()
+            { return end; }
+
+        public double getStart ()
+            { return start.get (); }
+        public double getStep ()
+            { return step.get (); }
+        public double getEnd ()
+            { return end.get (); }
+
+        public void setStart (double nStart) {
+            validateRange (nStart, getStart (), getEnd ());
+            start.setValue (nStart);
+        }
+
+        public void setStep (double nStep) {
+            validateRange (getStart (), nStep, getEnd ());
+            step.setValue (nStep);
+        }
+
+        public void setEnd (double nEnd) {
+            validateRange (getStart (), getStep (), nEnd);
+            end.setValue (nEnd);
+        }
+
+        public void setRange (double pStart, double pStep, double pEnd) {
+            validateRange (pStart, pStep, pEnd);
+            start.setValue (pStart);
+            step.setValue (pStep);
+            end.setValue (pEnd);
+        }
+
+        /* +-----------+ */
+        /* | LISTENERS | */
+        /* +-----------+ */
+
+        /* +--- RANGE ---+ */
+        private final List<IRangeChangeListener> rangeChangeListeners = new ArrayList<> ();
+
+        public void addRangeListener (IRangeChangeListener lis)
+            { if (lis != null) rangeChangeListeners.add (lis); }
+        public void removeRangeListener (IRangeChangeListener lis)
+            { rangeChangeListeners.remove (lis); }
+
+        /* +--- FUNCTION ---+ */
+        private final List<IFunctionChangeListener> functionChangeListeners = new ArrayList<> ();
+
+        public void addFunctionListener (IFunctionChangeListener lis)
+            { if (lis != null) functionChangeListeners.add (lis); }
+        public void removeFunctionListener (IFunctionChangeListener lis)
+            { functionChangeListeners.remove (lis); }
+
+        /* +--------------------------+ */
+        /* | INITIALIZATION & MEMBERS | */
+        /* +--------------------------+ */
+        private Series<Number, Number> associatedSeries;
+        private final IUnit
+            inputUnits,
+            outputUnits;
+
+        FunctionEntry (
+            IRealFunction pFunction,
+            String pName,
+            IUnit pInputUnits,
+            IUnit pOutputUnits,
+            double pStart,
+            double pStep,
+            double pEnd)
         {
-            /* bind labels to their content */
-            nameLabel.textProperty ().bind (name);
-            value.addListener (onValueChanged);
-
-            /* add components to graphic and setup the graphic */
-            graphic.setAlignment (Pos.TOP_LEFT);
-            graphic.getChildren ().addAll (nameLabel, valueLabel);
-
-            /* add graphic to the tooltip */
-            setGraphic (graphic);
-        }
-
-        /* +----------------+ */
-        /* | INITIALIZATION | */
-        /* +----------------+ */
-        SampleTooltip (String pName, double pValue) {
+            inputUnits = Objects.requireNonNull (pInputUnits, "input units must be specified");
+            outputUnits = Objects.requireNonNull (pOutputUnits, "output units must be specified");
+            setFunction (pFunction);
             setName (pName);
-            setValue (pValue);
+            setRange (pStart, pStep, pEnd);
         }
 
-        void destroy () {
-            nameLabel.textProperty ().unbind ();
-            value.removeListener (onValueChanged);
+        /* +----------+ */
+        /* | HANDLERS | */
+        /* +----------+ */
+        private final ChangeListener<IRealFunction> onFunctionChanged = (__obs, __old, __now) ->
+            functionChangeListeners.forEach (i -> i.onFunctionChanged (this));
+
+        private final ChangeListener<Number> onRangeChanged = (__obs, __old, __now) ->
+            rangeChangeListeners.forEach (i -> i.onRangeChanged (this));
+
+        /* install the required handlers */
+        {
+            function.addListener (onFunctionChanged);
+            start.addListener (onRangeChanged);
+            step.addListener (onRangeChanged);
+            end.addListener (onRangeChanged);
+        }
+
+        /* +-----------+ */
+        /* | INTERFACE | */
+        /* +-----------+ */
+
+        /* +--- SERIES ---+ */
+        public Series<Number, Number> getAssociatedSeries () {
+            return associatedSeries;
+        }
+
+        public void setAssociatedSeries (Series<Number, Number> series) {
+            associatedSeries = series;
+        }
+
+        /* +-- UNITS ---+ */
+        public IUnit getInputUnits () {
+            return inputUnits;
+        }
+
+        public IUnit getOutputUnits () {
+            return outputUnits;
+        }
+
+        /* +--- DISPOSE ---+ s*/
+        public void dispose () {
+            function.removeListener (onFunctionChanged);
+            start.removeListener (onRangeChanged);
+            step.removeListener (onRangeChanged);
+            end.removeListener (onRangeChanged);
+        }
+
+        /* +-----------+ */
+        /* | UTILITIES | */
+        /* +-----------+ */
+        private static void validateRange (
+            double pStart,
+            double pStep,
+            double pEnd) throws RuntimeException
+        {
+            if (Math.abs (pStep) < STEP_EPSILON)
+                throw new RuntimeException ("step is too small (under " + STEP_EPSILON + ")");
+            if (Math.signum (pEnd - pStart) != Math.signum (pStep))
+                throw new RuntimeException ("step is heading out of interval bounds");
         }
     }
+
+
+    /* +--------------------------------------------------------------------+ */
+    /* |                            FUNCTION SET                            | */
+    /* +--------------------------------------------------------------------+ */
+    public static final class FunctionData {
+
+        /* +-----------+ */
+        /* | LISTENERS | */
+        /* +-----------+ */
+        @FunctionalInterface
+        public interface IEntryAdditionListener {
+            void onEntryAdded (FunctionData source, FunctionEntry added);
+        }
+
+        @FunctionalInterface
+        public interface IEntryRemovalListener {
+            void onEntryRemoved (FunctionData source, FunctionEntry removed);
+        }
+
+        /* +--------------------------+ */
+        /* | MEMBERS & INITIALIZATION | */
+        /* +--------------------------+ */
+        private final ObservableList<FunctionEntry> entries = FXCollections.observableArrayList ();
+        private final ObservableList<FunctionEntry> immutableEntries
+            = FXCollections.observableList (Collections.unmodifiableList (entries));
+
+        /* +-----------+ */
+        /* | INTERFACE | */
+        /* +-----------+ */
+        public ObservableList<FunctionEntry> getImmutableEntries () {
+            return immutableEntries;
+        }
+
+        /* +-----------+ */
+        /* | LISTENERS | */
+        /* +-----------+ */
+
+        /* +--- ENTRY ADDITION LISTENERS ---+ */
+        private final List<IEntryAdditionListener> entryAdditionListeners = new ArrayList<> ();
+
+        public void addEntryAdditionListener (IEntryAdditionListener lis)
+            { if (lis != null) entryAdditionListeners.add (lis); }
+        public void removeEntryAdditionListener (IEntryAdditionListener lis)
+            { entryAdditionListeners.remove (lis); }
+
+        /* +--- ENTRY REMOVAL LISTENERS ---+ */
+        private final List<IEntryRemovalListener> entryRemovalListeners = new ArrayList<> ();
+
+        public void addEntryRemovalListener (IEntryRemovalListener lis)
+            { if (lis != null) entryRemovalListeners.add (lis); }
+        public void removeEntryRemovalListener (IEntryRemovalListener lis)
+            { entryRemovalListeners.remove (lis); }
+
+        /* +----------+ */
+        /* | HANDLERS | */
+        /* +----------+ */
+        private final ListChangeListener<FunctionEntry> onEntriesChanged = (change) -> {
+            while (change.next ()) {
+                if (change.wasAdded ())
+                    change.getAddedSubList ().forEach (i ->
+                        entryAdditionListeners.forEach (j -> j.onEntryAdded (this, i)));
+                else if (change.wasRemoved ())
+                    change.getRemoved ().forEach (i ->
+                        entryRemovalListeners.forEach (j -> j.onEntryRemoved (this, i)));
+            }
+        };
+
+        /* install entries listener */
+        {
+            entries.addListener (onEntriesChanged);
+        }
+
+        /* +-----------+ */
+        /* | INTERFACE | */
+        /* +-----------+ */
+
+        /* +--- CREATE ENTRY ---+ */
+        public void createEntry (
+            FunctionEntry.IRealFunction func,
+            String                      name,
+            IUnit                       inputUnits,
+            IUnit                       outputUnits,
+            double                      start,
+            double                      step,
+            double                      end)
+        {
+            Objects.requireNonNull (func, "a function must be specified");
+            Objects.requireNonNull (inputUnits, "the input units must be specified");
+            Objects.requireNonNull (outputUnits, "the output units must be specified");
+            entries.add (new FunctionEntry (func, name, inputUnits, outputUnits, start, step, end));
+        }
+
+        /* +--- CLEAR ENTRIES ---+ */
+        public void clearEntries () {
+            entries.clear ();
+        }
+
+        /* +--- DISPOSING ---+ */
+        public void dispose () {
+            entries.removeListener (onEntriesChanged);
+            entries.forEach (i ->
+                entryRemovalListeners.forEach (j -> j.onEntryRemoved (this, i)));
+            entries.clear ();
+        }
+    }
+
+
+    /* +--------------------------------------------------------------------+ */
+    /* |                         SAMPLED RANGE GRAPH                        | */
+    /* +--------------------------------------------------------------------+ */
 
     /* +---------------+ */
     /* | STYLE CLASSES | */
     /* +---------------+ */
     public static final class ComponentClass {
-        public static final String SAMPLED_RANGE_GRAPH = "sample-range-graph";
+        public static final String
+            SAMPLED_RANGE_GRAPH  = "sampled-range-graph",
+            AXIS_LABEL_CONTAINER = "axis-label-container",
+            AXIS_LABEL_UNITS_BOX = "axis-label-units-box";
     }
 
     /* +--------------------------+ */
     /* | MEMBERS & INITIALIZATION | */
     /* +--------------------------+ */
+
+    /* constants */
     private static final int MAX_SAMPLES = 4096;
 
-    /* Function Data */
-    private final Data data = new Data ();
-    private final Map<Data.Entry, Series<Number, Number>> entryPlotMap = new HashMap<> ();
+    /* plot data */
+    private final FunctionData data = new FunctionData ();
+    private final Map<FunctionEntry, SeriesWrapper> entryToSeries = new HashMap<> ();
+    private final ObservableList<Series<Number, Number>> plots = FXCollections.observableArrayList ();
+
+    private final ObservableList<IUnit>
+        supportedInputUnits,
+        supportedOutputUnits;
+
+    public SampledRangeGraph (
+        final List<IUnit> pSupportedInputUnits,
+        final List<IUnit> pSupportedOutputUnits,
+        IUnit initialInputUnits,
+        IUnit initialOutputUnits)
+    {
+        supportedInputUnits =
+            FXCollections.observableList (
+                Collections.unmodifiableList (Objects.requireNonNull (pSupportedInputUnits)));
+        supportedOutputUnits =
+            FXCollections.observableList (
+                Collections.unmodifiableList (Objects.requireNonNull (pSupportedOutputUnits)));
+
+        /* ensure that the units within each list actually are interconvertible and not null */
+        validateUnits (supportedInputUnits,
+            "input units may not be null",
+            "input units are not interconvertible");
+        validateUnits (supportedOutputUnits,
+            "output units may not be null",
+            "output units are not interconvertible");
+
+        if (initialInputUnits != null && !supportedInputUnits.contains (initialInputUnits))
+            throw new RuntimeException ("initial input unit is not contained in supported units");
+        if (initialOutputUnits != null && !supportedOutputUnits.contains (initialOutputUnits))
+            throw new RuntimeException ("initial output unit is not contained in supported units");
+
+        xLabelUnitsBox.setItems (supportedInputUnits);
+        yLabelUnitsBox.setItems (supportedOutputUnits);
+
+        setInputUnits (initialInputUnits);
+        setOutputUnits (initialOutputUnits);
+    }
+
+    private static void validateUnits (
+        List<? extends IUnit> units,
+        String nullityErrorMessage,
+        String convertibilityErrorMessage)
+    {
+        ListUtils.pairCombinationIterator (Objects.requireNonNull (units), (a, b) -> {
+            if (a == null || b == null)
+                throw new RuntimeException (nullityErrorMessage);
+            if (!(a.isConvertibleTo (b)   &&
+                  a.isConvertibleFrom (b) &&
+                  b.isConvertibleTo (a)   &&
+                  b.isConvertibleFrom (a)))
+                throw new RuntimeException (convertibilityErrorMessage);
+        });
+    }
+
+    /* +------------+ */
+    /* | COMPONENTS | */
+    /* +------------+ */
+
+    /* Axes */
+    private final NumberAxis
+        x = new NumberAxis (),
+        y = new NumberAxis ();
+
+    /* Main Container & Chart */
+    private final GridPane container = new GridPane ();
+    private final LineChart<Number, Number> chart = new LineChart<> (x, y);
+
+    /* Axis Labels & Controls */
+    private final Group
+        xLabelContainer = new Group (),
+        yLabelContainer = new Group ();
+    private final HBox
+        xLabelBox = new HBox (),
+        yLabelBox = new HBox ();
+    private final ComboBox<IUnit>
+        xLabelUnitsBox = new ComboBox<> (),
+        yLabelUnitsBox = new ComboBox<> ();
+    private final Label
+        xLabel = new Label (),
+        yLabel = new Label ();
+
+    /* configuration & initialization */
+    {
+        /* configure the region first */
+        getStyleClass ().add (ComponentClass.SAMPLED_RANGE_GRAPH);
+        getChildren ().add (container);
+
+        /* configure the chart */
+        chart.setData (plots);
+
+        /* configure the X/Y labels */
+        xLabelContainer.getStyleClass ().add (ComponentClass.AXIS_LABEL_CONTAINER);
+        yLabelContainer.getStyleClass ().add (ComponentClass.AXIS_LABEL_CONTAINER);
+        xLabelUnitsBox.getStyleClass ().add (ComponentClass.AXIS_LABEL_UNITS_BOX);
+        yLabelUnitsBox.getStyleClass ().add (ComponentClass.AXIS_LABEL_UNITS_BOX);
+
+        xLabelContainer.getChildren ().add (xLabelBox);
+        yLabelContainer.getChildren ().add (yLabelBox);
+
+        xLabelBox.getChildren ().addAll (xLabel, xLabelUnitsBox);
+        yLabelBox.getChildren ().addAll (yLabel, yLabelUnitsBox);
+
+        xLabelBox.setAlignment (Pos.CENTER);
+        yLabelBox.setAlignment (Pos.CENTER);
+        yLabelBox.setRotate (270d);
+
+        xLabelUnitsBox.setButtonCell (new UnitListCell<> (UnitListCell.DisplayMode.MNEMONIC_ONLY));
+        xLabelUnitsBox.setCellFactory (view -> new UnitListCell<> ());
+
+        yLabelUnitsBox.setButtonCell (new UnitListCell<> (UnitListCell.DisplayMode.MNEMONIC_ONLY));
+        yLabelUnitsBox.setCellFactory (view -> new UnitListCell<> ());
+
+        /* configure the container & set constraints */
+        GridPane.setConstraints (xLabelContainer, 1, 1, 1, 1, HPos.CENTER, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);
+        GridPane.setConstraints (yLabelContainer, 0, 0, 1, 1, HPos.CENTER, VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
+        GridPane.setConstraints (chart, 1, 0, 1, 1, HPos.CENTER, VPos.CENTER, Priority.ALWAYS, Priority.ALWAYS);
+
+        /* fill the container and add it to the main region */
+        container.getChildren ().addAll (xLabelContainer, yLabelContainer, chart);
+    }
+
+    /* +------------+ */
+    /* | PROPERTIES | */
+    /* +------------+ */
+
+    /* +--- UNITS ---+ */
+    private final ObjectProperty<IUnit>
+        inputUnits = xLabelUnitsBox.valueProperty (),
+        outputUnits = yLabelUnitsBox.valueProperty ();
+
+    public ReadOnlyObjectProperty<IUnit> inputUnitProperty ()
+        { return inputUnits; }
+    public ReadOnlyObjectProperty<IUnit> outputUnitProperty ()
+        { return outputUnits; }
+
+    public IUnit getInputUnits ()
+        { return inputUnits.get (); }
+    public IUnit getOutputUnits ()
+        { return outputUnits.get (); }
+
+    public void setInputUnits (IUnit nInputUnits)
+        { inputUnits.set (nInputUnits); }
+    public void setOutputUnits (IUnit nOutputUnits)
+        { outputUnits.set (nOutputUnits); }
 
     /* +----------+ */
     /* | HANDLERS | */
     /* +----------+ */
 
-    /* +--- plotting/individual entry listeners ---+ */
-    private final ChangeListener<Object> onEntryPlotRequired = (obs, __old, __now) ->
-        plot (data.findEntryByObservable (obs));
-
-    /* +--- entry listeners ---+ */
-    private final Data.IEntryAddedListener onEntryAdded = (__data, entry) -> {
-        /* entry should never be null */
-        entry.functionProperty ().addListener (onEntryPlotRequired);
-        entry.startProperty ().addListener (onEntryPlotRequired);
-        entry.stepProperty ().addListener (onEntryPlotRequired);
-        entry.endProperty ().addListener (onEntryPlotRequired);
-        plot (entry);
-    };
-
-    private final Data.IEntryRemovedListener onEntryRemoved = (__data, entry) -> {
-        /* entry should never be null */
-        entry.functionProperty ().removeListener (onEntryPlotRequired);
-        entry.startProperty ().removeListener (onEntryPlotRequired);
-        entry.stepProperty ().removeListener (onEntryPlotRequired);
-        entry.endProperty ().removeListener (onEntryPlotRequired);
-        destroy (entry);
-    };
-
-    /* install data handlers */
-    {
-        data.addEntryAddedListener (onEntryAdded);
-        data.addEntryRemovedListener (onEntryRemoved);
-    }
-
-    /* Chart Data */
-    private final NumberAxis
-        x = new NumberAxis (),
-        y = new NumberAxis ();
-    private final ObservableList<Series<Number, Number>> plots = FXCollections.observableArrayList ();
-
-    /* layout & components */
-    private final GridPane container = new GridPane ();
-    private final LineChart<Number, Number> chart = new LineChart<> (x, y);
-    private final Group
-        xLabelContainer = new Group (),
-        yLabelContainer = new Group ();
-    private final Label
-        xLabel = new Label (),
-        yLabel = new Label ();
-
-    /* dimension adjustment listeners */
+    /* dimension handling */
     private final ChangeListener<Number> onRegionWidthChanged = (__obs, __old, now) ->
         container.setPrefWidth (now == null ? Double.NaN : now.doubleValue ());
 
     private final ChangeListener<Number> onRegionHeightChanged = (__obs, __old, now) ->
         container.setPrefHeight (now == null ? Double.NaN : now.doubleValue ());
 
+    /* function entry listeners */
+    private final FunctionEntry.IFunctionChangeListener onFunctionChanged =
+        this::plotWithCurrentUnits;
+
+    private final FunctionEntry.IRangeChangeListener onRangeChanged =
+        this::plotWithCurrentUnits;
+
+    private final FunctionData.IEntryAdditionListener onEntryAdded = (__data, entry) -> {
+        /* entry should never be null */
+        entry.addFunctionListener (onFunctionChanged);
+        entry.addRangeListener (onRangeChanged);
+        plotWithCurrentUnits (entry);
+    };
+
+    private final FunctionData.IEntryRemovalListener onEntryRemoved = (__data, entry) -> {
+        /* entry should never be null */
+        entry.removeFunctionListener (onFunctionChanged);
+        entry.removeRangeListener (onRangeChanged);
+        destroy (entry);
+    };
+
+    /* units listeners */
+    private final ChangeListener<IUnit> onInputUnitsChanged = (__obs, __old, __now) ->
+        data.getImmutableEntries ().forEach (this::plotWithCurrentUnits);
+
+    private final ChangeListener<IUnit> onOutputUnitsChanged = (__obs, __old, __now) ->
+        data.getImmutableEntries ().forEach (this::plotWithCurrentUnits);
+
+    /* install handlers */
     {
         widthProperty ().addListener (onRegionWidthChanged);
         heightProperty ().addListener (onRegionHeightChanged);
+
+        data.addEntryAdditionListener (onEntryAdded);
+        data.addEntryRemovalListener (onEntryRemoved);
+
+        inputUnits.addListener (onInputUnitsChanged);
+        outputUnits.addListener (onOutputUnitsChanged);
     }
 
-    /* configuration & initialization */
-    {
-        /* style class */
-        getStyleClass ().add (ComponentClass.SAMPLED_RANGE_GRAPH);
-
-        /* configure the chart */
-        chart.setData (plots);
-
-        /* configure the X/Y labels */
-        xLabelContainer.getChildren ().add (xLabel);
-        yLabelContainer.getChildren ().add (yLabel);
-        yLabel.setRotate (270d);
-
-        /* configure the main container & the components */
-        GridPane.setConstraints (xLabelContainer, 1, 1, 1, 1, HPos.CENTER, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);
-        GridPane.setConstraints (yLabelContainer, 0, 0, 1, 1, HPos.CENTER, VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
-        GridPane.setConstraints (chart, 1, 0, 1, 1, HPos.CENTER, VPos.CENTER, Priority.ALWAYS, Priority.ALWAYS);
-        container.getChildren ().addAll (xLabelContainer, yLabelContainer, chart);
-
-        /* add relevant components as children to the region */
-        getChildren ().add (container);
+    /* +-----------+ */
+    /* | INTERFACE | */
+    /* +-----------+ */
+    public FunctionData getFunctionData () {
+        return data;
     }
 
-    /* +----------------+ */
-    /* | IMPLEMENTATION | */
-    /* +----------------+ */
     public void setXLabel (String text) {
         xLabel.setText (text);
     }
@@ -399,23 +746,42 @@ public class SampledRangeGraph extends Region {
         yLabel.setText (text);
     }
 
-    public Data getData () {
-        return data;
-    }
-
     /* +----------+ */
     /* | INTERNAL | */
     /* +----------+ */
-    private void plot (Data.Entry entry) {
+    private void plotWithCurrentUnits (FunctionEntry entry) {
+        plot (entry, getInputUnits (), getOutputUnits ());
+    }
+
+    private void plot (FunctionEntry entry, IUnit inputUnits, IUnit outputUnits) {
+        /* parameter validation */
         Objects.requireNonNull (entry, "Cannot plot a null entry");
-        Series<Number, Number> series = entryPlotMap.get (entry);
-        if (series == null) { /* new plot */
-            series = new Series<> ();
-            series.nameProperty ().bind (entry.nameProperty ());
-            entryPlotMap.put (entry, series);
-            plots.add (series);
+        Objects.requireNonNull (inputUnits, "input units cannot be null");
+        Objects.requireNonNull (outputUnits, "output units cannot be null");
+
+        /* verify that the entry's input/output units can be converted to supported ones */
+        for (IUnit in : supportedInputUnits)
+            if (!in.isConvertibleFrom (entry.getInputUnits ()))
+                throw new RuntimeException ("cannot plot an entry with unsupported input units");
+
+        for (IUnit out : supportedOutputUnits)
+            if (!out.isConvertibleFrom (entry.getOutputUnits ()))
+                throw new RuntimeException ("cannot plot an entry with unsupported output units");
+
+        /* series lookup/creation */
+        SeriesWrapper wrapper = entryToSeries.get (entry);
+        if (wrapper == null) { /* new plot */
+            wrapper = new SeriesWrapper ();
+            wrapper.getSeries ().nameProperty ().bind (entry.nameProperty ());
+            entryToSeries.put (entry, wrapper);
+            plots.add (wrapper.getSeries ());
         }
-        final Data.IFunction func = entry.getFunction ();
+
+        /* entry data queries & range validation */
+        final FunctionEntry.IRealFunction func = entry.getFunction ();
+        final IUnit
+            entryInputUnits = entry.getInputUnits (),
+            entryOutputUnits = entry.getOutputUnits ();
         final double
             start = entry.getStart (),
             step = entry.getStep (),
@@ -423,38 +789,37 @@ public class SampledRangeGraph extends Region {
         final double span = end - start;
         final double ratio = Math.abs (span / step);
         int samples = Math.min (
-            (int) Math.floor (ratio),
+            (int) Math.ceil (ratio),
             MAX_SAMPLES
         );
-        if (Math.abs (ratio - Math.floor (ratio)) >= 1e-14d)
-            samples = Math.min (samples + 1, MAX_SAMPLES);
-        final double updatedStep = samples < MAX_SAMPLES ? step : span / MAX_SAMPLES;
+        //if (Math.abs (ratio - Math.floor (ratio)) >= 1e-14d)
+        //    samples = Math.min (samples + 1, MAX_SAMPLES);
+        final double realstep = samples < MAX_SAMPLES ? step : span / MAX_SAMPLES;
+
+        /* creating plot data */
         final List<XYChart.Data<Number, Number>> buffer = new ArrayList<> (samples);
         for (int i = 0; i < samples; ++i) {
-            final double x = start + i * updatedStep;
-            final double y = func.compute (x);
+            final double x = i + 1 == samples ? end : start + i * realstep;
+            final double y = func.eval (x);
             if (Double.isNaN (y))
                 continue;
-            buffer.add (new XYChart.Data<> (x, y));
+            final double realX = getInputUnits ().convertFrom (entryInputUnits, x);
+            final double realY = getOutputUnits ().convertFrom (entryOutputUnits, y);
+            buffer.add (new XYChart.Data<> (realX, realY));
         }
-        /* add the final data point (end point) */
-        {
-            final double x = end;
-            final double y = func.compute (x);
-            if (Double.isNaN (y))
-                return;
-            buffer.add (new XYChart.Data<> (x, y));
-        }
-        series.getData ().clear ();
-        series.getData ().addAll (buffer);
+
+        /* submitting plot data */
+        wrapper.getSeries ().getData ().clear ();
+        wrapper.getSeries ().getData ().addAll (buffer);
     }
 
-    private void destroy (Data.Entry entry) {
+    private void destroy (FunctionEntry entry) {
         Objects.requireNonNull (entry, "Cannot destroy a null entry");
-        Series<Number, Number> removed = entryPlotMap.remove (entry);
+        SeriesWrapper removed = entryToSeries.remove (entry);
         if (removed != null) {
-            removed.nameProperty ().unbind ();
-            plots.remove (removed);
+            removed.getSeries ().nameProperty ().unbind ();
+            removed.getSeries ().getData ().clear ();
+            plots.remove (removed.getSeries ());
         }
     }
 }

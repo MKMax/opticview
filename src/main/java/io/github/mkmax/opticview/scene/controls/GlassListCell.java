@@ -6,6 +6,8 @@ import javafx.scene.control.ListCell;
 
 public class GlassListCell extends ListCell<Glass> {
 
+
+
     /* +---------------+ */
     /* | STYLE CLASSES | */
     /* +---------------+ */
