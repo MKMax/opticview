@@ -186,7 +186,7 @@ public class AppPane extends Region {
             String.format (
                 "%s [rad: %s%s]",
                 material.NAME,
-                real_lens_radius, "μm"
+                lens_radius, lens_radius_units.getMnemonic ()
             ),
             MetricDistance.MICROMETERS,
             MetricDistance.MILLIMETERS,
