@@ -18,7 +18,7 @@ import javafx.stage.Modality;
 import java.util.List;
 
 /* The main panel housing the input forms and the graph */
-public class MainPane extends Region {
+public class AppPane extends Region {
 
     /* +---------------+ */
     /* | STYLE CLASSES | */
@@ -171,40 +171,33 @@ public class MainPane extends Region {
 
         /* actually graph the focal length now */
         final double
-            real_l_min    = MetricDistance.MICROMETERS.convertFrom (lambda_units, l_min),
-            real_l_step   = MetricDistance.MICROMETERS.convertFrom (lambda_units, l_step),
-            real_l_max    = MetricDistance.MICROMETERS.convertFrom (lambda_units, l_max),
-            real_l_radius = MetricDistance.MILLIMETERS.convertFrom (lens_radius_units, lens_radius);
+            real_l_min       = MetricDistance.MICROMETERS.convertFrom (lambda_units, l_min),
+            real_l_step      = MetricDistance.MICROMETERS.convertFrom (lambda_units, l_step),
+            real_l_max       = MetricDistance.MICROMETERS.convertFrom (lambda_units, l_max),
+            real_lens_radius = MetricDistance.MILLIMETERS.convertFrom (lens_radius_units, lens_radius);
+
+
+        /* per client request, if inputs are in nanos and real_l_min > 2 microns, set it to microns */
+        if (real_l_min > 2d && graph.getInputUnits () == MetricDistance.NANOMETERS)
+            graph.setInputUnits (MetricDistance.MICROMETERS);
 
         graph.getFunctionData ().createEntry (
-            l -> real_l_radius / (material.calcRefractiveIndex (l) - 1d),
-            String.format ("%s [%.2f %s, %.2f %s, %.2f %s]",
+            l -> real_lens_radius / (material.calcRefractiveIndex (l) - 1d),
+            String.format (
+                "%s [rad: %s%s]",
                 material.NAME,
-                real_l_min, "μm",
-                real_l_step, "μm",
-                real_l_max, "μm"),
+                real_lens_radius, "μm"
+            ),
             MetricDistance.MICROMETERS,
             MetricDistance.MILLIMETERS,
             real_l_min,
             real_l_step,
             real_l_max
         );
-
-        /* per client request, if inputs are in nanos and real_l_min > 2 microns, set it to microns */
-        if (real_l_min > 2d && graph.getInputUnits () == MetricDistance.NANOMETERS)
-            graph.setInputUnits (MetricDistance.MICROMETERS);
-
     };
 
-    private final Runnable onFormClearRequested = () -> {
+    private final Runnable onFormClearRequested = () ->
         graph.getFunctionData ().clearEntries ();
-        /* @NOTE(max): do we need a clear input button? */
-        form.getGlassBox ().setValue (null);
-        form.getLambdaMinField ().clear ();
-        form.getLambdaStepField ().clear ();
-        form.getLambdaMaxField ().clear ();
-        form.getLensRadiusField ().clear ();
-    };
 
     /* install form handlers */
     {

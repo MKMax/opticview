@@ -64,7 +64,8 @@ public class FocalLengthForm extends Region {
     /* export section */
     private final Button
         plotButton       = new Button ("Plot"),
-        clearPlotsButton = new Button ("Clear Plots");
+        clearPlotsButton = new Button ("Clear Plots"),
+        clearInputButton = new Button ("Clear Input");
 
     /* component initialization */
     {
@@ -89,7 +90,7 @@ public class FocalLengthForm extends Region {
         lambdaUnitsBox.getStyleClass ().add (ComponentClass.FILL_CELL);
         lambdaUnitsBox.setButtonCell (new UnitListCell<> ());
         lambdaUnitsBox.setCellFactory (view -> new UnitListCell<> ());
-        lambdaUnitsBox.setValue (MetricDistance.NANOMETERS);
+        lambdaUnitsBox.setValue (MetricDistance.MICROMETERS);
 
         GridPane.setConstraints (lambdaHeader,     0, 2, 2, 1, HPos.CENTER, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);
         GridPane.setConstraints (lambdaUnitsLabel, 0, 3, 1, 1, HPos.RIGHT, VPos.CENTER, Priority.NEVER, Priority.NEVER);
@@ -129,12 +130,15 @@ public class FocalLengthForm extends Region {
         /* configure export controls [10-12] */
         plotButton.getStyleClass ().add (ComponentClass.FILL_CELL);
         clearPlotsButton.getStyleClass ().add (ComponentClass.FILL_CELL);
+        clearInputButton.getStyleClass ().add (ComponentClass.FILL_CELL);
 
         GridPane.setConstraints (plotButton,       0, 10, 2, 1, HPos.CENTER, VPos.CENTER, Priority.ALWAYS, Priority.ALWAYS);
         GridPane.setConstraints (clearPlotsButton, 0, 11, 2, 1, HPos.CENTER, VPos.CENTER, Priority.ALWAYS, Priority.ALWAYS);
+        GridPane.setConstraints (clearInputButton, 0, 12, 2, 1, HPos.CENTER, VPos.CENTER, Priority.ALWAYS, Priority.ALWAYS);
         container.getChildren ().addAll (
             plotButton,
-            clearPlotsButton);
+            clearPlotsButton,
+            clearInputButton);
     }
 
     /* +-----------+ */
@@ -170,6 +174,13 @@ public class FocalLengthForm extends Region {
     {
         plotButton.setOnAction (e -> plotSubmitListeners.forEach (Runnable::run));
         clearPlotsButton.setOnAction (e -> plotClearListeners.forEach (Runnable::run));
+        clearInputButton.setOnAction (e -> {
+            glassBox.setValue (null);
+            lambdaMinField.setText (null);
+            lambdaStepField.setText (null);
+            lambdaMaxField.setText (null);
+            lensRadiusField.setText (null);
+        });
     }
 
     /* +-------------------+ */

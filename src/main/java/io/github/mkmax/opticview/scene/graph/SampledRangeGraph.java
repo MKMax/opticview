@@ -789,11 +789,9 @@ public class SampledRangeGraph extends Region {
         final double span = end - start;
         final double ratio = Math.abs (span / step);
         int samples = Math.min (
-            (int) Math.ceil (ratio),
+            (int) Math.ceil (ratio) + 1,
             MAX_SAMPLES
         );
-        //if (Math.abs (ratio - Math.floor (ratio)) >= 1e-14d)
-        //    samples = Math.min (samples + 1, MAX_SAMPLES);
         final double realstep = samples < MAX_SAMPLES ? step : span / MAX_SAMPLES;
 
         /* creating plot data */

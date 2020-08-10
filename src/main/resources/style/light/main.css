@@ -62,8 +62,8 @@ GridPane .fill-cell {
 }
 
 /* --- MainPane --- */
-MainPane .container {
-    -fx-padding: 1mm;
+AppPane .container {
+    -fx-padding: 2.5mm;
     -fx-hgap: 1mm;
     -fx-vgap: 1mm;
 }
